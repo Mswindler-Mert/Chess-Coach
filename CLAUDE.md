@@ -122,7 +122,7 @@ Analiz sonuçları IndexedDB'ye kaydedilir; aynı oyun iki kez analiz edilmez.
 
 Her aşama ayrı bir dal (branch) ve küçük commit'lerle yapılır. Bir aşama bitmeden diğerine geçme.
 
-- [ ] **M0 – Kurulum:** Vite + React + TS + Tailwind, ESLint/Prettier, Vitest, GitHub repo, README, GPL-3.0 lisansı, ilk yayın
+- [x] **M0 – Kurulum:** Vite + React + TS + Tailwind, ESLint/Prettier (→ oxlint/Prettier, bkz. Karar Notları), Vitest, GitHub repo, README, GPL-3.0 lisansı, ilk yayın
 - [ ] **M1 – Oyunları çek:** Kullanıcı adı girişi, arşivleri sırayla çekme, IndexedDB, tempo filtresi, oyun listesi, oyunu tahtada izleme
 - [ ] **M2 – Analiz motoru:** Stockfish worker, hamle başı değerlendirme, win%, sınıflandırma, evre tespiti, ilerleme çubuğu, testler
 - [ ] **M3 – Hatalarımdan bulmacalar:** Bulmaca ekranı + aralıklı tekrar
@@ -164,3 +164,10 @@ Her aşama ayrı bir dal (branch) ve küçük commit'lerle yapılır. Bir aşama
   çalışır, `main` push'unda yayınlanır. Vite `base: '/Chess-Coach/'` (repo adı değişirse güncelle).
   Adres: https://mswindler-mert.github.io/Chess-Coach/
 - **Komutlar:** `dev`, `build`, `preview`, `typecheck`, `lint`, `format`, `format:check`, `test`, `test:watch`.
+- **İlk yayın tamam (2026-11-19):** Site https://mswindler-mert.github.io/Chess-Coach/ adresinde açılıyor.
+  Repo public. Pages kaynağı "GitHub Actions". Yeni repoda Actions'ın elle etkinleştirilmesi gerekti.
+- **Git kimliği:** Commit e-postası GitHub noreply adresi (`70340171+Mswindler-Mert@users.noreply.github.com`),
+  hem global hem proje ayarında. Kişisel e-posta commit'lere girmemeli. Geçmişte kalan eski adres yüzünden
+  repo silinip temiz geçmişle yeniden açıldı.
+- **Dal akışı:** Her aşama kendi dalında (`m0-setup`, `m1-...`) yapılır, bitince `main`'e fast-forward
+  ile birleştirilir. `main`'e push yayını tetikler.
