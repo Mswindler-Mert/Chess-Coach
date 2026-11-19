@@ -147,3 +147,20 @@ Her aşama ayrı bir dal (branch) ve küçük commit'lerle yapılır. Bir aşama
 ## Karar Notları
 
 (Geliştirme sırasında alınan önemli kararlar buraya eklenir.)
+
+### M0 – Kurulum (2026-11-19)
+- **Sürümler:** React 19, Vite 8, TypeScript 7, Tailwind CSS v4, Vitest 5.
+- **Lint: ESLint yerine oxlint.** `typescript-eslint` henüz TypeScript 7'yi desteklemiyor (peer: `<6.1`).
+  Vite'ın güncel şablonu da oxlint kullanıyor, tek paket. Ayarlar `.oxlintrc.json` içinde.
+  İleride ESLint gerekirse TS 6'ya inmek ya da typescript-eslint desteğini beklemek gerekir.
+- **Prettier:** noktalı virgül yok, tek tırnak, 100 sütun (`.prettierrc.json`). CLAUDE.md biçimlendirilmez.
+- **Tailwind v4:** config dosyası yok; `src/index.css` içinde `@import 'tailwindcss'`, `@tailwindcss/vite` eklentisi.
+- **TS ayarları:** `strict` + `noUncheckedIndexedAccess`, `noImplicitOverride`, `noImplicitReturns`.
+  Tip kontrolü: `npm run typecheck` (`tsc -b --noEmit`, tüm proje referanslarını kontrol eder).
+- **Testler:** Vitest node ortamında (jsdom yok). Test dosyaları kodun yanında `*.test.ts`,
+  örnek PGN'ler `tests/fixtures/` içinde.
+- **i18n:** Kütüphane yok; `src/i18n/tr.ts` sözlüğü + tipli `t(key, params)` fonksiyonu (`{name}` yer tutucuları).
+- **Yayın:** GitHub Pages, GitHub Actions ile (`.github/workflows/deploy.yml`). PR'larda sadece kontroller
+  çalışır, `main` push'unda yayınlanır. Vite `base: '/Chess-Coach/'` (repo adı değişirse güncelle).
+  Adres: https://mswindler-mert.github.io/Chess-Coach/
+- **Komutlar:** `dev`, `build`, `preview`, `typecheck`, `lint`, `format`, `format:check`, `test`, `test:watch`.
