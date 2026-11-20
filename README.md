@@ -37,7 +37,10 @@ npm run build      # üretim derlemesi (dist/)
 ### Teknolojiler
 
 React + TypeScript (strict) + Vite · Tailwind CSS · Vitest · oxlint + Prettier ·
-ileride `chess.js`, `react-chessboard`, Stockfish (WASM, Web Worker) ve Dexie (IndexedDB).
+`chess.js` · `react-chessboard` · Dexie (IndexedDB) · Stockfish 19 lite (WASM, Web Worker).
+
+Stockfish dosyaları `npm run dev` / `npm run build` öncesinde `node_modules/stockfish` içinden
+`public/stockfish/` klasörüne kopyalanır (`scripts/copy-engine.mjs`); bu klasör git'e girmez.
 
 ### Klasör yapısı
 

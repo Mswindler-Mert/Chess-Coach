@@ -126,7 +126,7 @@ Her aşama ayrı bir dal (branch) ve küçük commit'lerle yapılır. Bir aşama
 
 - [x] **M0 – Kurulum:** Vite + React + TS + Tailwind, ESLint/Prettier (→ oxlint/Prettier, bkz. Karar Notları), Vitest, GitHub repo, README, GPL-3.0 lisansı, ilk yayın
 - [x] **M1 – Oyunları çek:** Kullanıcı adı girişi, arşivleri sırayla çekme, IndexedDB, tempo filtresi, oyun listesi, oyunu tahtada izleme
-- [ ] **M2 – Analiz motoru:** Stockfish worker, hamle başı değerlendirme, win%, sınıflandırma, evre tespiti, ilerleme çubuğu, testler
+- [x] **M2 – Analiz motoru:** Stockfish worker, hamle başı değerlendirme, win%, sınıflandırma, evre tespiti, ilerleme çubuğu, testler
 - [ ] **M3 – Hatalarımdan bulmacalar:** Bulmaca ekranı + aralıklı tekrar
 - [ ] **M4 – Panel:** İstatistikler ve grafikler
 - [ ] **M5 – Motif etiketleme:** asili-tas, bedava-tasi-almadi, mat, kazanılmış oyunu kaçırma, zaman baskısı
@@ -209,3 +209,30 @@ Her aşama ayrı bir dal (branch) ve küçük commit'lerle yapılır. Bir aşama
 - **Analiz kapsamı = filtre:** M2'de analiz kuyruğu, oyun listesindeki aynı tempo seçimini kullanır.
   Filtreye sonradan eklenen tempoların oyunları kuyruğa eklenir; kapatılan tempoların mevcut analizleri
   silinmez, sadece gösterilmez.
+
+### M2 – Analiz motoru (2026-11-21)
+- **Motor:** `stockfish` 19 npm paketinin **lite, tek iş parçacıklı** sürümü (~1.8 MB WASM).
+  Çok iş parçacıklı sürüm COOP/COEP başlıkları istiyor, GitHub Pages veremiyor; tam sürüm ~94 MB.
+  `scripts/copy-engine.mjs` dosyaları `predev`/`prebuild`'de `public/stockfish/` içine kopyalar
+  (git'e girmez). Worker adresi `${BASE_URL}stockfish/stockfish.js`; `.wasm` aynı ada bakar.
+- **Katmanlar:** `engine/uci.ts` (saf UCI ayrıştırma), `engine/engine.ts` (`UciEngine`: komut kuyruğu,
+  `init`/`newGame`/`evaluate`; taşıyıcı arayüzü sayesinde testte Node'daki gerçek Stockfish ile çalışır),
+  `engine/worker.ts` (tarayıcıda Web Worker), `engine/runner.ts` (arka plan kuyruğu, tekil `analysisRunner`).
+- **Skorlar hamle sırası gelen tarafın açısından saklanır** (UCI'nin verdiği gibi). `mate 0` = sırası gelen
+  mat olmuş. Beyaz açısına çevirme sadece gösterimde (`core/analysis/display.ts`, `formatScore`).
+- **Pozisyon gönderimi:** `position fen <başlangıç> moves …` ile; motor tekrarları görür. Mat/pat/yetersiz
+  materyal pozisyonları motora sorulmaz (`terminalEval`). N hamlelik oyunda N+1 pozisyon, her biri bir kez.
+- **Sınıflandırma:** motorun en iyi hamlesi her zaman `best` (sığ aramada kayıp > 0 görünse bile);
+  diğerleri win% kaybına göre `good` / `inaccuracy` / `mistake` / `blunder` (`CLASS_THRESHOLDS`).
+- **Evre:** hamlenin oynandığı pozisyona göre. İlk 24 yarım hamle her zaman açılış (erken toplu
+  değişimler oyun sonu sayılmaz); sonra her iki tarafın **toplam** piyon dışı materyali ≤ 26 ise oyun sonu.
+- **Kayıt:** Dexie sürüm 2, `analyses` tablosu (`gameId` anahtar). Kayıtta `engine`, `depth`, `version`
+  (`ANALYSIS_VERSION`) tutulur; format değişirse sürümü artır. Derinlik ayarı `settings.analysisDepth`
+  (10/12/14/16, varsayılan 12). Derinlik değişince eski analizler yeniden yapılmaz.
+- **Kuyruk:** her oyundan önce listeyi yeniden planlar (`planAnalysisQueue`): filtredeki tempolar,
+  analiz edilmemiş, en yeniden eskiye. Filtre değişikliği bir sonraki oyunda geçerli olur. Duraklatınca
+  yarım kalan oyun kaydedilmez. Oyun sayfasındaki "Bu oyunu analiz et" o oyunu öne alır ve kuyruk
+  ardından devam eder; filtrede kapalı tempodaki oyun için düğme yerine uyarı çıkar.
+- **Hız (2026-11, masaüstü):** derinlik 12'de oyun başı ~1 sn; 638 blitz+rapid oyunun tamamı ~10–15 dk.
+- **Bilinen eksikler:** değerlendirme grafiği yok (M4), tahtada en iyi hamle oku yok (M3'te bulmacada),
+  kuyruk sekme kapanınca durur (sayfa açılınca kendiliğinden başlamaz, "Analizi başlat" gerekir).
