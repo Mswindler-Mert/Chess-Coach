@@ -9,8 +9,8 @@ import {
   saveAnalysis,
 } from '../db/analyses'
 import { getGameFilter, listGames } from '../db/games'
-import { UciEngine } from './engine'
-import { createWorkerTransport } from './worker'
+import type { UciEngine } from './engine'
+import { getSharedEngine, resetSharedEngine } from './shared'
 
 export interface RunnerState {
   status: 'idle' | 'running' | 'error'
@@ -33,8 +33,6 @@ const INITIAL_STATE: RunnerState = {
   error: null,
 }
 
-const ENGINE_OPTIONS = { Hash: 32 }
-
 /**
  * Analyses a user's games one at a time in the background, newest first, using only the
  * games matching the saved filter (tempos and date range). Each finished game is saved right away, so pausing (or closing
@@ -43,7 +41,6 @@ const ENGINE_OPTIONS = { Hash: 32 }
 export class AnalysisRunner {
   private state: RunnerState = INITIAL_STATE
   private readonly listeners = new Set<() => void>()
-  private engine: Promise<UciEngine> | null = null
   private controller: AbortController | null = null
   private priorityId: string | undefined
   /** Bumped on every start/pause; a loop from an older generation stops by itself. */
@@ -93,7 +90,7 @@ export class AnalysisRunner {
   private async run(username: string, generation: number): Promise<void> {
     const isCurrent = () => generation === this.generation
     try {
-      const engine = await this.getEngine()
+      const engine: UciEngine = await getSharedEngine()
       while (isCurrent()) {
         const [games, analyzed, filter, depth] = await Promise.all([
           listGames(username),
@@ -146,22 +143,13 @@ export class AnalysisRunner {
       if (isCurrent()) this.set({ status: 'idle', current: null })
     } catch (error) {
       if (!isCurrent()) return
-      void this.engine?.then((e) => e.terminate()).catch(() => undefined)
-      this.engine = null
+      resetSharedEngine()
       this.set({
         status: 'error',
         current: null,
         error: error instanceof Error ? error.message : String(error),
       })
     }
-  }
-
-  private getEngine(): Promise<UciEngine> {
-    if (!this.engine) {
-      const engine = new UciEngine(createWorkerTransport())
-      this.engine = engine.init(ENGINE_OPTIONS).then(() => engine)
-    }
-    return this.engine
   }
 
   private set(patch: Partial<RunnerState>): void {

@@ -1,6 +1,7 @@
 import { Dexie, type EntityTable } from 'dexie'
 import type { GameAnalysis } from '../core/analysis/types'
 import type { Game } from '../core/games/model'
+import type { PuzzleProgress } from '../core/training/leitner'
 
 export interface ArchiveRecord {
   username: string
@@ -33,6 +34,7 @@ export class ChessCoachDb extends Dexie {
   declare archives: Dexie.Table<ArchiveRecord, [string, string]>
   declare settings: EntityTable<SettingRecord, 'key'>
   declare analyses: EntityTable<AnalysisRecord, 'gameId'>
+  declare puzzleProgress: EntityTable<PuzzleProgress, 'puzzleId'>
 
   constructor(name = 'chess-coach') {
     super(name)
@@ -43,6 +45,9 @@ export class ChessCoachDb extends Dexie {
     })
     this.version(2).stores({
       analyses: 'gameId, username',
+    })
+    this.version(3).stores({
+      puzzleProgress: 'puzzleId, username',
     })
   }
 }
