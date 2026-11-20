@@ -24,7 +24,16 @@ import { routeHref } from '../router'
 
 const LAST_MOVE_STYLE = { backgroundColor: 'rgba(250, 204, 21, 0.45)' }
 
-export function GamePage({ username, id }: { username: string; id: string }) {
+export function GamePage({
+  username,
+  id,
+  initialPly = 0,
+}: {
+  username: string
+  id: string
+  /** Half-move to show first, e.g. the mistake a puzzle came from. */
+  initialPly?: number
+}) {
   const [game, setGame] = useState<Game | null | undefined>(undefined)
 
   useEffect(() => {
@@ -55,12 +64,12 @@ export function GamePage({ username, id }: { username: string; id: string }) {
   return (
     <div className="flex flex-col gap-4">
       {back}
-      <Viewer game={game} />
+      <Viewer game={game} initialPly={initialPly} />
     </div>
   )
 }
 
-function Viewer({ game }: { game: Game }) {
+function Viewer({ game, initialPly }: { game: Game; initialPly: number }) {
   const replay = useMemo<Replay | null>(() => {
     try {
       return buildReplay(game.pgn)
@@ -79,20 +88,22 @@ function Viewer({ game }: { game: Game }) {
   if (!replay) return <p className="text-rose-400">{t('viewer.parseError')}</p>
   // Ignore an analysis that does not match the moves (should not happen, but never mislabel).
   const matching = analysis && analysis.moves.length === replay.moves.length ? analysis : null
-  return <ReplayView game={game} replay={replay} analysis={matching} />
+  return <ReplayView game={game} replay={replay} analysis={matching} initialPly={initialPly} />
 }
 
 function ReplayView({
   game,
   replay,
   analysis,
+  initialPly,
 }: {
   game: Game
   replay: Replay
   analysis: AnalysisRecord | null
+  initialPly: number
 }) {
   const total = replay.moves.length
-  const [ply, setPly] = useState(0)
+  const [ply, setPly] = useState(() => Math.max(0, Math.min(total, initialPly)))
   const go = (next: number) => setPly(Math.max(0, Math.min(total, next)))
 
   useEffect(() => {

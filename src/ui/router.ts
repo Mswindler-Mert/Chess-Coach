@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react'
 export type Route =
   | { name: 'home' }
   | { name: 'games'; username: string }
-  | { name: 'game'; username: string; id: string }
+  | { name: 'game'; username: string; id: string; ply?: number }
+  | { name: 'puzzles'; username: string }
 
 export function parseRoute(hash: string): Route {
   const parts = hash
@@ -13,7 +14,13 @@ export function parseRoute(hash: string): Route {
     .filter(Boolean)
     .map((p) => decodeURIComponent(p))
   if (parts[0] === 'u' && parts[1]) {
-    if (parts[2] === 'game' && parts[3]) return { name: 'game', username: parts[1], id: parts[3] }
+    if (parts[2] === 'game' && parts[3]) {
+      const ply = Number(parts[4])
+      return Number.isInteger(ply) && ply > 0
+        ? { name: 'game', username: parts[1], id: parts[3], ply }
+        : { name: 'game', username: parts[1], id: parts[3] }
+    }
+    if (parts[2] === 'puzzles') return { name: 'puzzles', username: parts[1] }
     return { name: 'games', username: parts[1] }
   }
   return { name: 'home' }
@@ -26,7 +33,11 @@ export function routeHref(route: Route): string {
     case 'games':
       return `#/u/${encodeURIComponent(route.username)}`
     case 'game':
-      return `#/u/${encodeURIComponent(route.username)}/game/${encodeURIComponent(route.id)}`
+      return `#/u/${encodeURIComponent(route.username)}/game/${encodeURIComponent(route.id)}${
+        route.ply ? `/${route.ply}` : ''
+      }`
+    case 'puzzles':
+      return `#/u/${encodeURIComponent(route.username)}/puzzles`
   }
 }
 

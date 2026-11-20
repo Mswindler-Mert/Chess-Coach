@@ -2,6 +2,7 @@ import { t } from '../i18n'
 import { GamePage } from './pages/GamePage'
 import { GamesPage } from './pages/GamesPage'
 import { HomePage } from './pages/HomePage'
+import { PuzzlePage } from './pages/PuzzlePage'
 import { routeHref, useRoute } from './router'
 
 export default function App() {
@@ -32,8 +33,14 @@ export default function App() {
         {route.name === 'home' && <HomePage />}
         {route.name === 'games' && <GamesPage key={route.username} username={route.username} />}
         {route.name === 'game' && (
-          <GamePage key={route.id} username={route.username} id={route.id} />
+          <GamePage
+            key={`${route.id}:${route.ply ?? 0}`}
+            username={route.username}
+            id={route.id}
+            initialPly={route.ply ?? 0}
+          />
         )}
+        {route.name === 'puzzles' && <PuzzlePage key={route.username} username={route.username} />}
 
         <footer className="text-xs text-slate-500">
           {t('footer.license', { name: t('app.title') })}
