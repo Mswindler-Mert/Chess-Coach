@@ -48,7 +48,8 @@ Chess.com oyunlarımı çekip Stockfish ile analiz eden, **sık yaptığım hata
 ```
 src/
   core/            # Saf TypeScript, React'ten bağımsız, test edilir
-    api/           # Chess.com istemcisi
+    api/           # Chess.com istemcisi ve senkronizasyon planı
+    games/         # Oyun modeli, PGN tekrar oynatma, saatler, tempo filtresi
     analysis/      # Değerlendirme, hata sınıflandırma, evre tespiti, motif etiketleme
     training/      # Bulmaca üretimi, aralıklı tekrar (spaced repetition)
     openings/      # Açılış istatistikleri ve prensip kontrolleri
@@ -123,7 +124,7 @@ Analiz sonuçları IndexedDB'ye kaydedilir; aynı oyun iki kez analiz edilmez.
 Her aşama ayrı bir dal (branch) ve küçük commit'lerle yapılır. Bir aşama bitmeden diğerine geçme.
 
 - [x] **M0 – Kurulum:** Vite + React + TS + Tailwind, ESLint/Prettier (→ oxlint/Prettier, bkz. Karar Notları), Vitest, GitHub repo, README, GPL-3.0 lisansı, ilk yayın
-- [ ] **M1 – Oyunları çek:** Kullanıcı adı girişi, arşivleri sırayla çekme, IndexedDB, tempo filtresi, oyun listesi, oyunu tahtada izleme
+- [x] **M1 – Oyunları çek:** Kullanıcı adı girişi, arşivleri sırayla çekme, IndexedDB, tempo filtresi, oyun listesi, oyunu tahtada izleme
 - [ ] **M2 – Analiz motoru:** Stockfish worker, hamle başı değerlendirme, win%, sınıflandırma, evre tespiti, ilerleme çubuğu, testler
 - [ ] **M3 – Hatalarımdan bulmacalar:** Bulmaca ekranı + aralıklı tekrar
 - [ ] **M4 – Panel:** İstatistikler ve grafikler
@@ -171,3 +172,30 @@ Her aşama ayrı bir dal (branch) ve küçük commit'lerle yapılır. Bir aşama
   repo silinip temiz geçmişle yeniden açıldı.
 - **Dal akışı:** Her aşama kendi dalında (`m0-setup`, `m1-...`) yapılır, bitince `main`'e fast-forward
   ile birleştirilir. `main`'e push yayını tetikler.
+
+### M1 – Oyunları çek (2026-11-20)
+- **Yeni bağımlılıklar:** `chess.js` (PGN → pozisyonlar), `react-chessboard` v5 (`options` prop'u alır),
+  `dexie`. Router/state kütüphanesi yok.
+- **Senkronizasyon (`core/api/sync.ts`):** `planSync` bir ayı, hiç çekilmemişse ya da son çekim ay
+  bitmeden yapıldıysa yeniden çeker (ay sonu UTC). Aylar en yeniden eskiye, **tek tek** çekilir; her ay
+  gelir gelmez kaydedilir. 429'da 2 sn'den başlayan, iki katına çıkan bekleme ile 3 kez yeniden denenir.
+  `fetch`, `sleep`, `now` ve depolama parametre olarak verilir (testler internete çıkmaz).
+- **Aynı anda tek senkronizasyon:** `db/games.ts` kullanıcı başına çalışan senkronizasyonu paylaşır
+  (React StrictMode efektleri iki kez çalıştırsa da istekler paralel gitmez).
+- **Sadece standart satranç saklanır:** `rules !== 'chess'` (Chess960, odds chess…) atlanır;
+  odds chess farklı başlangıç pozisyonuyla başlar ve analiz için yanıltıcı olur.
+- **Oyun modeli (`core/games/model.ts`):** Kullanıcının bakış açısından: `userColor`, `outcome`
+  (win/loss/draw), `resultCode` (kullanıcının ham kodu), `endReason` (kaybedenin kodu ya da beraberlik
+  kodu). `plies` TCN uzunluğundan (2 karakter = 1 yarım hamle) hesaplanır, PGN listede parse edilmez.
+  Açılış adı `eco` URL'sinden; `.../openings/Undefined` → açılış yok.
+- **Daily oyunlarda `[%clk]`** o hamle için kalan gün içi süredir, oyun saati değil. İzleyicide gösterilmez;
+  M5'teki `zaman-baskisi` etiketi daily oyunları atlamalı.
+- **Saklanan veri değişirse:** `normalizeGame` değişince eski kayıtlar kendiliğinden güncellenmez
+  (bitmiş aylar yeniden çekilmez). Böyle bir değişiklikte Dexie sürümünü artırıp `archives` tablosunu
+  temizleyen bir `upgrade` yaz, böylece her şey yeniden çekilir.
+- **Yönlendirme:** Hash tabanlı (`#/`, `#/u/:kullanici`, `#/u/:kullanici/game/:id`), GitHub Pages'te
+  ek ayar gerektirmez.
+- **Test yapısı:** `tests/helpers.ts` fixture'ları okur; Node tipleri için ayrı `tsconfig.test.json`
+  (uygulama kodu tarayıcı tipleriyle kalır). Fixture'lar `mswindler07`'nin gerçek oyunları.
+- **Kullanıcının oyun dağılımı (2026-11):** 1236 bullet, 616 blitz, 22 rapid, 5 daily. Varsayılan filtre
+  (rapid + daily) sadece 27 oyun gösteriyor; analiz için blitz'i de açmak gerekebilir.
