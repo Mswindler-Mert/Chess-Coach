@@ -1,6 +1,12 @@
 import { defaultHttpDeps } from '../core/api/chesscom'
 import { syncGames, type SyncProgress, type SyncResult, type SyncStore } from '../core/api/sync'
-import { DEFAULT_TIME_CLASSES } from '../core/games/filter'
+import {
+  DEFAULT_DATE_RANGE,
+  DEFAULT_TIME_CLASSES,
+  isDateRange,
+  type DateRange,
+  type GameFilter,
+} from '../core/games/filter'
 import { normalizeGame, type Game, type TimeClass } from '../core/games/model'
 import { db, type ChessCoachDb } from './schema'
 
@@ -70,6 +76,7 @@ export async function lastSyncedAt(username: string): Promise<number | null> {
 
 const LAST_USERNAME = 'lastUsername'
 const TIME_CLASSES = 'timeClasses'
+const DATE_RANGE = 'dateRange'
 
 export async function getLastUsername(): Promise<string | null> {
   const record = await db.settings.get(LAST_USERNAME)
@@ -87,4 +94,19 @@ export async function getTimeClasses(): Promise<TimeClass[]> {
 
 export async function setTimeClasses(timeClasses: TimeClass[]): Promise<void> {
   await db.settings.put({ key: TIME_CLASSES, value: timeClasses })
+}
+
+export async function getDateRange(): Promise<DateRange> {
+  const record = await db.settings.get(DATE_RANGE)
+  return isDateRange(record?.value) ? record.value : DEFAULT_DATE_RANGE
+}
+
+export async function setDateRange(range: DateRange): Promise<void> {
+  await db.settings.put({ key: DATE_RANGE, value: range })
+}
+
+/** The saved filter shared by the game list, analysis and (later) puzzles and the dashboard. */
+export async function getGameFilter(): Promise<GameFilter> {
+  const [timeClasses, dateRange] = await Promise.all([getTimeClasses(), getDateRange()])
+  return { timeClasses, dateRange }
 }

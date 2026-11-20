@@ -8,7 +8,7 @@ import {
   getAnalysisDepth,
   saveAnalysis,
 } from '../db/analyses'
-import { getTimeClasses, listGames } from '../db/games'
+import { getGameFilter, listGames } from '../db/games'
 import { UciEngine } from './engine'
 import { createWorkerTransport } from './worker'
 
@@ -37,7 +37,7 @@ const ENGINE_OPTIONS = { Hash: 32 }
 
 /**
  * Analyses a user's games one at a time in the background, newest first, using only the
- * tempos selected in the filter. Each finished game is saved right away, so pausing (or closing
+ * games matching the saved filter (tempos and date range). Each finished game is saved right away, so pausing (or closing
  * the tab) only loses the game in progress.
  */
 export class AnalysisRunner {
@@ -95,15 +95,15 @@ export class AnalysisRunner {
     try {
       const engine = await this.getEngine()
       while (isCurrent()) {
-        const [games, analyzed, timeClasses, depth] = await Promise.all([
+        const [games, analyzed, filter, depth] = await Promise.all([
           listGames(username),
           analyzedGameIds(username),
-          getTimeClasses(),
+          getGameFilter(),
           getAnalysisDepth(),
         ])
         if (!isCurrent()) return
         for (const id of this.skipped) analyzed.add(id)
-        const game = planAnalysisQueue(games, analyzed, timeClasses, this.priorityId)[0]
+        const game = planAnalysisQueue(games, analyzed, filter, Date.now(), this.priorityId)[0]
         if (!game) break
         if (game.id === this.priorityId) this.priorityId = undefined
 

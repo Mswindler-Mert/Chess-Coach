@@ -3,10 +3,11 @@ import { Chessboard } from 'react-chessboard'
 import { sideToMove } from '../../core/analysis/analyzeGame'
 import { formatScore, uciToSan } from '../../core/analysis/display'
 import type { MoveAnalysis } from '../../core/analysis/types'
-import type { Color, Game, PlayerInfo, TimeClass } from '../../core/games/model'
+import type { Color, Game, PlayerInfo } from '../../core/games/model'
 import { buildReplay, clocksAt, fenAt, formatClock, type Replay } from '../../core/games/replay'
 import { getAnalysis } from '../../db/analyses'
-import { getGame, getTimeClasses } from '../../db/games'
+import { filterByDateRange, type GameFilter } from '../../core/games/filter'
+import { getGame, getGameFilter } from '../../db/games'
 import type { AnalysisRecord } from '../../db/schema'
 import { analysisRunner } from '../../engine/runner'
 import { t } from '../../i18n'
@@ -319,14 +320,17 @@ function MoveInsight({
 
 function AnalyzePrompt({ game }: { game: Game }) {
   const runner = useAnalysisRunner()
-  const [timeClasses, setTimeClasses] = useState<TimeClass[] | null>(null)
+  const [filter, setFilter] = useState<GameFilter | null>(null)
+  const [now] = useState(() => Date.now())
   useEffect(() => {
-    void getTimeClasses().then(setTimeClasses)
+    void getGameFilter().then(setFilter)
   }, [])
 
   const current = runner.status === 'running' ? runner.current : null
   const isRunning = current?.gameId === game.id
-  const allowed = timeClasses?.includes(game.timeClass) ?? false
+  // Analysis only covers games matching the shared filter, so explain which part excludes this one.
+  const tempoOk = filter?.timeClasses.includes(game.timeClass) ?? false
+  const rangeOk = filter ? filterByDateRange([game], filter.dateRange, now).length > 0 : false
 
   return (
     <div className="flex flex-col gap-2 rounded-xl border border-slate-800 bg-slate-900 p-3 text-sm">
@@ -340,8 +344,8 @@ function AnalyzePrompt({ game }: { game: Game }) {
       ) : (
         <>
           <p className="text-slate-300">{t('viewer.analysis.none')}</p>
-          {timeClasses &&
-            (allowed ? (
+          {filter &&
+            (tempoOk && rangeOk ? (
               <button
                 type="button"
                 onClick={() => analysisRunner.start(game.username, game.id)}
@@ -351,7 +355,9 @@ function AnalyzePrompt({ game }: { game: Game }) {
               </button>
             ) : (
               <p className="text-slate-400">
-                {t('viewer.analysis.filteredOut', { tempo: timeClassLabel(game.timeClass) })}
+                {tempoOk
+                  ? t('viewer.analysis.outOfRange', { range: t(`games.range.${filter.dateRange}`) })
+                  : t('viewer.analysis.filteredOut', { tempo: timeClassLabel(game.timeClass) })}
               </p>
             ))}
         </>

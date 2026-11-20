@@ -4,15 +4,21 @@ import type { SyncProgress } from '../../core/api/sync'
 import { normalizeUsername } from '../../core/api/username'
 import {
   ALL_TIME_CLASSES,
+  applyGameFilter,
   countByTimeClass,
-  filterGames,
+  DATE_RANGES,
+  filterByDateRange,
+  FEW_GAMES_THRESHOLD,
   toggleTimeClass,
+  type DateRange,
 } from '../../core/games/filter'
 import { opponentOf, type Game, type TimeClass } from '../../core/games/model'
 import {
+  getDateRange,
   getTimeClasses,
   lastSyncedAt,
   listGames,
+  setDateRange,
   setLastUsername,
   setTimeClasses,
   syncUserGames,
@@ -64,6 +70,9 @@ export function GamesPage({ username: rawUsername }: { username: string }) {
 function GamesView({ username }: { username: string }) {
   const [games, setGames] = useState<Game[] | null>(null)
   const [timeClasses, setSelected] = useState<TimeClass[] | null>(null)
+  const [dateRange, setRange] = useState<DateRange | null>(null)
+  // One reference time per visit, so the list does not shift while it is open.
+  const [now] = useState(() => Date.now())
   const [sync, setSync] = useState<SyncState>({ status: 'running', progress: null })
   const [syncedAt, setSyncedAt] = useState<number | null>(null)
   const [limit, setLimit] = useState(PAGE_SIZE)
@@ -99,6 +108,7 @@ function GamesView({ username }: { username: string }) {
 
   useEffect(() => {
     void getTimeClasses().then(setSelected)
+    void getDateRange().then(setRange)
     void reload()
     runSync()
   }, [reload, runSync])
@@ -108,11 +118,29 @@ function GamesView({ username }: { username: string }) {
     runSync()
   }
 
-  const counts = useMemo(() => countByTimeClass(games ?? []), [games])
-  const visible = useMemo(
-    () => (games && timeClasses ? filterGames(games, timeClasses) : []),
-    [games, timeClasses],
+  // Tempo counts follow the date range, so each button says what it would add.
+  const counts = useMemo(
+    () => countByTimeClass(games && dateRange ? filterByDateRange(games, dateRange, now) : []),
+    [games, dateRange, now],
   )
+  const visible = useMemo(
+    () =>
+      games && timeClasses && dateRange
+        ? applyGameFilter(games, { timeClasses, dateRange }, now)
+        : [],
+    [games, timeClasses, dateRange, now],
+  )
+  const fewGames =
+    dateRange !== null &&
+    dateRange !== 'all' &&
+    visible.length > 0 &&
+    visible.length < FEW_GAMES_THRESHOLD
+
+  function onRange(range: DateRange) {
+    setRange(range)
+    setLimit(PAGE_SIZE)
+    void setDateRange(range)
+  }
 
   function onToggle(tc: TimeClass) {
     if (!timeClasses) return
@@ -153,7 +181,36 @@ function GamesView({ username }: { username: string }) {
         </div>
       </fieldset>
 
-      {games && timeClasses && (
+      <fieldset className="flex flex-col gap-2">
+        <legend className="mb-2 text-sm text-slate-400">{t('games.range.label')}</legend>
+        <div className="flex flex-wrap gap-2">
+          {DATE_RANGES.map((range) => {
+            const active = dateRange === range
+            return (
+              <button
+                key={range}
+                type="button"
+                aria-pressed={active}
+                onClick={() => onRange(range)}
+                className={`min-h-10 rounded-full border px-4 text-sm font-medium ${
+                  active
+                    ? 'border-emerald-500 bg-emerald-600/20 text-emerald-200'
+                    : 'border-slate-700 text-slate-400 hover:border-slate-500'
+                }`}
+              >
+                {t(`games.range.${range}`)}
+              </button>
+            )
+          })}
+        </div>
+        {fewGames && (
+          <p className="text-sm text-amber-300" role="note">
+            {t('games.range.fewGames')}
+          </p>
+        )}
+      </fieldset>
+
+      {games && timeClasses && dateRange && (
         <AnalysisPanel username={username} games={games} eligible={visible} summaries={summaries} />
       )}
 

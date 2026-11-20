@@ -38,19 +38,24 @@ export const tr = {
   'games.count': '{shown} oyun gösteriliyor (toplam {total})',
   'games.empty': 'Henüz oyun yok.',
   'games.emptyFiltered':
-    'Seçili tempolarda oyun yok. Yukarıdan diğer tempoları açarak diğer oyunlarını görebilirsin.',
+    'Seçili tempo ve tarih aralığında oyun yok. Yukarıdan başka tempoları açabilir ya da aralığı genişletebilirsin.',
   'games.showMore': 'Daha fazla göster',
   'games.moves': '{count} hamle',
   'games.unrated': 'puansız',
   'games.filter.label': 'Tempo',
+  'games.range.label': 'Tarih aralığı',
+  'games.range.30d': 'Son 30 gün',
+  'games.range.90d': 'Son 3 ay',
+  'games.range.all': 'Tümü',
+  'games.range.fewGames': 'Bu aralıkta az oyun var, aralığı genişletebilirsin.',
 
   'analysis.title': 'Analiz',
-  'analysis.progress': 'Seçili tempolarda {analyzed}/{total} oyun analiz edildi.',
+  'analysis.progress': 'Seçili tempo ve tarih aralığında {analyzed}/{total} oyun analiz edildi.',
   'analysis.start': 'Analizi başlat',
   'analysis.pause': 'Duraklat',
   'analysis.starting': 'Stockfish hazırlanıyor…',
   'analysis.running': '{opponent} ile oyun analiz ediliyor: {done}/{total} pozisyon',
-  'analysis.allDone': 'Seçili tempolardaki tüm oyunlar analiz edildi.',
+  'analysis.allDone': 'Seçili tempo ve tarih aralığındaki tüm oyunlar analiz edildi.',
   'analysis.error': 'Analiz durdu: {message}',
   'analysis.depth': 'Derinlik',
   'analysis.hint':
@@ -112,6 +117,8 @@ export const tr = {
   'viewer.analysis.running': 'Analiz ediliyor: {done}/{total} pozisyon',
   'viewer.analysis.filteredOut':
     'Bu oyunun temposu ({tempo}) filtrede kapalı. Analiz etmek için oyun listesinde bu tempoyu aç.',
+  'viewer.analysis.outOfRange':
+    'Bu oyun seçili tarih aralığının ({range}) dışında. Analiz etmek için oyun listesinde aralığı genişlet.',
   'viewer.analysis.startPosition': 'Başlangıç pozisyonu',
   'viewer.analysis.eval': 'Değerlendirme: {score}',
   'viewer.analysis.better': 'Daha iyisi: {move}',

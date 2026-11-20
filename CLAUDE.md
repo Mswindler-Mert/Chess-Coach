@@ -9,7 +9,8 @@ Chess.com oyunlarımı çekip Stockfish ile analiz eden, **sık yaptığım hata
 
 - Kullanıcı: ~300 reyting, Chess.com'da oynuyor. Analiz edilecek ana oyunlar **rapid ve blitz**.
   Bullet ve daily varsayılan olarak kapalıdır; tempo düğmeleriyle açılabilir, seçim kaydedilir.
-  **Analiz sadece filtrede seçili tempolardaki oyunlara uygulanır.**
+  Tarih aralığı (Son 30 gün / Son 3 ay / Tümü) varsayılan olarak **Son 30 gün**; seçim kaydedilir.
+  **Analiz sadece hem tempo filtresine hem tarih aralığına uyan oyunlara uygulanır.**
 - Hedef: Hızlı reyting artışı. 300 seviyesinde en büyük kazanç **taş asmamak ve asılan taşı görmek**,
   bu yüzden öncelik her zaman bu.
 - Arkadaşlarla paylaşılacak: Herkes kendi Chess.com kullanıcı adını girer, hesap/giriş yok.
@@ -236,3 +237,20 @@ Her aşama ayrı bir dal (branch) ve küçük commit'lerle yapılır. Bir aşama
 - **Hız (2026-11, masaüstü):** derinlik 12'de oyun başı ~1 sn; 638 blitz+rapid oyunun tamamı ~10–15 dk.
 - **Bilinen eksikler:** değerlendirme grafiği yok (M4), tahtada en iyi hamle oku yok (M3'te bulmacada),
   kuyruk sekme kapanınca durur (sayfa açılınca kendiliğinden başlamaz, "Analizi başlat" gerekir).
+
+### Tarih aralığı filtresi (2026-11-21)
+- **Seçenekler:** Son 30 gün / Son 3 ay / Tümü (`DateRange`: `'30d' | '90d' | 'all'`, `core/games/filter.ts`).
+  "Son 3 ay" takvim ayı değil, **90 gün**. Sınır dahil: `endTime >= now - gün × 24 sa`.
+  Varsayılan `'30d'` (`DEFAULT_DATE_RANGE`): güncel seviyeyi en iyi son oyunlar gösterir.
+- **Kayıt:** `settings` tablosunda `dateRange` anahtarı; geçersiz/eksik değerde varsayılan kullanılır.
+- **Ortak filtre:** `GameFilter = { timeClasses, dateRange }`, `applyGameFilter(games, filter, now)` ve
+  `db/games.ts`'teki `getGameFilter()`. **M3 bulmacaları ve M4 paneli de aynı filtreyi
+  (tempo + tarih aralığı) kullanacak**; kendi filtrelerini yazmasınlar, `getGameFilter`/`applyGameFilter`'ı çağırsınlar.
+- **Analiz kuyruğu:** `planAnalysisQueue(games, analyzed, filter, now, priorityId)`; aralık dışındaki
+  oyunlar kuyruğa girmez. Aralığı daraltmak mevcut analizleri silmez. Oyun sayfasında aralık dışı oyun için
+  "Bu oyunu analiz et" yerine aralığı genişletme uyarısı çıkar.
+- **`now`:** saf fonksiyonlara parametre olarak verilir (testler sabit tarih kullanır). Oyun listesi sayfa
+  açılışındaki zamanı kullanır; kuyruk her oyundan önce `Date.now()` alır.
+- **Az oyun uyarısı:** aralık "Tümü" değilken listede 1–9 oyun varsa (`FEW_GAMES_THRESHOLD = 10`)
+  "Bu aralıkta az oyun var…" uyarısı çıkar. 0 oyunda boş liste mesajı zaten aralığı genişletmeyi önerir.
+- **Tempo düğmelerindeki sayılar** seçili tarih aralığındaki oyunları sayar.

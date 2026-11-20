@@ -1,17 +1,18 @@
-import { filterGames } from '../games/filter'
-import type { Game, TimeClass } from '../games/model'
+import { applyGameFilter, type GameFilter } from '../games/filter'
+import type { Game } from '../games/model'
 
 /**
- * Games still waiting for analysis: only the tempos selected in the filter, newest first.
- * `priorityId` (a game the user opened and asked for) goes to the front.
+ * Games still waiting for analysis: only those matching the shared filter (tempos and date range),
+ * newest first. `priorityId` (a game the user opened and asked for) goes to the front.
  */
 export function planAnalysisQueue(
   games: readonly Game[],
   analyzedIds: ReadonlySet<string>,
-  timeClasses: readonly TimeClass[],
+  filter: GameFilter,
+  now: number,
   priorityId?: string,
 ): Game[] {
-  const pending = filterGames(games, timeClasses).filter((g) => !analyzedIds.has(g.id))
+  const pending = applyGameFilter(games, filter, now).filter((g) => !analyzedIds.has(g.id))
   const index = priorityId ? pending.findIndex((g) => g.id === priorityId) : -1
   if (index <= 0) return pending
   const [priority] = pending.splice(index, 1)
