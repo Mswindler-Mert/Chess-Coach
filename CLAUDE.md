@@ -7,8 +7,9 @@ Bu dosya Claude Code için proje hafızasıdır. Her oturumda önce bunu oku.
 Chess.com oyunlarımı çekip Stockfish ile analiz eden, **sık yaptığım hataları** bulan ve bunlardan
 **kişisel alıştırmalar** (bulmaca, açılış, oyun sonu) üreten bir web uygulaması.
 
-- Kullanıcı: ~300 reyting, Chess.com'da oynuyor. Analiz edilecek ana oyunlar **uzun tempolu** (rapid / daily).
-  Bullet (1+0) ve blitz oyunları varsayılan olarak filtrelenir (ayardan açılabilir).
+- Kullanıcı: ~300 reyting, Chess.com'da oynuyor. Analiz edilecek ana oyunlar **rapid ve blitz**.
+  Bullet ve daily varsayılan olarak kapalıdır; tempo düğmeleriyle açılabilir, seçim kaydedilir.
+  **Analiz sadece filtrede seçili tempolardaki oyunlara uygulanır.**
 - Hedef: Hızlı reyting artışı. 300 seviyesinde en büyük kazanç **taş asmamak ve asılan taşı görmek**,
   bu yüzden öncelik her zaman bu.
 - Arkadaşlarla paylaşılacak: Herkes kendi Chess.com kullanıcı adını girer, hesap/giriş yok.
@@ -197,5 +198,14 @@ Her aşama ayrı bir dal (branch) ve küçük commit'lerle yapılır. Bir aşama
   ek ayar gerektirmez.
 - **Test yapısı:** `tests/helpers.ts` fixture'ları okur; Node tipleri için ayrı `tsconfig.test.json`
   (uygulama kodu tarayıcı tipleriyle kalır). Fixture'lar `mswindler07`'nin gerçek oyunları.
-- **Kullanıcının oyun dağılımı (2026-11):** 1236 bullet, 616 blitz, 22 rapid, 5 daily. Varsayılan filtre
-  (rapid + daily) sadece 27 oyun gösteriyor; analiz için blitz'i de açmak gerekebilir.
+- **Kullanıcının oyun dağılımı (2026-11):** 1236 bullet, 616 blitz, 22 rapid, 5 daily.
+
+### Varsayılan tempo filtresi değişti (2026-11-20)
+- **Varsayılan: blitz + rapid** (`DEFAULT_TIME_CLASSES`, `core/games/filter.ts`). Rapid + daily sadece
+  27 oyun veriyordu, analiz için çok az. Bullet öğrenmek için fazla hızlı; daily'nin `[%clk]` değeri gerçek
+  oyun saati değil. İkisi de düğmeyle açılabilir.
+- **Seçim kaydedilir:** `settings` tablosundaki `timeClasses` anahtarı. Daha önce düğmeye basmış biri kendi
+  seçimini korur; varsayılan sadece kayıt yoksa kullanılır.
+- **Analiz kapsamı = filtre:** M2'de analiz kuyruğu, oyun listesindeki aynı tempo seçimini kullanır.
+  Filtreye sonradan eklenen tempoların oyunları kuyruğa eklenir; kapatılan tempoların mevcut analizleri
+  silinmez, sadece gösterilmez.

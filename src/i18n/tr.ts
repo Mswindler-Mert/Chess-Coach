@@ -38,7 +38,7 @@ export const tr = {
   'games.count': '{shown} oyun gösteriliyor (toplam {total})',
   'games.empty': 'Henüz oyun yok.',
   'games.emptyFiltered':
-    'Seçili tempolarda oyun yok. Yukarıdan blitz veya bullet’ı açarak diğer oyunlarını görebilirsin.',
+    'Seçili tempolarda oyun yok. Yukarıdan diğer tempoları açarak diğer oyunlarını görebilirsin.',
   'games.showMore': 'Daha fazla göster',
   'games.moves': '{count} hamle',
   'games.unrated': 'puansız',

@@ -2,8 +2,11 @@ import type { Game, TimeClass } from './model'
 
 export const ALL_TIME_CLASSES: readonly TimeClass[] = ['bullet', 'blitz', 'rapid', 'daily']
 
-/** Long games are what we analyse; bullet and blitz are hidden until the user turns them on. */
-export const DEFAULT_TIME_CLASSES: readonly TimeClass[] = ['rapid', 'daily']
+/**
+ * Default tempos for the list and for analysis. Bullet is too fast to learn from and daily clocks
+ * are not real game clocks; both stay hidden until the user turns them on.
+ */
+export const DEFAULT_TIME_CLASSES: readonly TimeClass[] = ['blitz', 'rapid']
 
 /** Games whose tempo is in `timeClasses`, newest first. */
 export function filterGames(games: readonly Game[], timeClasses: readonly TimeClass[]): Game[] {

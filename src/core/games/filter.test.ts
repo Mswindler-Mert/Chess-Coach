@@ -14,9 +14,10 @@ const games: Game[] = fixtureGames
   .filter((g): g is Game => g !== null)
 
 describe('filterGames', () => {
-  it('keeps only rapid and daily by default, newest first', () => {
+  it('keeps only blitz and rapid by default, newest first', () => {
     const result = filterGames(games, DEFAULT_TIME_CLASSES)
-    expect(result.map((g) => g.timeClass)).toEqual(['rapid', 'rapid', 'daily'])
+    expect(result).toHaveLength(5)
+    expect(new Set(result.map((g) => g.timeClass))).toEqual(new Set(['blitz', 'rapid']))
     expect(result.map((g) => g.endTime)).toEqual(
       [...result.map((g) => g.endTime)].sort((a, b) => b - a),
     )
