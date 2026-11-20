@@ -4,6 +4,8 @@ export interface ReplayMove {
   san: string
   from: string
   to: string
+  /** Move in UCI notation, e.g. "e2e4" or "e7e8q". */
+  uci: string
   /** Position after this move. */
   fen: string
   /** Mover's remaining clock after this move, in seconds; null if the PGN has none. */
@@ -39,6 +41,7 @@ export function buildReplay(pgn: string): Replay {
     san: move.san,
     from: move.from,
     to: move.to,
+    uci: move.lan,
     fen: move.after,
     clockSeconds: hasClocks ? (clocks[index] ?? null) : null,
   }))

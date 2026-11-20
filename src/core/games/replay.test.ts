@@ -30,7 +30,7 @@ describe('buildReplay', () => {
   it('lists every move with its squares', () => {
     expect(replay.moves).toHaveLength(19)
     expect(replay.moves.slice(0, 3).map((m) => m.san)).toEqual(['e4', 'd5', 'Nc3'])
-    expect(replay.moves[0]).toMatchObject({ from: 'e2', to: 'e4', clockSeconds: 1800 })
+    expect(replay.moves[0]).toMatchObject({ from: 'e2', to: 'e4', uci: 'e2e4', clockSeconds: 1800 })
     expect(replay.moves.at(-1)?.san).toBe('Qd8#')
   })
 
