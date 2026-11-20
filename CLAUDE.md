@@ -128,7 +128,7 @@ Her aşama ayrı bir dal (branch) ve küçük commit'lerle yapılır. Bir aşama
 - [x] **M0 – Kurulum:** Vite + React + TS + Tailwind, ESLint/Prettier (→ oxlint/Prettier, bkz. Karar Notları), Vitest, GitHub repo, README, GPL-3.0 lisansı, ilk yayın
 - [x] **M1 – Oyunları çek:** Kullanıcı adı girişi, arşivleri sırayla çekme, IndexedDB, tempo filtresi, oyun listesi, oyunu tahtada izleme
 - [x] **M2 – Analiz motoru:** Stockfish worker, hamle başı değerlendirme, win%, sınıflandırma, evre tespiti, ilerleme çubuğu, testler
-- [ ] **M3 – Hatalarımdan bulmacalar:** Bulmaca ekranı + aralıklı tekrar
+- [x] **M3 – Hatalarımdan bulmacalar:** Bulmaca ekranı + aralıklı tekrar
 - [ ] **M4 – Panel:** İstatistikler ve grafikler
 - [ ] **M5 – Motif etiketleme:** asili-tas, bedava-tasi-almadi, mat, kazanılmış oyunu kaçırma, zaman baskısı
 - [ ] **M6 – Açılış modülü**
@@ -254,3 +254,27 @@ Her aşama ayrı bir dal (branch) ve küçük commit'lerle yapılır. Bir aşama
 - **Az oyun uyarısı:** aralık "Tümü" değilken listede 1–9 oyun varsa (`FEW_GAMES_THRESHOLD = 10`)
   "Bu aralıkta az oyun var…" uyarısı çıkar. 0 oyunda boş liste mesajı zaten aralığı genişletmeyi önerir.
 - **Tempo düğmelerindeki sayılar** seçili tarih aralığındaki oyunları sayar.
+
+### M3 – Hatalarımdan bulmacalar (2026-11-21)
+- **Kaynak:** kullanıcının kendi `mistake` ve `blunder` hamleleri (`PUZZLE_CLASSES`); inaccuracy 300 seviyesi
+  için fazla ince. Bulmaca = hatadan önceki pozisyon, çözüm = analizdeki motorun en iyi hamlesi.
+  Rakibin hataları bulmaca olmaz (M5'teki `bedava-tasi-almadi` için ayrıca ele alınacak).
+- **Bulmacalar saklanmaz,** her açılışta analizlerden yeniden üretilir (`db/puzzles.ts` → `loadPuzzles`,
+  saf kısım `core/training/puzzles.ts` → `generatePuzzles`). Kimlik `${gameId}:${ply}`, kalıcı.
+  Ortak filtre (tempo + tarih aralığı, `applyGameFilter`) hangi oyunlardan bulmaca çıkacağını belirler.
+  Çok oyunda ("Tümü" + yüzlerce analiz) yavaşlarsa bulmacaları analizle birlikte saklamayı düşün.
+- **Cevap kontrolü:** motorun hamlesi anında doğru. Başka hamle Stockfish'e (analiz derinliğiyle) sorulur;
+  en iyi hamlenin win%'inden en fazla `ACCEPT_MARGIN` (5) puan düşükse doğru (`checkAnswer`, `engine/judge.ts`).
+  Mat eden hamle motora sorulmadan doğru (`terminalEval`). Terfi her zaman vezire.
+- **Tek motor:** `engine/shared.ts` → `getSharedEngine()`; analiz kuyruğu ve bulmaca kontrolü aynı worker'ı
+  kullanır (UCI kuyruğu sayesinde kontrol en fazla bir pozisyon bekler). Başlatma hatası önbelleğe alınmaz.
+- **Leitner (`core/training/leitner.ts`):** kutular 1–5, aralıklar 1/3/7/14/30 gün. Yeni bulmaca doğruysa
+  kutu 1'e; doğru → bir üst kutu (en fazla 5); yanlış veya "Çözümü göster" → kutu 1. Sıra: vadesi gelen
+  tekrarlar (en çok geciken önce), sonra yeni bulmacalar (en yeni oyun önce, oyun içinde hamle sırasıyla).
+  Dexie sürüm 3, `puzzleProgress` tablosu (`puzzleId` anahtar).
+- **Ekran (`#/u/:kullanıcı/puzzles`):** sürükle-bırak ve tıkla-tıkla (mobil için) hamle; yanlışta doğru hamle
+  yeşil, denenen kırmızı okla; oyundaki hamle ve rakibin en iyi cevabı (4 yarım hamle) yazılır.
+  Evre ve renk filtresi (kaydedilmez; motif filtresi M5'te). "Oyunda gör" oyunu hata hamlesinde açar:
+  oyun adresine isteğe bağlı yarım hamle eklendi (`#/u/:kullanıcı/game/:id/:ply`).
+- **Bilinen:** Dexie sürümü yükselince eski sürümün açık olduğu başka bir sekme yükseltmeyi bekletebilir
+  (geliştirmede HMR sonrası "hazırlanıyor"da kaldı, sayfa yenileyince düzeldi).
