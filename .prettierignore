@@ -4,3 +4,4 @@ package-lock.json
 LICENSE
 CLAUDE.md
 tests/fixtures
+public/stockfish
