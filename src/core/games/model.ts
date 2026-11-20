@@ -31,6 +31,8 @@ export interface Game {
   outcome: Outcome
   /** The user's raw Chess.com result, e.g. checkmated, timeout, stalemate. */
   resultCode: string
+  /** Why the game ended: the loser's code (checkmated, timeout, …) or the draw code. */
+  endReason: string
   white: PlayerInfo
   black: PlayerInfo
   opening: Opening | null
@@ -59,7 +61,8 @@ export function outcomeFromResult(code: string): Outcome {
 export function openingFromEcoUrl(url: string | undefined): Opening | null {
   if (!url) return null
   const slug = url.split('/openings/')[1]
-  if (!slug) return null
+  // Chess.com uses ".../openings/Undefined" when it could not name the opening.
+  if (!slug || slug === 'Undefined') return null
   const name = decodeURIComponent(slug).replace(/-/g, ' ').replace(/\s+/g, ' ').trim()
   return name ? { name, url } : null
 }
@@ -83,6 +86,7 @@ export function normalizeGame(raw: RawGame, owner: string): Game | null {
   else return null
 
   const me = raw[userColor]
+  const opponent = raw[userColor === 'white' ? 'black' : 'white']
   return {
     id: raw.uuid,
     username: ownerLower,
@@ -94,6 +98,7 @@ export function normalizeGame(raw: RawGame, owner: string): Game | null {
     userColor,
     outcome: outcomeFromResult(me.result),
     resultCode: me.result,
+    endReason: me.result === 'win' ? opponent.result : me.result,
     white: { username: raw.white.username, rating: raw.white.rating },
     black: { username: raw.black.username, rating: raw.black.rating },
     opening: openingFromEcoUrl(raw.eco),

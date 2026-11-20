@@ -22,17 +22,35 @@ export function createSyncStore(username: string, database: ChessCoachDb = db): 
   }
 }
 
-/** Downloads new games of `username` from Chess.com into IndexedDB. */
+type ProgressListener = (progress: SyncProgress) => void
+
+const inFlight = new Map<
+  string,
+  { promise: Promise<SyncResult>; listeners: Set<ProgressListener> }
+>()
+
+/**
+ * Downloads new games of `username` from Chess.com into IndexedDB.
+ * Concurrent calls for the same user share one run, so requests never go out in parallel.
+ */
 export function syncUserGames(
   username: string,
-  onProgress?: (progress: SyncProgress) => void,
+  onProgress?: ProgressListener,
 ): Promise<SyncResult> {
-  return syncGames(username, {
-    ...defaultHttpDeps,
-    store: createSyncStore(username),
-    now: () => Date.now(),
-    ...(onProgress ? { onProgress } : {}),
-  })
+  let entry = inFlight.get(username)
+  if (!entry) {
+    const listeners = new Set<ProgressListener>()
+    const promise = syncGames(username, {
+      ...defaultHttpDeps,
+      store: createSyncStore(username),
+      now: () => Date.now(),
+      onProgress: (progress) => listeners.forEach((listener) => listener(progress)),
+    }).finally(() => inFlight.delete(username))
+    entry = { promise, listeners }
+    inFlight.set(username, entry)
+  }
+  if (onProgress) entry.listeners.add(onProgress)
+  return entry.promise
 }
 
 export function listGames(username: string): Promise<Game[]> {

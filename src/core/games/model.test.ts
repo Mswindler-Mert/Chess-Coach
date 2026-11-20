@@ -33,6 +33,7 @@ describe('openingFromEcoUrl', () => {
   it('returns null without a URL', () => {
     expect(openingFromEcoUrl(undefined)).toBeNull()
     expect(openingFromEcoUrl('https://www.chess.com/')).toBeNull()
+    expect(openingFromEcoUrl('https://www.chess.com/openings/Undefined')).toBeNull()
   })
 })
 
@@ -47,6 +48,7 @@ describe('normalizeGame', () => {
       userColor: 'white',
       outcome: 'win',
       resultCode: 'win',
+      endReason: 'checkmated',
       endTime: 1791806195000,
       plies: 19,
       opening: { name: 'Scandinavian Defense Closed' },
@@ -61,11 +63,19 @@ describe('normalizeGame', () => {
       userColor: 'black',
       outcome: 'loss',
       resultCode: 'resigned',
+      endReason: 'resigned',
     })
   })
 
   it('treats stalemate as a draw', () => {
-    expect(normalizeGame(fixtureGame('532df7fd'), OWNER)?.outcome).toBe('draw')
+    expect(normalizeGame(fixtureGame('532df7fd'), OWNER)).toMatchObject({
+      outcome: 'draw',
+      endReason: 'stalemate',
+    })
+  })
+
+  it('takes the end reason from the opponent when the user wins', () => {
+    expect(normalizeGame(fixtureGame('d21dabaf'), OWNER)?.endReason).toBe('abandoned')
   })
 
   it('matches the owner case-insensitively', () => {
