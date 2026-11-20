@@ -17,7 +17,17 @@ import {
   setTimeClasses,
   syncUserGames,
 } from '../../db/games'
+import {
+  DEPTH_OPTIONS,
+  getAnalysisDepth,
+  listAnalysisSummaries,
+  setAnalysisDepth,
+  type AnalysisSummary,
+} from '../../db/analyses'
+import { analysisRunner } from '../../engine/runner'
 import { t, type MessageKey } from '../../i18n'
+import { ErrorChips, ProgressBar } from '../analysis'
+import { useAnalysisRunner } from '../analysisStyles'
 import {
   formatDate,
   formatDateTime,
@@ -57,6 +67,12 @@ function GamesView({ username }: { username: string }) {
   const [sync, setSync] = useState<SyncState>({ status: 'running', progress: null })
   const [syncedAt, setSyncedAt] = useState<number | null>(null)
   const [limit, setLimit] = useState(PAGE_SIZE)
+  const [summaries, setSummaries] = useState<Map<string, AnalysisSummary>>(new Map())
+  useEffect(() => {
+    const load = () => void listAnalysisSummaries(username).then(setSummaries)
+    load()
+    return analysisRunner.onSaved(load)
+  }, [username])
 
   const reload = useCallback(
     () =>
@@ -137,6 +153,10 @@ function GamesView({ username }: { username: string }) {
         </div>
       </fieldset>
 
+      {games && timeClasses && (
+        <AnalysisPanel username={username} games={games} eligible={visible} summaries={summaries} />
+      )}
+
       {games && (
         <p className="text-sm text-slate-400">
           {t('games.count', { shown: visible.length, total: games.length })}
@@ -152,7 +172,7 @@ function GamesView({ username }: { username: string }) {
       <ul className="flex flex-col gap-2">
         {visible.slice(0, limit).map((game) => (
           <li key={game.id}>
-            <GameRow game={game} username={username} />
+            <GameRow game={game} username={username} summary={summaries.get(game.id)} />
           </li>
         ))}
       </ul>
@@ -225,7 +245,118 @@ function SyncStatus({
   )
 }
 
-function GameRow({ game, username }: { game: Game; username: string }) {
+function AnalysisPanel({
+  username,
+  games,
+  eligible,
+  summaries,
+}: {
+  username: string
+  games: Game[]
+  /** Games in the selected tempos: the ones analysis covers. */
+  eligible: Game[]
+  summaries: Map<string, AnalysisSummary>
+}) {
+  const runner = useAnalysisRunner()
+  const [depth, setDepth] = useState<number | null>(null)
+  useEffect(() => {
+    void getAnalysisDepth().then(setDepth)
+  }, [])
+
+  const analyzed = eligible.filter((g) => summaries.has(g.id)).length
+  const running = runner.status === 'running' && runner.username === username
+  const current = running ? runner.current : null
+  const currentGame = current ? games.find((g) => g.id === current.gameId) : undefined
+  const allDone = analyzed === eligible.length
+
+  function onDepth(value: number) {
+    setDepth(value)
+    void setAnalysisDepth(value)
+  }
+
+  return (
+    <section className="flex flex-col gap-3 rounded-xl border border-slate-800 bg-slate-900 p-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="font-semibold">{t('analysis.title')}</h2>
+        <div className="flex items-center gap-3">
+          <label className="flex items-center gap-2 text-sm text-slate-400">
+            {t('analysis.depth')}
+            <select
+              value={depth ?? ''}
+              disabled={depth === null}
+              onChange={(e) => onDepth(Number(e.target.value))}
+              className="min-h-10 rounded-lg border border-slate-700 bg-slate-950 px-2 text-slate-100"
+            >
+              {DEPTH_OPTIONS.map((d) => (
+                <option key={d} value={d}>
+                  {d}
+                </option>
+              ))}
+            </select>
+          </label>
+          {running ? (
+            <button
+              type="button"
+              onClick={() => analysisRunner.pause()}
+              className="min-h-10 rounded-lg border border-slate-600 px-4 text-sm font-medium hover:border-slate-400"
+            >
+              {t('analysis.pause')}
+            </button>
+          ) : (
+            <button
+              type="button"
+              disabled={allDone}
+              onClick={() => analysisRunner.start(username)}
+              className="min-h-10 rounded-lg bg-emerald-600 px-4 text-sm font-semibold text-white hover:bg-emerald-500 disabled:opacity-40"
+            >
+              {t('analysis.start')}
+            </button>
+          )}
+        </div>
+      </div>
+
+      <p className="text-sm text-slate-300">
+        {allDone && eligible.length > 0
+          ? t('analysis.allDone')
+          : t('analysis.progress', { analyzed, total: eligible.length })}
+      </p>
+      <ProgressBar value={eligible.length ? analyzed / eligible.length : 0} />
+
+      {running && (
+        <div className="flex flex-col gap-1.5" role="status">
+          <p className="text-sm text-slate-400">
+            {current && currentGame
+              ? t('analysis.running', {
+                  opponent: opponentOf(currentGame).username,
+                  done: current.done,
+                  total: current.total,
+                })
+              : t('analysis.starting')}
+          </p>
+          {current && <ProgressBar value={current.done / current.total} />}
+        </div>
+      )}
+
+      {runner.status === 'error' && (
+        <p className="text-sm text-rose-400" role="alert">
+          {t('analysis.error', { message: runner.error ?? '' })}
+        </p>
+      )}
+
+      <p className="text-xs text-slate-500">{t('analysis.hint')}</p>
+    </section>
+  )
+}
+
+function GameRow({
+  game,
+  username,
+  summary,
+}: {
+  game: Game
+  username: string
+  summary: AnalysisSummary | undefined
+}) {
   const opponent = opponentOf(game)
   return (
     <a
@@ -253,6 +384,7 @@ function GameRow({ game, username }: { game: Game; username: string }) {
           </span>
         </div>
         <p className="truncate text-xs text-slate-400">{game.opening?.name ?? '—'}</p>
+        {summary && <ErrorChips counts={summary[game.userColor]} />}
       </div>
 
       <div className="flex shrink-0 flex-col items-end gap-0.5 text-xs text-slate-400">

@@ -44,6 +44,32 @@ export const tr = {
   'games.unrated': 'puansız',
   'games.filter.label': 'Tempo',
 
+  'analysis.title': 'Analiz',
+  'analysis.progress': 'Seçili tempolarda {analyzed}/{total} oyun analiz edildi.',
+  'analysis.start': 'Analizi başlat',
+  'analysis.pause': 'Duraklat',
+  'analysis.starting': 'Stockfish hazırlanıyor…',
+  'analysis.running': '{opponent} ile oyun analiz ediliyor: {done}/{total} pozisyon',
+  'analysis.allDone': 'Seçili tempolardaki tüm oyunlar analiz edildi.',
+  'analysis.error': 'Analiz durdu: {message}',
+  'analysis.depth': 'Derinlik',
+  'analysis.hint':
+    'Analiz bu sekme açıkken arka planda sürer, en yeni oyundan başlar. Biten her oyun kaydedilir. Derinlik arttıkça analiz daha doğru ama daha yavaş olur.',
+  'analysis.clean': 'hatasız',
+  'analysis.count.blunder': '{count} blunder',
+  'analysis.count.mistake': '{count} hata',
+  'analysis.count.inaccuracy': '{count} hatalı hamle',
+
+  'moveClass.best': 'En iyi hamle',
+  'moveClass.good': 'İyi hamle',
+  'moveClass.inaccuracy': 'Hatalı hamle',
+  'moveClass.mistake': 'Hata',
+  'moveClass.blunder': 'Blunder',
+
+  'phase.opening': 'Açılış',
+  'phase.middlegame': 'Orta oyun',
+  'phase.endgame': 'Oyun sonu',
+
   'timeClass.bullet': 'Bullet',
   'timeClass.blitz': 'Blitz',
   'timeClass.rapid': 'Rapid',
@@ -81,6 +107,16 @@ export const tr = {
   'viewer.last': 'Sona git',
   'viewer.openOnChessCom': 'Chess.com’da aç',
   'viewer.keyboardHint': 'İpucu: ← → tuşlarıyla hamleler arasında gezinebilirsin.',
+  'viewer.analysis.none': 'Bu oyun henüz analiz edilmedi.',
+  'viewer.analysis.analyze': 'Bu oyunu analiz et',
+  'viewer.analysis.running': 'Analiz ediliyor: {done}/{total} pozisyon',
+  'viewer.analysis.filteredOut':
+    'Bu oyunun temposu ({tempo}) filtrede kapalı. Analiz etmek için oyun listesinde bu tempoyu aç.',
+  'viewer.analysis.startPosition': 'Başlangıç pozisyonu',
+  'viewer.analysis.eval': 'Değerlendirme: {score}',
+  'viewer.analysis.better': 'Daha iyisi: {move}',
+  'viewer.analysis.winChance': '{color} için kazanma şansı: %{before} → %{after}',
+  'viewer.analysis.engine': 'Stockfish, derinlik {depth}',
 
   'footer.license': '{name} açık kaynaktır (GPL-3.0). Analiz motoru: Stockfish.',
 } as const

@@ -1,9 +1,17 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Chessboard } from 'react-chessboard'
-import type { Color, Game, PlayerInfo } from '../../core/games/model'
+import { sideToMove } from '../../core/analysis/analyzeGame'
+import { formatScore, uciToSan } from '../../core/analysis/display'
+import type { MoveAnalysis } from '../../core/analysis/types'
+import type { Color, Game, PlayerInfo, TimeClass } from '../../core/games/model'
 import { buildReplay, clocksAt, fenAt, formatClock, type Replay } from '../../core/games/replay'
-import { getGame } from '../../db/games'
+import { getAnalysis } from '../../db/analyses'
+import { getGame, getTimeClasses } from '../../db/games'
+import type { AnalysisRecord } from '../../db/schema'
+import { analysisRunner } from '../../engine/runner'
 import { t } from '../../i18n'
+import { ErrorChips, ProgressBar } from '../analysis'
+import { MOVE_CLASS_TEXT, MOVE_SYMBOLS, useAnalysisRunner } from '../analysisStyles'
 import {
   endReasonLabel,
   formatDateTime,
@@ -60,11 +68,28 @@ function Viewer({ game }: { game: Game }) {
     }
   }, [game.pgn])
 
+  const [analysis, setAnalysis] = useState<AnalysisRecord | null>(null)
+  useEffect(() => {
+    const load = () => void getAnalysis(game.id).then((record) => setAnalysis(record ?? null))
+    load()
+    return analysisRunner.onSaved(load)
+  }, [game.id])
+
   if (!replay) return <p className="text-rose-400">{t('viewer.parseError')}</p>
-  return <ReplayView game={game} replay={replay} />
+  // Ignore an analysis that does not match the moves (should not happen, but never mislabel).
+  const matching = analysis && analysis.moves.length === replay.moves.length ? analysis : null
+  return <ReplayView game={game} replay={replay} analysis={matching} />
 }
 
-function ReplayView({ game, replay }: { game: Game; replay: Replay }) {
+function ReplayView({
+  game,
+  replay,
+  analysis,
+}: {
+  game: Game
+  replay: Replay
+  analysis: AnalysisRecord | null
+}) {
   const total = replay.moves.length
   const [ply, setPly] = useState(0)
   const go = (next: number) => setPly(Math.max(0, Math.min(total, next)))
@@ -151,7 +176,12 @@ function ReplayView({ game, replay }: { game: Game; replay: Replay }) {
             {t('viewer.openOnChessCom')} ↗
           </a>
         </div>
-        <MoveList replay={replay} ply={ply} go={go} />
+        {analysis ? (
+          <MoveInsight game={game} replay={replay} analysis={analysis} ply={ply} />
+        ) : (
+          <AnalyzePrompt game={game} />
+        )}
+        <MoveList replay={replay} moves={analysis?.moves ?? null} ply={ply} go={go} />
         <p className="hidden text-xs text-slate-500 sm:block">{t('viewer.keyboardHint')}</p>
       </aside>
     </div>
@@ -214,7 +244,149 @@ function Controls({ ply, total, go }: { ply: number; total: number; go: (ply: nu
   )
 }
 
-function MoveList({ replay, ply, go }: { replay: Replay; ply: number; go: (ply: number) => void }) {
+function MoveInsight({
+  game,
+  replay,
+  analysis,
+  ply,
+}: {
+  game: Game
+  replay: Replay
+  analysis: AnalysisRecord
+  ply: number
+}) {
+  const position = analysis.positions[ply]
+  const fen = fenAt(replay, ply)
+  const move = ply > 0 ? analysis.moves[ply - 1] : undefined
+  const before = ply > 0 ? analysis.positions[ply - 1] : undefined
+  const isError =
+    move?.moveClass === 'inaccuracy' ||
+    move?.moveClass === 'mistake' ||
+    move?.moveClass === 'blunder'
+  const better =
+    isError && before?.bestMove ? uciToSan(fenAt(replay, ply - 1), before.bestMove) : null
+  const moveNumber = Math.ceil(ply / 2)
+
+  return (
+    <div className="flex flex-col gap-2 rounded-xl border border-slate-800 bg-slate-900 p-3 text-sm">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        {move ? (
+          <p className="font-medium">
+            <span className="font-mono">
+              {moveNumber}
+              {move.color === 'white' ? '.' : '…'} {move.san}
+            </span>{' '}
+            <span className={MOVE_CLASS_TEXT[move.moveClass]}>
+              {t(`moveClass.${move.moveClass}`)}
+            </span>
+            <span className="text-slate-500"> · {t(`phase.${move.phase}`)}</span>
+          </p>
+        ) : (
+          <p className="font-medium">{t('viewer.analysis.startPosition')}</p>
+        )}
+        {position && (
+          <span className="rounded-md bg-slate-800 px-2 py-0.5 font-mono tabular-nums">
+            {t('viewer.analysis.eval', { score: formatScore(position.score, sideToMove(fen)) })}
+          </span>
+        )}
+      </div>
+      {move && (
+        <p className="text-slate-400">
+          {t('viewer.analysis.winChance', {
+            color: t(`color.${move.color}`),
+            before: Math.round(move.winBefore),
+            after: Math.round(move.winAfter),
+          })}
+        </p>
+      )}
+      {better && (
+        <p className="text-emerald-300">{t('viewer.analysis.better', { move: better })}</p>
+      )}
+      <div className="flex flex-col gap-1 border-t border-slate-800 pt-2 text-xs">
+        {(['white', 'black'] as const).map((color) => (
+          <p key={color} className="flex items-center justify-between gap-2">
+            <span className={color === game.userColor ? 'text-slate-200' : 'text-slate-400'}>
+              {game[color].username}
+            </span>
+            <ErrorChips counts={analysis.summary[color]} />
+          </p>
+        ))}
+        <p className="text-slate-500">{t('viewer.analysis.engine', { depth: analysis.depth })}</p>
+      </div>
+    </div>
+  )
+}
+
+function AnalyzePrompt({ game }: { game: Game }) {
+  const runner = useAnalysisRunner()
+  const [timeClasses, setTimeClasses] = useState<TimeClass[] | null>(null)
+  useEffect(() => {
+    void getTimeClasses().then(setTimeClasses)
+  }, [])
+
+  const current = runner.status === 'running' ? runner.current : null
+  const isRunning = current?.gameId === game.id
+  const allowed = timeClasses?.includes(game.timeClass) ?? false
+
+  return (
+    <div className="flex flex-col gap-2 rounded-xl border border-slate-800 bg-slate-900 p-3 text-sm">
+      {isRunning && current ? (
+        <div className="flex flex-col gap-1.5" role="status">
+          <p className="text-slate-300">
+            {t('viewer.analysis.running', { done: current.done, total: current.total })}
+          </p>
+          <ProgressBar value={current.done / current.total} />
+        </div>
+      ) : (
+        <>
+          <p className="text-slate-300">{t('viewer.analysis.none')}</p>
+          {timeClasses &&
+            (allowed ? (
+              <button
+                type="button"
+                onClick={() => analysisRunner.start(game.username, game.id)}
+                className="min-h-10 self-start rounded-lg bg-emerald-600 px-4 font-semibold text-white hover:bg-emerald-500"
+              >
+                {t('viewer.analysis.analyze')}
+              </button>
+            ) : (
+              <p className="text-slate-400">
+                {t('viewer.analysis.filteredOut', { tempo: timeClassLabel(game.timeClass) })}
+              </p>
+            ))}
+        </>
+      )}
+      {runner.status === 'error' && (
+        <p className="text-rose-400" role="alert">
+          {t('analysis.error', { message: runner.error ?? '' })}
+        </p>
+      )}
+    </div>
+  )
+}
+
+function symbolFor(moves: MoveAnalysis[] | null, ply: number, active: boolean) {
+  const move = moves?.[ply - 1]
+  const symbol = move && MOVE_SYMBOLS[move.moveClass]
+  if (!move || !symbol) return null
+  return (
+    <span className={`ml-0.5 font-bold ${active ? 'text-white' : MOVE_CLASS_TEXT[move.moveClass]}`}>
+      {symbol}
+    </span>
+  )
+}
+
+function MoveList({
+  replay,
+  moves,
+  ply,
+  go,
+}: {
+  replay: Replay
+  moves: MoveAnalysis[] | null
+  ply: number
+  go: (ply: number) => void
+}) {
   const listRef = useRef<HTMLOListElement>(null)
   // Scroll only the move list (not the page) so the current move stays visible.
   const scrollToActive = (el: HTMLButtonElement | null) => {
@@ -258,6 +430,7 @@ function MoveList({ replay, ply, go }: { replay: Replay; ply: number; go: (ply: 
                 }`}
               >
                 {cell.san}
+                {symbolFor(moves, cell.ply, cell.ply === ply)}
               </button>
             ) : (
               <span key={c} className="px-2 py-1 text-slate-600">
