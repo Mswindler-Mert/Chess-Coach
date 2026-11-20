@@ -160,11 +160,11 @@ export function ColumnChart({
           <YGrid ticks={ticks} y={y} digits={digits} />
           {points.map((p, i) => {
             const x = PAD.left + band * i + (band - barW) / 2
-            const top = y(p.value)
-            const h = Math.max(0, PAD.top + PLOT_H - top)
+            const barTop = y(p.value)
+            const h = Math.max(0, PAD.top + PLOT_H - barTop)
             const r = Math.min(4, h, barW / 2)
             // 4px rounded data end, square at the baseline.
-            const path = `M${x},${top + h}V${top + r}Q${x},${top} ${x + r},${top}H${x + barW - r}Q${x + barW},${top} ${x + barW},${top + r}V${top + h}Z`
+            const path = `M${x},${barTop + h}V${barTop + r}Q${x},${barTop} ${x + r},${barTop}H${x + barW - r}Q${x + barW},${barTop} ${x + barW},${barTop + r}V${barTop + h}Z`
             return (
               <g key={i}>
                 {h > 0 && (

@@ -99,6 +99,10 @@ export const tr = {
   'puzzles.filter.color': 'Renk',
   'puzzles.filter.all': 'Tümü',
 
+  'charts.table': 'Tablo olarak göster',
+  'charts.period': 'Dönem',
+  'charts.date': 'Tarih',
+
   'moveClass.best': 'En iyi hamle',
   'moveClass.good': 'İyi hamle',
   'moveClass.inaccuracy': 'Hatalı hamle',
