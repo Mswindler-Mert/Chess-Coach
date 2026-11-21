@@ -80,3 +80,10 @@ describe('languages', () => {
     expect(t('app.title')).toBe('Satranç Antrenörü')
   })
 })
+
+describe('piece names', () => {
+  it('has a name for every piece type', () => {
+    for (const type of ['p', 'n', 'b', 'r', 'q', 'k'])
+      expect(hasMessage(`piece.${type}`)).toBe(true)
+  })
+})

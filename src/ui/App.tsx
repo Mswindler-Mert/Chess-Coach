@@ -11,6 +11,7 @@ const GamePage = lazyPage(() => import('./pages/GamePage').then((m) => m.GamePag
 const PuzzlePage = lazyPage(() => import('./pages/PuzzlePage').then((m) => m.PuzzlePage))
 const EndgamesPage = lazyPage(() => import('./pages/EndgamesPage').then((m) => m.EndgamesPage))
 const OpeningsPage = lazyPage(() => import('./pages/OpeningsPage').then((m) => m.OpeningsPage))
+const HangingPage = lazyPage(() => import('./pages/HangingPage').then((m) => m.HangingPage))
 const DashboardPage = lazyPage(() => import('./pages/DashboardPage').then((m) => m.DashboardPage))
 
 export default function App() {
@@ -65,6 +66,9 @@ export default function App() {
               username={route.username}
               lesson={route.lesson}
             />
+          )}
+          {route.name === 'hanging' && (
+            <HangingPage key={route.username} username={route.username} />
           )}
           {route.name === 'openings' && (
             <OpeningsPage key={route.username} username={route.username} />

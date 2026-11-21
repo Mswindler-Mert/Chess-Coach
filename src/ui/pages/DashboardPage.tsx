@@ -135,6 +135,15 @@ function Dashboard({ username }: { username: string }) {
                     focus.kind === 'motif' ? t(`motif.${focus.motif}`) : t(`phase.${focus.phase}`),
                 })}
               </a>
+              {focus.kind === 'motif' &&
+                (focus.motif === 'hanging-piece' || focus.motif === 'missed-free-piece') && (
+                  <a
+                    href={routeHref({ name: 'hanging', username })}
+                    className="grid min-h-10 place-items-center self-start rounded-lg border border-emerald-600 px-4 text-sm font-semibold text-emerald-200 hover:border-emerald-400"
+                  >
+                    {t('hanging.practice')}
+                  </a>
+                )}
             </section>
           )}
 

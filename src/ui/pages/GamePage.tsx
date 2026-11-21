@@ -4,6 +4,7 @@ import { sideToMove } from '../../core/analysis/analyzeGame'
 import { formatScore, uciToSan } from '../../core/analysis/display'
 import { gameAccuracy, whiteWinPercents } from '../../core/analysis/accuracy'
 import { tagGame, type Motif } from '../../core/analysis/motifs'
+import { hangingPieces } from '../../core/analysis/hanging'
 import { keyMoments } from '../../core/analysis/review'
 import type { MoveAnalysis } from '../../core/analysis/types'
 import type { Color, Game, PlayerInfo } from '../../core/games/model'
@@ -28,6 +29,7 @@ import { routeHref } from '../router'
 
 const LAST_MOVE_STYLE = { backgroundColor: 'rgba(250, 204, 21, 0.45)' }
 const BEST_ARROW = 'rgba(16, 185, 129, 0.85)'
+const THREAT_STYLE = { boxShadow: 'inset 0 0 0 4px rgba(244, 63, 94, 0.9)' }
 
 export function GamePage({
   username,
@@ -110,6 +112,7 @@ function ReplayView({
   const total = replay.moves.length
   const [ply, setPly] = useState(() => Math.max(0, Math.min(total, initialPly)))
   const [showArrow, setShowArrow] = useState(true)
+  const [showThreats, setShowThreats] = useState(false)
   const review = useMemo(
     () =>
       analysis
@@ -142,9 +145,17 @@ function ReplayView({
   }, [total])
 
   const lastMove = ply > 0 ? replay.moves[ply - 1] : undefined
-  const squareStyles = lastMove
+  const fen = fenAt(replay, ply)
+  const threats = useMemo(
+    () => (showThreats ? [...hangingPieces(fen, 'white'), ...hangingPieces(fen, 'black')] : []),
+    [fen, showThreats],
+  )
+  const squareStyles: Record<string, React.CSSProperties> = lastMove
     ? { [lastMove.from]: LAST_MOVE_STYLE, [lastMove.to]: LAST_MOVE_STYLE }
     : {}
+  for (const square of threats) {
+    squareStyles[square] = { ...squareStyles[square], ...THREAT_STYLE }
+  }
   const clocks = clocksAt(replay, ply)
   const showClocks = game.timeClass !== 'daily'
   const topColor: Color = game.userColor === 'white' ? 'black' : 'white'
@@ -167,7 +178,7 @@ function ReplayView({
           <Chessboard
             options={{
               id: 'game-viewer',
-              position: fenAt(replay, ply),
+              position: fen,
               boardOrientation: game.userColor,
               allowDragging: false,
               allowDrawingArrows: true,
@@ -185,6 +196,18 @@ function ReplayView({
           clock={showClocks ? clocks[game.userColor] : null}
         />
         <Controls ply={ply} total={total} go={go} />
+        <label className="flex items-center gap-2 self-start text-sm text-slate-300">
+          <input
+            type="checkbox"
+            checked={showThreats}
+            onChange={(e) => setShowThreats(e.target.checked)}
+            className="size-4 accent-rose-500"
+          />
+          {t('viewer.review.threats')}
+        </label>
+        {showThreats && (
+          <p className="text-xs text-slate-500">{t('viewer.review.threatsLegend')}</p>
+        )}
         {analysis && review && (
           <>
             <EvalGraph wins={review.wins} moves={analysis.moves} ply={ply} onSelect={go} />

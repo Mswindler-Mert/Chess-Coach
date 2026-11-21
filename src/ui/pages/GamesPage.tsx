@@ -157,6 +157,12 @@ function GamesView({ username }: { username: string }) {
           <h1 className="text-2xl font-bold">{t('games.title', { username })}</h1>
           <div className="flex flex-wrap gap-2">
             <a
+              href={routeHref({ name: 'hanging', username })}
+              className="grid min-h-10 place-items-center rounded-lg border border-emerald-600 px-4 text-sm font-semibold text-emerald-200 hover:border-emerald-400"
+            >
+              {t('hanging.open')}
+            </a>
+            <a
               href={routeHref({ name: 'endgames', username })}
               className="grid min-h-10 place-items-center rounded-lg border border-slate-600 px-4 text-sm font-semibold text-slate-100 hover:border-slate-400"
             >
