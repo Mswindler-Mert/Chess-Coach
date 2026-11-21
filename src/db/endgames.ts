@@ -1,3 +1,4 @@
+import type { EndgameProgress } from '../core/backup/backup'
 import { blownEndgames, type OwnEndgame } from '../core/endgames/fromGames'
 import { applyGameFilter } from '../core/games/filter'
 import { buildReplay } from '../core/games/replay'
@@ -35,12 +36,7 @@ export async function getOwnEndgame(id: string): Promise<OwnEndgame | null> {
   }
 }
 
-export interface EndgameProgress {
-  attempts: number
-  solved: boolean
-  /** Fewest user moves in a successful attempt. */
-  bestMoves: number | null
-}
+export type { EndgameProgress }
 
 const PROGRESS_KEY = 'endgameProgress'
 
