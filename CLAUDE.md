@@ -134,7 +134,7 @@ Her aşama ayrı bir dal (branch) ve küçük commit'lerle yapılır. Bir aşama
 - [x] **M6 – Açılış modülü**
 - [x] **M7 – Oyun sonu modülü**
 - [x] **M8 – PWA ve mobil cilalama:** Kurulabilir uygulama, dokunmatik tahta, çevrimdışı çalışma
-- [ ] **Sonra:** Lichess desteği, ~~İngilizce arayüz~~ (yapıldı), Capacitor ile Android uygulaması, motif tespitinin genişletilmesi (çatal, açmaz ve şiş yapıldı; sıradaki fikirler: çifte saldırı, aşırı yüklü taş)
+- [ ] **Sonra:** (ayrıntılı plan: ROADMAP.md) Lichess desteği, ~~İngilizce arayüz~~ (yapıldı), Capacitor ile Android uygulaması, motif tespitinin genişletilmesi (çatal, açmaz ve şiş yapıldı; sıradaki fikirler: çifte saldırı, aşırı yüklü taş)
 
 ## Çalışma Kuralları (Claude Code için)
 
