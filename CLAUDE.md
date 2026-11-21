@@ -134,7 +134,7 @@ Her aşama ayrı bir dal (branch) ve küçük commit'lerle yapılır. Bir aşama
 - [x] **M6 – Açılış modülü**
 - [x] **M7 – Oyun sonu modülü**
 - [x] **M8 – PWA ve mobil cilalama:** Kurulabilir uygulama, dokunmatik tahta, çevrimdışı çalışma
-- [ ] **Sonra:** Lichess desteği, İngilizce arayüz, Capacitor ile Android uygulaması, motif tespitinin genişletilmesi
+- [ ] **Sonra:** Lichess desteği, İngilizce arayüz, Capacitor ile Android uygulaması, motif tespitinin genişletilmesi (çatal yapıldı; şiş ve açmaz kaldı)
 
 ## Çalışma Kuralları (Claude Code için)
 
@@ -394,3 +394,16 @@ Her aşama ayrı bir dal (branch) ve küçük commit'lerle yapılır. Bir aşama
   manifest okunuyor, Stockfish önbellekte; sunucu kapalıyken sayfa açıldı, bulmaca sayfası yüklendi ve oyun sonu
   dersinde motor hamle yaptı.
 - **Telefonda denenmedi:** kurulum ve dokunmatik his kullanıcı tarafından denenecek.
+
+### İyileştirmeler (2026-11-22)
+- **Açılış, "aynı taşı tekrar":** saldırı altındaki taşın kaçması artık sayılmaz (hamleden önceki pozisyonda
+  taşın karesi rakip tarafından saldırı altındaysa). Örnek test oyununda 6 → 2.
+- **Açılış aileleri:** `FAMILY_ALIASES` ile "Giuoco Piano Game" → "Italian Game", "Kings Indian Defence" →
+  "Kings Indian Defense". Yeni eşleşmeler buraya eklenir.
+- **Motif v2, çatal (`core/analysis/tactics.ts`):** `forkTargets(fen, kare)` bir taşın saldırdığı, alınmaya
+  değer rakip taşları verir: şah, saldırandan değerli taş ya da korunmasız en az hafif taş (piyon sayılmaz).
+  İki ve daha fazlası çataldır. Yeni motifler (`MOTIFS` sırasıyla):
+  - `allowed-fork` ("Çatala düşme"): asılı taş durumunda rakibin en iyi cevabının ilk hamlesi bir çatal.
+  - `missed-fork` ("Çatal kaçtı"): en iyi hamle bir çataldı, varyant ≥ 2 kazandırıyor ve oynanmadı.
+  Saklanmaz, analizden hesaplanır (eski analizler de etiketlenir). İlk sonuç (blitz + rapid, son 30 gün):
+  çatala düşme 6, çatal kaçtı 2.
