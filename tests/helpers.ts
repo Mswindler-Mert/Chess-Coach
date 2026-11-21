@@ -26,3 +26,9 @@ export function jsonResponse(body: unknown, status = 200): Response {
     headers: { 'Content-Type': 'application/json' },
   })
 }
+
+/** Three real Lichess games of `thibault` (opponents renamed), as the API streams them. */
+export const lichessNdjson: string = readFileSync(
+  fileURLToPath(new URL('./fixtures/lichess-games.ndjson', import.meta.url)),
+  'utf8',
+)
