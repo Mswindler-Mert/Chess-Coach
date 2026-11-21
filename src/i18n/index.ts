@@ -10,6 +10,10 @@ export const LANGUAGES: readonly Language[] = ['tr', 'en']
 
 const DICTIONARIES: Record<Language, Record<MessageKey, string>> = { tr, en }
 const LOCALES: Record<Language, string> = { tr: 'tr-TR', en: 'en-GB' }
+const PLURAL_RULES: Record<Language, Intl.PluralRules> = {
+  tr: new Intl.PluralRules(LOCALES.tr),
+  en: new Intl.PluralRules(LOCALES.en),
+}
 const STORAGE_KEY = 'chess-coach:language'
 
 /** Turkish unless the viewer picked English before (a per-device choice). */
@@ -60,14 +64,26 @@ export function hasMessage(key: string): key is MessageKey {
 }
 
 /**
- * Returns the UI string for `key` in the current language, replacing `{name}`-style placeholders
- * with `params`. Placeholders without a matching param are left as-is so missing values are visible.
+ * Returns the UI string for `key` in the current language, replacing `{name}` placeholders and
+ * `{name|one|other}` plural forms (using `Intl.PluralRules` for the active locale; `#` inside a
+ * branch expands to the value). Placeholders without a matching param are left as-is so missing
+ * values are visible.
  */
 export function t(key: MessageKey, params?: MessageParams): string {
   const template: string = DICTIONARIES[current][key]
   if (!params) return template
-  return template.replace(/\{(\w+)\}/g, (match, name: string) => {
-    const value = params[name]
-    return value === undefined ? match : String(value)
-  })
+  return template.replace(
+    /\{(\w+)(?:\|([^|{}]*)\|([^{}]*))?\}/g,
+    (match, name: string, one: string | undefined, other: string | undefined) => {
+      const value = params[name]
+      if (value === undefined) return match
+      if (one !== undefined && other !== undefined) {
+        const num = typeof value === 'number' ? value : Number(value)
+        const chosen =
+          Number.isFinite(num) && PLURAL_RULES[current].select(num) === 'one' ? one : other
+        return chosen.replace(/#/g, String(value))
+      }
+      return String(value)
+    },
+  )
 }

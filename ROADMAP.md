@@ -64,6 +64,5 @@ Arkadaşlardan Lichess kullananlar için.
 
 ## R7 – Küçük ama kalıcı iyileştirmeler
 
-- [ ] i18n çoğul desteği (`Intl.PluralRules`; "1 game" / "2 games").
-- [ ] Uçtan uca duman testi (Playwright): ana akış (kullanıcı adı → liste → oyun → bulmaca) — bağımlılık
-      ağırsa atlanır, kararı notlara yaz.
+- [x] i18n çoğul desteği (`Intl.PluralRules`; "1 game" / "2 games").
+- [x] Uçtan uca duman testi (Playwright): bağımlılık ağır olduğu için atlandı (bkz. CLAUDE.md Karar Notları).

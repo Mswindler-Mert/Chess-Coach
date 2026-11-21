@@ -522,3 +522,14 @@ Her aşama ayrı bir dal (branch) ve küçük commit'lerle yapılır. Bir aşama
   Gerçek API'ye karşı ayrıca bir kerelik test: 231 oyunun hepsi PGN'den tekrar oynatılabildi.
 - **Bilinen:** Aynı kişi iki sitede ayrı hesap sayılır (veriler birleştirilmez). Yedek dosyası `usernames`
   alanında önekli anahtarları taşır; biçim değişmedi (`BACKUP_VERSION` 1).
+
+### R7 – Küçük ama kalıcı iyileştirmeler (2026-11-21)
+- **i18n çoğul desteği (`src/i18n/index.ts`):** `Intl.PluralRules` tabanlı `{ad|tekil|çoğul}` sözdizimi
+  eklendi (bağımlılık yok; `#` işareti sayının yerine geçer: `{count|# game|# games}`, ya da sadece kelime
+  için `{total|month|months}`). `en.ts`'teki tüm sayılı metinler güncellendi; `tr.ts` sade kaldı (Türkçede
+  sayıdan sonra çoğul eki yok). `i18n/index.test.ts` iki dilde aynı parametre setini, bozuk biçim olmadığını
+  ve İngilizce tekil/çoğul çıktılarını doğrular.
+- **Playwright duman testi atlandı:** Playwright yüzlerce MB tarayıcı indiriyor, CI süresini ve bağımlılık
+  yükünü ciddi biçimde artırıyor. Projede zaten 267 Vitest testi (gerçek Stockfish ve fixture PGN/NDJSON
+  dahil) var; büyük değişikliklerde canlı tarayıcı denemesi yeterli görüldü. İleride çok sayıda ekran
+  regresyonu olursa tekrar değerlendirilir.

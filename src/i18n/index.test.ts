@@ -52,13 +52,25 @@ describe('dynamic endgame keys', () => {
 })
 
 describe('languages', () => {
-  const placeholders = (text: string) => [...text.matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort()
+  const placeholders = (text: string) =>
+    [...new Set([...text.matchAll(/\{(\w+)(?:\|[^|{}]*\|[^{}]*)?\}/g)].map((m) => m[1]))].sort()
 
   it('uses the same placeholders in Turkish and English', () => {
     const mismatches = (Object.keys(tr) as MessageKey[]).filter(
       (key) => placeholders(tr[key]).join() !== placeholders(en[key]).join(),
     )
     expect(mismatches).toEqual([])
+  })
+
+  it('has no malformed plural placeholders', () => {
+    const bad = [tr, en].flatMap((dict) =>
+      Object.entries(dict)
+        .filter(([, text]) =>
+          /\{[^}]*\|[^}]*\}/.test(text.replace(/\{\w+\|[^|{}]*\|[^{}]*\}/g, '')),
+        )
+        .map(([key]) => key),
+    )
+    expect(bad).toEqual([])
   })
 
   it('has no empty English strings', () => {
@@ -78,6 +90,34 @@ describe('languages', () => {
       setLanguage('tr')
     }
     expect(t('app.title')).toBe('Satranç Antrenörü')
+  })
+
+  it('applies plural rules in English', () => {
+    setLanguage('en')
+    try {
+      expect(t('dashboard.games', { count: 0 })).toBe('0 games')
+      expect(t('dashboard.games', { count: 1 })).toBe('1 game')
+      expect(t('dashboard.games', { count: 2 })).toBe('2 games')
+      expect(t('games.count', { shown: 1, total: 5 })).toBe('Showing 1 game (5 in total)')
+      expect(t('games.count', { shown: 3, total: 5 })).toBe('Showing 3 games (5 in total)')
+      expect(t('sync.progress', { done: 1, total: 1 })).toBe('1/1 month fetched')
+      expect(t('sync.progress', { done: 1, total: 4 })).toBe('1/4 months fetched')
+      expect(t('analysis.count.inaccuracy', { count: 1 })).toBe('1 inaccuracy')
+      expect(t('analysis.count.inaccuracy', { count: 2 })).toBe('2 inaccuracies')
+      expect(t('puzzles.empty.done', { waiting: 1 })).toBe(
+        'That’s all for today! 1 puzzle is waiting for its next review.',
+      )
+      expect(t('puzzles.empty.done', { waiting: 3 })).toBe(
+        'That’s all for today! 3 puzzles are waiting for their next review.',
+      )
+      expect(t('backup.imported', { analyses: 1, progress: 1 })).toBe(
+        'Loaded: 1 analysis and 1 puzzle record updated. Reloading…',
+      )
+      expect(t('dashboard.games', {})).toBe('{count|# game|# games}')
+    } finally {
+      setLanguage('tr')
+    }
+    expect(t('dashboard.games', { count: 1 })).toBe('1 oyun')
   })
 })
 
