@@ -4,6 +4,7 @@ import { parseRoute, routeHref, type Route } from './router'
 describe('router', () => {
   const routes: Route[] = [
     { name: 'home' },
+    { name: 'overview', username: 'mswindler07' },
     { name: 'games', username: 'mswindler07' },
     { name: 'game', username: 'mswindler07', id: 'abc' },
     { name: 'game', username: 'mswindler07', id: 'abc', ply: 17 },

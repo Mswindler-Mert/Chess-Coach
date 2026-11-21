@@ -6,89 +6,155 @@
   --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
-/* Default theme: Warm Walnut Chess Club (espresso ground, walnut cards, ivory text, muted brass). */
+/* Theme 1 (Default): Carbon Cockpit (deep charcoal grid, crisp dark cards, coral-orange accent, olive goal card). */
 :root,
+[data-theme='carbon'] {
+  color-scheme: dark;
+  --color-slate-950: #0c0d10;
+  --color-slate-900: #14161b;
+  --color-slate-800: #22262e;
+  --color-slate-700: #323743;
+  --color-slate-600: #4c5363;
+  --color-slate-500: #71798a;
+  --color-slate-400: #9aa2b2;
+  --color-slate-300: #c5cbd6;
+  --color-slate-200: #dfe3eb;
+  --color-slate-100: #f2f4f7;
+
+  --color-emerald-950: #2c140e;
+  --color-emerald-900: #471e14;
+  --color-emerald-800: #6b2d1d;
+  --color-emerald-700: #943d26;
+  --color-emerald-600: #d95530;
+  --color-emerald-500: #eb6842;
+  --color-emerald-400: #f28361;
+  --color-emerald-300: #f7a68d;
+  --color-emerald-200: #fbc9ba;
+
+  --goal-bg: #2b471d;
+  --goal-border: #3d6329;
+  --goal-ring: #e8d274;
+  --grid-line: rgba(255, 255, 255, 0.032);
+}
+
+/* Theme 2: Warm Walnut Club (espresso ground, walnut cards, ivory text, muted brass accent). */
 [data-theme='walnut'] {
   color-scheme: dark;
-  --color-slate-950: #14110f;
-  --color-slate-900: #1d1815;
-  --color-slate-800: #2b241f;
-  --color-slate-700: #3d332c;
+  --color-slate-950: #120f0d;
+  --color-slate-900: #1b1714;
+  --color-slate-800: #2b241e;
+  --color-slate-700: #3d332b;
   --color-slate-600: #57493e;
   --color-slate-500: #807160;
   --color-slate-400: #a89884;
   --color-slate-300: #d1c3b0;
   --color-slate-200: #e5dac9;
-  --color-slate-100: #f1e9dc;
+  --color-slate-100: #f2eadc;
 
   --color-emerald-950: #2b2012;
   --color-emerald-900: #42311a;
   --color-emerald-800: #634925;
   --color-emerald-700: #856332;
-  --color-emerald-600: #a97d3d;
-  --color-emerald-500: #c79850;
-  --color-emerald-400: #d8ae6a;
-  --color-emerald-300: #e6c68e;
-  --color-emerald-200: #f0dbb4;
+  --color-emerald-600: #b88a44;
+  --color-emerald-500: #cfa057;
+  --color-emerald-400: #deb36e;
+  --color-emerald-300: #ebd09f;
+  --color-emerald-200: #f4e2bf;
 
-  --ambient-glow: rgba(199, 152, 80, 0.09);
-  --ambient-glow-2: rgba(130, 88, 48, 0.07);
+  --goal-bg: #2a4021;
+  --goal-border: #3c5a30;
+  --goal-ring: #e8c775;
+  --grid-line: rgba(255, 240, 220, 0.032);
 }
 
-/* Theme 2: Forest Tournament (deep pine ground, muted sage cards, soft bone text, calm leaf green). */
+/* Theme 3: Forest Tournament (deep pine ground, muted sage cards, soft leaf green accent). */
 [data-theme='forest'] {
   color-scheme: dark;
-  --color-slate-950: #0f1511;
-  --color-slate-900: #161f19;
-  --color-slate-800: #233027;
-  --color-slate-700: #324438;
-  --color-slate-600: #485e50;
-  --color-slate-500: #6d8173;
-  --color-slate-400: #93a798;
-  --color-slate-300: #bdc9bf;
-  --color-slate-200: #d9e2da;
-  --color-slate-100: #e9efe9;
+  --color-slate-950: #0d130f;
+  --color-slate-900: #141d17;
+  --color-slate-800: #213026;
+  --color-slate-700: #314437;
+  --color-slate-600: #475e4f;
+  --color-slate-500: #6c8273;
+  --color-slate-400: #93a899;
+  --color-slate-300: #bccac0;
+  --color-slate-200: #d9e3db;
+  --color-slate-100: #eaf0eb;
 
-  --color-emerald-950: #112418;
-  --color-emerald-900: #1b3826;
-  --color-emerald-800: #285239;
-  --color-emerald-700: #376e4d;
-  --color-emerald-600: #4d8763;
-  --color-emerald-500: #67a17c;
-  --color-emerald-400: #82b895;
-  --color-emerald-300: #a7d1b4;
-  --color-emerald-200: #cae4d2;
+  --color-emerald-950: #102418;
+  --color-emerald-900: #1a3825;
+  --color-emerald-800: #265237;
+  --color-emerald-700: #346e4b;
+  --color-emerald-600: #498d62;
+  --color-emerald-500: #5ea678;
+  --color-emerald-400: #7abf93;
+  --color-emerald-300: #a2d6b4;
+  --color-emerald-200: #c7e8d2;
 
-  --ambient-glow: rgba(103, 161, 124, 0.08);
-  --ambient-glow-2: rgba(70, 110, 82, 0.06);
+  --goal-bg: #1e4228;
+  --goal-border: #2f5e3c;
+  --goal-ring: #dce68a;
+  --grid-line: rgba(210, 255, 225, 0.03);
 }
 
-/* Theme 3: Warm Obsidian & Copper (charcoal basalt ground, graphite cards, muted copper accent). */
+/* Theme 4: Warm Amber (deep charcoal-umber ground, bronze cards, golden amber accent). */
+[data-theme='amber'] {
+  color-scheme: dark;
+  --color-slate-950: #11100d;
+  --color-slate-900: #191713;
+  --color-slate-800: #29251e;
+  --color-slate-700: #3b352a;
+  --color-slate-600: #544c3d;
+  --color-slate-500: #7c7260;
+  --color-slate-400: #a69b86;
+  --color-slate-300: #cfc5b2;
+  --color-slate-200: #e5ddc9;
+  --color-slate-100: #f2ece0;
+
+  --color-emerald-950: #2b210e;
+  --color-emerald-900: #423315;
+  --color-emerald-800: #634c1f;
+  --color-emerald-700: #876829;
+  --color-emerald-600: #c7942e;
+  --color-emerald-500: #dfa93c;
+  --color-emerald-400: #ebc060;
+  --color-emerald-300: #f3d58e;
+  --color-emerald-200: #f9e6b8;
+
+  --goal-bg: #32441e;
+  --goal-border: #48612b;
+  --goal-ring: #f2d374;
+  --grid-line: rgba(255, 240, 200, 0.03);
+}
+
+/* Theme 5: Obsidian Blue (cool graphite ground, slate-blue accent, deep teal goal card). */
 [data-theme='obsidian'] {
   color-scheme: dark;
-  --color-slate-950: #131519;
-  --color-slate-900: #1b1e24;
-  --color-slate-800: #272c35;
-  --color-slate-700: #383e4a;
-  --color-slate-600: #505868;
-  --color-slate-500: #727b8c;
-  --color-slate-400: #98a1b0;
-  --color-slate-300: #c0c6d1;
-  --color-slate-200: #dadfe7;
-  --color-slate-100: #eceff4;
+  --color-slate-950: #0f1217;
+  --color-slate-900: #161b22;
+  --color-slate-800: #232a35;
+  --color-slate-700: #333d4c;
+  --color-slate-600: #4c586b;
+  --color-slate-500: #6e7b90;
+  --color-slate-400: #95a2b8;
+  --color-slate-300: #bec7d6;
+  --color-slate-200: #dbe1eb;
+  --color-slate-100: #eef1f6;
 
-  --color-emerald-950: #291b14;
-  --color-emerald-900: #40291d;
-  --color-emerald-800: #5e3c2a;
-  --color-emerald-700: #7d5038;
-  --color-emerald-600: #9e6748;
-  --color-emerald-500: #ba7f5d;
-  --color-emerald-400: #ce9676;
-  --color-emerald-300: #dfb69d;
-  --color-emerald-200: #edd1bf;
+  --color-emerald-950: #112233;
+  --color-emerald-900: #1a3550;
+  --color-emerald-800: #244c73;
+  --color-emerald-700: #306699;
+  --color-emerald-600: #4485c2;
+  --color-emerald-500: #5a9bd6;
+  --color-emerald-400: #7cb3e3;
+  --color-emerald-300: #a6ccef;
+  --color-emerald-200: #cde2f7;
 
-  --ambient-glow: rgba(186, 127, 93, 0.08);
-  --ambient-glow-2: rgba(100, 114, 134, 0.06);
+  --goal-bg: #1c3d35;
+  --goal-border: #2a594d;
+  --goal-ring: #9ee0b8;
+  --grid-line: rgba(210, 230, 255, 0.032);
 }
 
 :root {
@@ -100,33 +166,21 @@ body {
   margin: 0;
   min-height: 100dvh;
   background-color: var(--color-slate-950);
+  /* Subtle architectural notebook grid like a tactile focus workspace. */
   background-image:
-    radial-gradient(ellipse 80% 50% at 20% -10%, var(--ambient-glow), transparent 65%),
-    radial-gradient(ellipse 60% 45% at 88% 12%, var(--ambient-glow-2), transparent 65%);
-  background-attachment: fixed;
+    linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+  background-size: 36px 36px;
   color: var(--color-slate-100);
   /* Keep content clear of the iPhone home indicator and notch sides when installed. */
   padding-bottom: env(safe-area-inset-bottom);
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
   transition:
-    background-color 220ms ease,
-    color 220ms ease;
+    background-color 200ms ease,
+    color 200ms ease;
 }
 
-/* Subtle paper/wood grain texture so dark surfaces feel tactile rather than flat plastic. */
-body::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 40;
-  opacity: 0.028;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-}
-
-h1,
-h2,
 .font-display {
   font-family: var(--font-display);
   font-optical-sizing: auto;
@@ -138,7 +192,7 @@ h2,
   background: linear-gradient(145deg, var(--color-slate-700), var(--color-slate-900));
   box-shadow:
     0 18px 40px -16px rgba(0, 0, 0, 0.72),
-    inset 0 1px 0 rgba(255, 245, 230, 0.09);
+    inset 0 1px 0 rgba(255, 245, 230, 0.08);
 }
 
 /* No double-tap zoom delay on controls; the boards already disable touch gestures. */

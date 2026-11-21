@@ -1,10 +1,10 @@
 import { useSyncExternalStore } from 'react'
 
-export type ThemeId = 'walnut' | 'forest' | 'obsidian'
+export type ThemeId = 'carbon' | 'walnut' | 'forest' | 'amber' | 'obsidian'
 
 export interface ThemeMeta {
   id: ThemeId
-  /** Swatch colours shown in the theme picker (background + accent). */
+  /** Two-tone split circle swatch colours (background half + accent half). */
   swatchBg: string
   swatchAccent: string
   /** Browser status bar / PWA theme-color. */
@@ -16,8 +16,16 @@ export interface ThemeMeta {
 
 export const THEMES: readonly ThemeMeta[] = [
   {
+    id: 'carbon',
+    swatchBg: '#17191e',
+    swatchAccent: '#e85d35',
+    metaColor: '#0c0d10',
+    boardDark: '#5e6a78',
+    boardLight: '#cfd6de',
+  },
+  {
     id: 'walnut',
-    swatchBg: '#1c1714',
+    swatchBg: '#1e1915',
     swatchAccent: '#cfa057',
     metaColor: '#14110f',
     boardDark: '#9d7250',
@@ -25,41 +33,57 @@ export const THEMES: readonly ThemeMeta[] = [
   },
   {
     id: 'forest',
-    swatchBg: '#131b16',
-    swatchAccent: '#6fa477',
-    metaColor: '#0f1511',
+    swatchBg: '#131d16',
+    swatchAccent: '#58a86c',
+    metaColor: '#0d130f',
     boardDark: '#658058',
     boardLight: '#d3dcc9',
   },
   {
+    id: 'amber',
+    swatchBg: '#1c1914',
+    swatchAccent: '#e0a63b',
+    metaColor: '#12100d',
+    boardDark: '#94704c',
+    boardLight: '#e0cda8',
+  },
+  {
     id: 'obsidian',
-    swatchBg: '#181a1f',
-    swatchAccent: '#c48a62',
-    metaColor: '#131519',
-    boardDark: '#626f7d',
-    boardLight: '#cbd2d9',
+    swatchBg: '#181c24',
+    swatchAccent: '#569cd6',
+    metaColor: '#111418',
+    boardDark: '#5a6c7d',
+    boardLight: '#cdd7e0',
   },
 ]
 
 const THEME_MAP: Record<ThemeId, ThemeMeta> = {
-  walnut: THEMES[0]!,
-  forest: THEMES[1]!,
-  obsidian: THEMES[2]!,
+  carbon: THEMES[0]!,
+  walnut: THEMES[1]!,
+  forest: THEMES[2]!,
+  amber: THEMES[3]!,
+  obsidian: THEMES[4]!,
 }
 
 const STORAGE_KEY = 'chess-coach:theme'
 const listeners = new Set<() => void>()
 
 function isThemeId(value: string | null): value is ThemeId {
-  return value === 'walnut' || value === 'forest' || value === 'obsidian'
+  return (
+    value === 'carbon' ||
+    value === 'walnut' ||
+    value === 'forest' ||
+    value === 'amber' ||
+    value === 'obsidian'
+  )
 }
 
 function readSaved(): ThemeId {
   try {
     const raw = globalThis.localStorage?.getItem(STORAGE_KEY) ?? null
-    return isThemeId(raw) ? raw : 'walnut'
+    return isThemeId(raw) ? raw : 'carbon'
   } catch {
-    return 'walnut'
+    return 'carbon'
   }
 }
 

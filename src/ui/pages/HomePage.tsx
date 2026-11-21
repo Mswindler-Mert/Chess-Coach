@@ -47,7 +47,7 @@ export function HomePage() {
       return
     }
     await setLastUsername(username)
-    navigate({ name: 'games', username })
+    navigate({ name: 'overview', username })
   }
 
   return (
@@ -152,7 +152,7 @@ export function HomePage() {
 
             {lastUsername && (
               <a
-                href={routeHref({ name: 'games', username: lastUsername })}
+                href={routeHref({ name: 'overview', username: lastUsername })}
                 className="group flex items-center justify-between border-t border-slate-800/80 pt-3 text-sm font-medium text-emerald-300 transition-colors hover:text-emerald-200"
               >
                 <span>{t('home.continue', { username: accountLabel(lastUsername) })}</span>

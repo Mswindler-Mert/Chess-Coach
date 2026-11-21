@@ -588,3 +588,22 @@ Her aşama ayrı bir dal (branch) ve küçük commit'lerle yapılır. Bir aşama
 - **Doku ve çerçeve:** Hafif ortam ışığı + mikro kâğıt/ahşap kum dokusu (`body::after`), tüm tahtalarda
   `.club-board-frame`, ana sayfada asimetrik 2 sütunlu editöryel vitrin (sağda canlı İtalyan Açılışı
   tahtası, altta 01–06 numaralı çizgili dizin).
+
+### Kokpit Yeniden Tasarımı ("Bugünkü Odak" + Sol Kenar Çubuğu + Isı Haritası, 2026-11-22)
+- **Tam ekran sol kenar çubuğu (`src/ui/Nav.tsx`):** Masaüstünde (`lg:flex`) 256px sabit sol menü:
+  marka, 5 çift renkli dairesel tema seçici (`KARBON`, `CEVİZ`, `ORMAN`, `KEHRİBAR`, `FÜME`), canlı
+  hesap/motor widget'ı (Başlat/Duraklat + Kullanıcı değiştir), aktif öğesi açık pill olan dikey menü
+  ve canlı bildirim rozetleri (bekleyen bulmaca, asılı taş, açılış ilerlemesi). Mobilde kompakt üst
+  bar + 6'lı alt çubuk.
+- **Yeni ilk ekran (`#/u/:kullanici` → `OverviewPage.tsx`, oyun listesi `#/u/:kullanici/games`):**
+  - Üst 2'li Bento: Sol tarafta dev rakamlı "Bugünkü Antrenman" + "Koçun Sıradaki Önerisi" aksiyon
+    kartı; sağ tarafta dolu zeytin/orman yeşili **Günlük Hedef** kartı + büyük **SVG dairesel ilerleme
+    halkası (`GoalRing`)** ve zincir özeti.
+  - Orta 3'lü renkli üst şeritli KPI kartları (Mavi: Ortalama İsabet, Yeşil: Hedef Tutan Gün, Turuncu
+    dolgulu tıklanabilir: Bekleyen Bulmaca).
+  - **"Zinciri Kırma" Aktivite Isı Haritası (`core/training/heatmap.ts`):** `activityLog`'dan son 16
+    haftanın Pazartesi hizalı renkli kareli ısı haritası + seviye rozeti (`Başlangıç` / `Düzenli` /
+    `Seri Ustası`).
+  - Alt 2'li Bento: "Hatalar Nereden Geldi?" (tıklanabilir motif barları) ve "Son Oyunlar".
+- **Kareli çalışma defteri zemini (`src/index.css`):** 36×36px çok hafif çizgili ızgara dokusu;
+  varsayılan tema `carbon` (Karbon).

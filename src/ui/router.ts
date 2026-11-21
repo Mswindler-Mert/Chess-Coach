@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 // Hash routes work on GitHub Pages without any server-side fallback.
 export type Route =
   | { name: 'home' }
+  | { name: 'overview'; username: string }
   | { name: 'games'; username: string }
   | { name: 'game'; username: string; id: string; ply?: number }
   /** `focus` preselects a puzzle filter, e.g. a phase ("endgame") from the dashboard. */
@@ -31,6 +32,7 @@ export function parseRoute(hash: string): Route {
         ? { name: 'puzzles', username: parts[1], focus: parts[3] }
         : { name: 'puzzles', username: parts[1] }
     }
+    if (parts[2] === 'games') return { name: 'games', username: parts[1] }
     if (parts[2] === 'dashboard') return { name: 'dashboard', username: parts[1] }
     if (parts[2] === 'openings') return { name: 'openings', username: parts[1] }
     if (parts[2] === 'hanging') return { name: 'hanging', username: parts[1] }
@@ -39,7 +41,7 @@ export function parseRoute(hash: string): Route {
         ? { name: 'endgames', username: parts[1], lesson: parts[3] }
         : { name: 'endgames', username: parts[1] }
     }
-    return { name: 'games', username: parts[1] }
+    return { name: 'overview', username: parts[1] }
   }
   return { name: 'home' }
 }
@@ -48,8 +50,10 @@ export function routeHref(route: Route): string {
   switch (route.name) {
     case 'home':
       return '#/'
-    case 'games':
+    case 'overview':
       return `#/u/${encodeURIComponent(route.username)}`
+    case 'games':
+      return `#/u/${encodeURIComponent(route.username)}/games`
     case 'game':
       return `#/u/${encodeURIComponent(route.username)}/game/${encodeURIComponent(route.id)}${
         route.ply ? `/${route.ply}` : ''
