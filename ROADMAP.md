@@ -22,12 +22,12 @@ Analizi gözle görülür yapmak: hangi hamlede oyunun koptuğu tek bakışta an
 
 Asılı taşı görmeyi doğrudan çalıştırmak.
 
-- [ ] Saf fonksiyon: bir pozisyonda **asılı taşlar** (saldırı altında ve yeterince korunmayan taşlar;
+- [x] Saf fonksiyon: bir pozisyonda **asılı taşlar** (saldırı altında ve yeterince korunmayan taşlar;
       basit takas hesabı, SEE benzeri) + testler.
-- [ ] Alıştırma ekranı: kendi oyunlarından pozisyonlar; "Asılı olan taşlarına dokun" (kendi taşların) ve
+- [x] Alıştırma ekranı: kendi oyunlarından pozisyonlar; "Asılı olan taşlarına dokun" (kendi taşların) ve
       "Rakibin bedava taşına dokun" turları; doğru/yanlış, açıklama.
-- [ ] Pozisyon kaynağı: analizde `hanging-piece` / `missed-free-piece` etiketli anlar (gerçek hata anları).
-- [ ] Tahtalarda isteğe bağlı **tehdit görünümü** düğmesi: asılı taşları kırmızı halkayla gösterir
+- [x] Pozisyon kaynağı: analizde `hanging-piece` / `missed-free-piece` etiketli anlar (gerçek hata anları).
+- [x] Tahtalarda isteğe bağlı **tehdit görünümü** düğmesi: asılı taşları kırmızı halkayla gösterir
       (oyun sayfası; bulmacada çözüm sonrası).
 
 ## R3 – Otomatik analiz

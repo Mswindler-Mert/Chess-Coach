@@ -439,3 +439,21 @@ Her aşama ayrı bir dal (branch) ve küçük commit'lerle yapılır. Bir aşama
 - **Liste ve panel:** `listAnalysisSummaries` artık `{ counts, accuracy }` döner; oyun satırında "İsabet 81".
   Panelde "Ortalama isabet" kutusu ve dönem başına isabet grafiği (`TrendPoint.accuracy`).
 - **İlk sonuç (blitz + rapid, son 30 gün):** ortalama isabet 66.6.
+
+### R2 – "Asılı taşı bul" antrenörü + tehdit görünümü (2026-11-22)
+- **Statik takas (`core/analysis/hanging.ts`, `staticExchange`):** bir karede saldıranın kazandığı materyal;
+  her iki taraf en ucuz taşla alır, istediği an durabilir (`best(i) = max(0, kazanç[i] − best(i+1))`).
+  Alışlar **gerçek yasal hamlelerle** yapılır (sıra saldırana çevrilir, geçerken alma silinir), böylece açmaz ve
+  arka arkaya dizilmiş taşlar doğru sayılır. `hangingPieces(fen, renk)`: SEE > 0 olan, en az hafif taş
+  değerindeki taşlar (piyon ve şah hariç, `MIN_HANGING_VALUE = 3`).
+- **Alıştırmalar (`core/training/hangingDrills.ts`):** kaynak, analizdeki gerçek anlar:
+  - `own`: kullanıcının `hanging-piece` etiketli hamlesinden **sonraki** pozisyon, cevap = kendi asılı taşları.
+  - `free`: `missed-free-piece` etiketli hamleden **önceki** pozisyon, cevap = rakibin asılı taşları.
+  Sadece statik olarak gerçekten asılı taş olan anlar alınır (derin taktikler bulmacalara kalır).
+  Doğru = bütün cevap karelerine dokunmak ve fazlasına dokunmamak (`checkSquares`).
+- **Tekrar:** bulmacalarla aynı Leitner kutuları ve aynı `puzzleProgress` tablosu; kimlik
+  `hang:own|free:gameId:ply`. `planPuzzles` artık genel (`Schedulable`: id, endTime, ply).
+- **Ekran `#/u/:kullanıcı/hanging`:** oyun listesinde "Asılı taş" düğmesi; panelde odak konusu asılı taş ya da
+  bedava taş ise ek kısayol. Seçim sarı halka; sonuçta yeşil = bulunan, kırmızı = kaçırılan, turuncu = yanlış.
+- **Tehdit görünümü:** oyun sayfasında onay kutusu; iki tarafın asılı taşlarını kırmızı halkayla gösterir.
+- **İlk sonuç (blitz + rapid, son 30 gün):** 63 alıştırma.
