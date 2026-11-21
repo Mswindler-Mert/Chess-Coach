@@ -44,6 +44,7 @@ import {
   timeControlLabel,
 } from '../format'
 import { autoAnalyzeAfterSync } from '../background'
+import { BackupPanel } from '../BackupPanel'
 import { DailyCard } from '../DailyCard'
 import { routeHref } from '../router'
 
@@ -288,6 +289,8 @@ function GamesView({ username }: { username: string }) {
           {t('games.showMore')}
         </button>
       )}
+
+      <BackupPanel onImported={() => window.location.reload()} />
     </div>
   )
 }

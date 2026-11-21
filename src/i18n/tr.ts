@@ -316,6 +316,19 @@ export const tr = {
   'daily.item.endgame': 'Oyun sonu: {lesson}',
   'daily.item.review': 'Son oyununun kritik anına bak',
 
+  'backup.title': 'Yedekle ve taşı',
+  'backup.intro':
+    'Analizlerini ve ilerlemeni bir dosyaya kaydet, başka bir cihazda (ör. telefonda) geri yükle. Analizi bilgisayarda yapıp telefona taşımak için idealdir. Oyunlar dosyaya girmez; diğer cihazda aynı kullanıcı adını açınca yeniden çekilir.',
+  'backup.export': 'Yedek dosyası indir',
+  'backup.import': 'Yedek dosyası yükle',
+  'backup.exported': '{count} analiz yedek dosyasına yazıldı.',
+  'backup.imported':
+    'Yüklendi: {analyses} analiz, {progress} bulmaca ilerlemesi yenilendi. Sayfa yenileniyor…',
+  'backup.error.not-json': 'Bu dosya okunamadı (JSON değil).',
+  'backup.error.format': 'Bu bir Satranç Antrenörü yedeği değil.',
+  'backup.error.version': 'Bu yedek başka bir sürümden; desteklenmiyor.',
+  'backup.error.shape': 'Yedek dosyası bozuk görünüyor.',
+
   'charts.table': 'Tablo olarak göster',
   'charts.period': 'Dönem',
   'charts.date': 'Tarih',

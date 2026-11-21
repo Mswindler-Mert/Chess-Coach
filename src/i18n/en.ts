@@ -325,6 +325,19 @@ export const en: Record<MessageKey, string> = {
   'daily.item.endgame': 'Endgame: {lesson}',
   'daily.item.review': 'Look at the key moment of your last game',
 
+  'backup.title': 'Back up and move',
+  'backup.intro':
+    'Save your analyses and progress to a file and load it on another device (e.g. your phone). Handy for analysing on a computer and training on the phone. Games are not in the file; they are fetched again when you open the same username there.',
+  'backup.export': 'Download backup',
+  'backup.import': 'Load backup',
+  'backup.exported': '{count} analyses written to the backup file.',
+  'backup.imported':
+    'Loaded: {analyses} analyses and {progress} puzzle records updated. Reloading…',
+  'backup.error.not-json': 'This file could not be read (not JSON).',
+  'backup.error.format': 'This is not a Chess Coach backup.',
+  'backup.error.version': 'This backup is from an unsupported version.',
+  'backup.error.shape': 'The backup file looks damaged.',
+
   'charts.table': 'Show as table',
   'charts.period': 'Period',
   'charts.date': 'Date',
