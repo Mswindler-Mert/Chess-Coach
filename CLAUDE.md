@@ -424,3 +424,18 @@ Her aşama ayrı bir dal (branch) ve küçük commit'lerle yapılır. Bir aşama
 - **Biçimler dile göre:** `locale()` (`tr-TR` / `en-GB`), `formatPercent` ("%45" / "45%"), `formatNumber`.
   Kodda `'tr-TR'` ya da elle `%` yazma; bunları kullan.
 - **Bilinen:** İngilizcede çoğul eki yok ("1 games" gibi). Gerekirse `Intl.PluralRules` ile `t`'ye çoğul desteği ekle.
+
+### R1 – Oyun inceleme ekranı (2026-11-22)
+- **İsabet (`core/analysis/accuracy.ts`):** Lichess formülü. Hamle isabeti
+  `103.17·e^(−0.0435·düşüş) − 3.17 + 1` (0–100; düşüş = hamleyi yapanın win% kaybı). Oyun isabeti: oynaklıkla
+  (pencere = hamle sayısı/10, 2–8; std 0.5–12) ağırlıklı ortalama ile harmonik ortalamanın ortalaması.
+  Saklanmaz, analizden hesaplanır. `whiteWinPercents` grafiğin de kaynağı.
+- **Kritik anlar (`core/analysis/review.ts`):** kullanıcının en çok kaybettiren 3 hatası (inaccuracy ve üstü),
+  oyun sırasıyla.
+- **Oyun sayfası:** tahtanın altında beyaz açısından kazanma şansı grafiği (`ui/EvalGraph.tsx`; hatalar hamle
+  listesiyle aynı renkte noktalar; dokun/sürükle → hamleye git). Tahtada o pozisyonda motorun en iyi hamlesi
+  yeşil okla (onay kutusuyla kapatılabilir) ve metin olarak "Bu pozisyonda en iyisi". Oyuncu satırlarında isabet.
+  "Kritik anlar" kutusu: her biri hamleye gider, win% değişimi ve ana motif.
+- **Liste ve panel:** `listAnalysisSummaries` artık `{ counts, accuracy }` döner; oyun satırında "İsabet 81".
+  Panelde "Ortalama isabet" kutusu ve dönem başına isabet grafiği (`TrendPoint.accuracy`).
+- **İlk sonuç (blitz + rapid, son 30 gün):** ortalama isabet 66.6.

@@ -11,12 +11,12 @@ kullanılır hale getirmek.
 
 Analizi gözle görülür yapmak: hangi hamlede oyunun koptuğu tek bakışta anlaşılsın.
 
-- [ ] Oyun başı **isabet puanı** (accuracy, 0–100) — Lichess'in win% tabanlı formülü, saf fonksiyon + test.
-- [ ] Oyun sayfasında **kazanma şansı grafiği** (beyaz açısından, hamle hamle); tıklayınca o hamleye gider,
+- [x] Oyun başı **isabet puanı** (accuracy, 0–100) — Lichess'in win% tabanlı formülü, saf fonksiyon + test.
+- [x] Oyun sayfasında **kazanma şansı grafiği** (beyaz açısından, hamle hamle); tıklayınca o hamleye gider,
       hatalı hamleler işaretli.
-- [ ] Tahtada **en iyi hamle oku** (seçili pozisyonda motorun önerisi; hatalı hamlede "daha iyisi" oku).
-- [ ] **Kritik anlar** listesi: kullanıcının en büyük 3 hatası (win% kaybına göre), tıklayınca o hamle.
-- [ ] İsabet puanı oyun listesinde ve panelde (ortalama + trend).
+- [x] Tahtada **en iyi hamle oku** (seçili pozisyonda motorun önerisi; hatalı hamlede "daha iyisi" oku).
+- [x] **Kritik anlar** listesi: kullanıcının en büyük 3 hatası (win% kaybına göre), tıklayınca o hamle.
+- [x] İsabet puanı oyun listesinde ve panelde (ortalama + trend).
 
 ## R2 – "Asılı taşı bul" antrenörü + tehdit görünümü
 
