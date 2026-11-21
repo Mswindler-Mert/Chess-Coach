@@ -1,6 +1,7 @@
 // Turkish UI strings. Keys are English; values are shown to the user.
 export const tr = {
   'app.title': 'Satranç Antrenörü',
+  'app.loading': 'Yükleniyor…',
   'app.tagline': 'Chess.com oyunlarını analiz et, sık yaptığın hataları bul, onlardan öğren.',
 
   'home.username.label': 'Chess.com kullanıcı adın',

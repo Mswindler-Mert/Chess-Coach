@@ -1,12 +1,16 @@
+import { Suspense } from 'react'
 import { t } from '../i18n'
-import { GamePage } from './pages/GamePage'
+import { lazyPage } from './lazyPage'
 import { GamesPage } from './pages/GamesPage'
 import { HomePage } from './pages/HomePage'
-import { DashboardPage } from './pages/DashboardPage'
-import { EndgamesPage } from './pages/EndgamesPage'
-import { OpeningsPage } from './pages/OpeningsPage'
-import { PuzzlePage } from './pages/PuzzlePage'
 import { routeHref, useRoute } from './router'
+
+// The first screens load with the app; the rest (board, charts) load when opened.
+const GamePage = lazyPage(() => import('./pages/GamePage').then((m) => m.GamePage))
+const PuzzlePage = lazyPage(() => import('./pages/PuzzlePage').then((m) => m.PuzzlePage))
+const EndgamesPage = lazyPage(() => import('./pages/EndgamesPage').then((m) => m.EndgamesPage))
+const OpeningsPage = lazyPage(() => import('./pages/OpeningsPage').then((m) => m.OpeningsPage))
+const DashboardPage = lazyPage(() => import('./pages/DashboardPage').then((m) => m.DashboardPage))
 
 export default function App() {
   const route = useRoute()
@@ -33,36 +37,38 @@ export default function App() {
       )}
 
       <main className="mx-auto flex max-w-4xl flex-col gap-8 px-4 py-6 sm:py-10">
-        {route.name === 'home' && <HomePage />}
-        {route.name === 'games' && <GamesPage key={route.username} username={route.username} />}
-        {route.name === 'game' && (
-          <GamePage
-            key={`${route.id}:${route.ply ?? 0}`}
-            username={route.username}
-            id={route.id}
-            initialPly={route.ply ?? 0}
-          />
-        )}
-        {route.name === 'puzzles' && (
-          <PuzzlePage
-            key={`${route.username}:${route.focus ?? ''}`}
-            username={route.username}
-            focus={route.focus}
-          />
-        )}
-        {route.name === 'endgames' && (
-          <EndgamesPage
-            key={`${route.username}:${route.lesson ?? ''}`}
-            username={route.username}
-            lesson={route.lesson}
-          />
-        )}
-        {route.name === 'openings' && (
-          <OpeningsPage key={route.username} username={route.username} />
-        )}
-        {route.name === 'dashboard' && (
-          <DashboardPage key={route.username} username={route.username} />
-        )}
+        <Suspense fallback={<p className="text-slate-400">{t('app.loading')}</p>}>
+          {route.name === 'home' && <HomePage />}
+          {route.name === 'games' && <GamesPage key={route.username} username={route.username} />}
+          {route.name === 'game' && (
+            <GamePage
+              key={`${route.id}:${route.ply ?? 0}`}
+              username={route.username}
+              id={route.id}
+              initialPly={route.ply ?? 0}
+            />
+          )}
+          {route.name === 'puzzles' && (
+            <PuzzlePage
+              key={`${route.username}:${route.focus ?? ''}`}
+              username={route.username}
+              focus={route.focus}
+            />
+          )}
+          {route.name === 'endgames' && (
+            <EndgamesPage
+              key={`${route.username}:${route.lesson ?? ''}`}
+              username={route.username}
+              lesson={route.lesson}
+            />
+          )}
+          {route.name === 'openings' && (
+            <OpeningsPage key={route.username} username={route.username} />
+          )}
+          {route.name === 'dashboard' && (
+            <DashboardPage key={route.username} username={route.username} />
+          )}
+        </Suspense>
 
         <footer className="text-xs text-slate-500">
           {t('footer.license', { name: t('app.title') })}
