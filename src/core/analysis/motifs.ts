@@ -2,6 +2,7 @@ import { Chess } from 'chess.js'
 import type { Game } from '../games/model'
 import { fenAt, type Replay } from '../games/replay'
 import { parseTimeControl } from '../games/timeControl'
+import { isForkingMove } from './tactics'
 import type { GameAnalysis, MoveAnalysis, PositionEval } from './types'
 
 /**
@@ -10,7 +11,9 @@ import type { GameAnalysis, MoveAnalysis, PositionEval } from './types'
  */
 export const MOTIFS = [
   'hanging-piece',
+  'allowed-fork',
   'missed-free-piece',
+  'missed-fork',
   'missed-mate',
   'walked-into-mate',
   'blew-winning-position',
@@ -106,9 +109,11 @@ export function motifsForMove(ctx: MotifContext): Motif[] {
   if (!isError(move)) return []
   const motifs: Motif[] = []
 
-  // After the move, the opponent's best line wins material.
+  // After the move, the opponent's best line wins material…
   if (lineMaterialChange(fenAfter, after.pv, move.color) <= -MATERIAL_SWING) {
     motifs.push('hanging-piece')
+    // …starting with a fork.
+    if (after.pv[0] && isForkingMove(fenAfter, after.pv[0])) motifs.push('allowed-fork')
   }
   // The best move captured something that stays won, and a different move was played.
   if (
@@ -118,6 +123,15 @@ export function motifsForMove(ctx: MotifContext): Motif[] {
     lineMaterialChange(fenBefore, before.pv, move.color) >= MATERIAL_SWING
   ) {
     motifs.push('missed-free-piece')
+  }
+  // The best move was a fork that wins material, and a different move was played.
+  if (
+    before.bestMove &&
+    before.bestMove !== move.uci &&
+    isForkingMove(fenBefore, before.bestMove) &&
+    lineMaterialChange(fenBefore, before.pv, move.color) >= MATERIAL_SWING
+  ) {
+    motifs.push('missed-fork')
   }
   // Scores are for the side to move: `before` is the mover's, `after` the opponent's.
   const hadMate = before.score.type === 'mate' && before.score.value > 0

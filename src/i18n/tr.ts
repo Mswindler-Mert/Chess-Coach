@@ -134,12 +134,18 @@ export const tr = {
 
   'motif.hanging-piece': 'Asılı taş',
   'motif.missed-free-piece': 'Bedava taş alınmadı',
+  'motif.allowed-fork': 'Çatala düşme',
+  'motif.missed-fork': 'Çatal kaçtı',
   'motif.missed-mate': 'Mat kaçtı',
   'motif.walked-into-mate': 'Mata düşme',
   'motif.blew-winning-position': 'Kazanılmış oyun kaçtı',
   'motif.time-pressure': 'Zaman baskısı',
   'motif.desc.hanging-piece': 'Hamleden sonra rakip karşılıksız taş kazanabiliyordu.',
   'motif.desc.missed-free-piece': 'Rakibin bıraktığı bir taşı bedavaya alabilirdin.',
+  'motif.desc.allowed-fork':
+    'Hamleden sonra rakip tek taşla iki taşa birden saldıran bir çatal yapıp taş kazanabiliyordu.',
+  'motif.desc.missed-fork':
+    'İki taşa birden saldıran, taş kazandıran bir çatal vardı ama oynanmadı.',
   'motif.desc.missed-mate': 'Zorlayıcı bir mat vardı ama kaçtı.',
   'motif.desc.walked-into-mate': 'Hamleden sonra rakibin zorlayıcı bir matı vardı.',
   'motif.desc.blew-winning-position': 'Kazanma şansı %80’in üstündeyken %50’nin altına düştü.',

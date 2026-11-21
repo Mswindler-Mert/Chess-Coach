@@ -52,6 +52,9 @@ function ctx(over: Partial<MotifContext> = {}): MotifContext {
   }
 }
 
+// White's knight on b5 can fork the e8 king and a8 rook from c7.
+const FORK_READY = 'r3k3/8/8/1N6/8/8/8/4K3 w - - 0 1'
+
 describe('materialBalance', () => {
   it('is zero at the start and counts pieces', () => {
     expect(materialBalance(START)).toBe(0)
@@ -106,6 +109,33 @@ describe('motifsForMove', () => {
       ctx({ fenBefore: FREE_KNIGHT, before: pos(cp(300), ['g1f3'], 'g1f3') }),
     )
     expect(result).not.toContain('missed-free-piece')
+  })
+
+  it('finds a fork the mover walked into', () => {
+    const result = motifsForMove(
+      ctx({
+        move: move({ color: 'black', moveClass: 'blunder' }),
+        fenAfter: FORK_READY,
+        after: pos(cp(500), ['b5c7', 'e8d7', 'c7a8', 'd7c8']),
+      }),
+    )
+    expect(result).toEqual(['hanging-piece', 'allowed-fork'])
+  })
+
+  it('does not call a plain capture a fork', () => {
+    const result = motifsForMove(ctx({ fenAfter: KNIGHT_HANGS, after: pos(cp(300), ['d5e4']) }))
+    expect(result).not.toContain('allowed-fork')
+  })
+
+  it('finds a fork the mover missed', () => {
+    const result = motifsForMove(
+      ctx({
+        move: move({ uci: 'e1e2', san: 'Ke2' }),
+        fenBefore: FORK_READY,
+        before: pos(cp(500), ['b5c7', 'e8d7', 'c7a8', 'd7c8'], 'b5c7'),
+      }),
+    )
+    expect(result).toEqual(['missed-fork'])
   })
 
   it('finds a missed mate and walking into mate', () => {
