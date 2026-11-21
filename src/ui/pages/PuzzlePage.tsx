@@ -47,17 +47,34 @@ type Answer =
   | { status: 'done'; uci: string | null; san: string | null; fen: string; result: AnswerResult }
   | { status: 'error'; message: string }
 
-export function PuzzlePage({ username: rawUsername }: { username: string }) {
+export function PuzzlePage({
+  username: rawUsername,
+  focus,
+}: {
+  username: string
+  /** A phase to preselect, e.g. from the dashboard's weekly focus. */
+  focus?: string
+}) {
   const username = normalizeUsername(rawUsername)
   if (!username) return <p className="text-rose-400">{t('home.username.invalid')}</p>
-  return <PuzzleTrainer username={username} />
+  return <PuzzleTrainer username={username} initialFilter={filterFromFocus(focus)} />
 }
 
-function PuzzleTrainer({ username }: { username: string }) {
+function filterFromFocus(focus: string | undefined): PuzzleFilter {
+  return PHASES.includes(focus as Phase) ? { ...ALL_PUZZLES, phase: focus as Phase } : ALL_PUZZLES
+}
+
+function PuzzleTrainer({
+  username,
+  initialFilter,
+}: {
+  username: string
+  initialFilter: PuzzleFilter
+}) {
   const [now] = useState(() => Date.now())
   const [set, setSet] = useState<PuzzleSet | null>(null)
   const [progress, setProgress] = useState<Map<string, PuzzleProgress> | null>(null)
-  const [filter, setFilter] = useState<PuzzleFilter>(ALL_PUZZLES)
+  const [filter, setFilter] = useState<PuzzleFilter>(initialFilter)
   const [currentId, setCurrentId] = useState<string | null>(null)
   const [session, setSession] = useState({ correct: 0, total: 0 })
 

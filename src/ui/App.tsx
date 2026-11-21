@@ -2,6 +2,7 @@ import { t } from '../i18n'
 import { GamePage } from './pages/GamePage'
 import { GamesPage } from './pages/GamesPage'
 import { HomePage } from './pages/HomePage'
+import { DashboardPage } from './pages/DashboardPage'
 import { PuzzlePage } from './pages/PuzzlePage'
 import { routeHref, useRoute } from './router'
 
@@ -40,7 +41,16 @@ export default function App() {
             initialPly={route.ply ?? 0}
           />
         )}
-        {route.name === 'puzzles' && <PuzzlePage key={route.username} username={route.username} />}
+        {route.name === 'puzzles' && (
+          <PuzzlePage
+            key={`${route.username}:${route.focus ?? ''}`}
+            username={route.username}
+            focus={route.focus}
+          />
+        )}
+        {route.name === 'dashboard' && (
+          <DashboardPage key={route.username} username={route.username} />
+        )}
 
         <footer className="text-xs text-slate-500">
           {t('footer.license', { name: t('app.title') })}

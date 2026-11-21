@@ -155,12 +155,20 @@ function GamesView({ username }: { username: string }) {
       <header className="flex flex-col gap-1">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h1 className="text-2xl font-bold">{t('games.title', { username })}</h1>
-          <a
-            href={routeHref({ name: 'puzzles', username })}
-            className="grid min-h-10 place-items-center rounded-lg bg-emerald-600 px-4 text-sm font-semibold text-white hover:bg-emerald-500"
-          >
-            ♞ {t('puzzles.open')}
-          </a>
+          <div className="flex gap-2">
+            <a
+              href={routeHref({ name: 'dashboard', username })}
+              className="grid min-h-10 place-items-center rounded-lg border border-slate-600 px-4 text-sm font-semibold text-slate-100 hover:border-slate-400"
+            >
+              {t('dashboard.open')}
+            </a>
+            <a
+              href={routeHref({ name: 'puzzles', username })}
+              className="grid min-h-10 place-items-center rounded-lg bg-emerald-600 px-4 text-sm font-semibold text-white hover:bg-emerald-500"
+            >
+              ♞ {t('puzzles.open')}
+            </a>
+          </div>
         </div>
         <SyncStatus sync={sync} syncedAt={syncedAt} username={username} onRefresh={onRefresh} />
       </header>

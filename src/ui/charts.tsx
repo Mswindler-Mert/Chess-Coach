@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react'
+import { useCallback, useState, type ReactNode } from 'react'
 import { niceTicks } from '../core/stats/ticks'
 import { t } from '../i18n'
 
@@ -7,11 +7,26 @@ const SERIES = '#059669'
 const GRID = '#1e293b'
 const SURFACE = '#0f172a'
 
-const W = 640
+// The SVG scales to its box, so a narrower drawing on phones keeps 11px text readable.
+const WIDE = 640
+const NARROW = 360
 const H = 220
 const PAD = { top: 16, right: 16, bottom: 28, left: 40 }
-const PLOT_W = W - PAD.left - PAD.right
 const PLOT_H = H - PAD.top - PAD.bottom
+
+/** Drawing width for the chart's container: narrow below 520px. */
+function useChartWidth(): [(el: HTMLDivElement | null) => () => void, number] {
+  const [width, setWidth] = useState(WIDE)
+  const ref = useCallback((el: HTMLDivElement | null) => {
+    if (!el) return () => {}
+    const update = () => setWidth(el.clientWidth < 520 ? NARROW : WIDE)
+    update()
+    const observer = new ResizeObserver(update)
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
+  return [ref, width]
+}
 
 export interface ChartPoint {
   /** Short label under the axis and in the table. */
@@ -66,9 +81,9 @@ function Frame({
   )
 }
 
-function Tooltip({ x, y, lines }: { x: number; y: number; lines: string[] }) {
+function Tooltip({ x, y, w, lines }: { x: number; y: number; w: number; lines: string[] }) {
   // Positioned in % of the SVG box so it scales with the chart.
-  const left = (x / W) * 100
+  const left = (x / w) * 100
   return (
     <div
       className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-full rounded-md border border-slate-700 bg-slate-950 px-2 py-1 text-xs whitespace-nowrap text-slate-100 shadow"
@@ -86,17 +101,19 @@ function Tooltip({ x, y, lines }: { x: number; y: number; lines: string[] }) {
 function YGrid({
   ticks,
   y,
+  w,
   digits,
 }: {
   ticks: number[]
   y: (v: number) => number
+  w: number
   digits: number
 }) {
   return (
     <>
       {ticks.map((tick) => (
         <g key={tick}>
-          <line x1={PAD.left} x2={W - PAD.right} y1={y(tick)} y2={y(tick)} stroke={GRID} />
+          <line x1={PAD.left} x2={w - PAD.right} y1={y(tick)} y2={y(tick)} stroke={GRID} />
           <text
             x={PAD.left - 6}
             y={y(tick)}
@@ -112,14 +129,22 @@ function YGrid({
   )
 }
 
-/** Labels for at most ~6 evenly spaced points, so they never collide. */
-function xLabelIndexes(n: number, max = 6): Set<number> {
-  if (n <= max) return new Set(Array.from({ length: n }, (_, i) => i))
-  const step = Math.ceil((n - 1) / (max - 1))
-  const set = new Set<number>()
-  for (let i = 0; i < n; i += step) set.add(i)
-  set.add(n - 1)
-  return set
+/**
+ * Labels for at most ~`max` evenly spaced points, so they never collide. A label equal to the one
+ * before it (several games on one day) is shown once, at its latest point.
+ */
+function xLabelIndexes(labels: readonly string[], max = 6): Set<number> {
+  const n = labels.length
+  const picked: number[] = []
+  const step = n <= max ? 1 : Math.ceil((n - 1) / (max - 1))
+  for (let i = 0; i < n; i += step) picked.push(i)
+  if (picked.at(-1) !== n - 1) picked.push(n - 1)
+  const kept: number[] = []
+  for (const i of picked) {
+    if (kept.length && labels[kept.at(-1) as number] === labels[i]) kept[kept.length - 1] = i
+    else kept.push(i)
+  }
+  return new Set(kept)
 }
 
 /** Columns from a zero baseline, one series, with hover tooltips. */
@@ -137,13 +162,15 @@ export function ColumnChart({
   digits?: number
 }) {
   const [hover, setHover] = useState<number | null>(null)
+  const [boxRef, W] = useChartWidth()
+  const PLOT_W = W - PAD.left - PAD.right
   const max = Math.max(...points.map((p) => p.value), 0)
   const ticks = niceTicks(0, max || 1)
   const top = ticks.at(-1) ?? 1
   const y = (v: number) => PAD.top + PLOT_H - (v / top) * PLOT_H
   const band = PLOT_W / Math.max(points.length, 1)
   const barW = Math.min(24, band - 2)
-  const labels = xLabelIndexes(points.length)
+  const labels = xLabelIndexes(points.map((p) => p.label))
   const hovered = hover !== null ? points[hover] : undefined
 
   return (
@@ -155,9 +182,9 @@ export function ColumnChart({
         rows: points.map((p) => [p.label, formatValue(p.value, digits)]),
       }}
     >
-      <div className="relative">
+      <div ref={boxRef} className="relative">
         <svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img" aria-label={title}>
-          <YGrid ticks={ticks} y={y} digits={digits} />
+          <YGrid ticks={ticks} y={y} w={W} digits={digits} />
           {points.map((p, i) => {
             const x = PAD.left + band * i + (band - barW) / 2
             const barTop = y(p.value)
@@ -196,6 +223,7 @@ export function ColumnChart({
         </svg>
         {hovered && hover !== null && (
           <Tooltip
+            w={W}
             x={PAD.left + band * hover + band / 2}
             y={y(hovered.value) - 6}
             lines={[
@@ -222,6 +250,8 @@ export function LineChart({
   valueLabel: string
 }) {
   const [hover, setHover] = useState<number | null>(null)
+  const [boxRef, W] = useChartWidth()
+  const PLOT_W = W - PAD.left - PAD.right
   const values = points.map((p) => p.value)
   const ticks = niceTicks(Math.min(...values), Math.max(...values))
   const lo = ticks[0] ?? 0
@@ -231,7 +261,10 @@ export function LineChart({
     PAD.left + (points.length > 1 ? (i / (points.length - 1)) * PLOT_W : PLOT_W / 2)
   const line = points.map((p, i) => `${i ? 'L' : 'M'}${x(i)},${y(p.value)}`).join('')
   const area = `${line}L${x(points.length - 1)},${PAD.top + PLOT_H}L${x(0)},${PAD.top + PLOT_H}Z`
-  const labels = xLabelIndexes(points.length, 5)
+  const labels = xLabelIndexes(
+    points.map((p) => p.label),
+    5,
+  )
   const last = points.length - 1
   const hovered = hover !== null ? points[hover] : undefined
 
@@ -252,9 +285,9 @@ export function LineChart({
         rows: points.map((p) => [p.label, formatValue(p.value, 0)]),
       }}
     >
-      <div className="relative">
+      <div ref={boxRef} className="relative">
         <svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img" aria-label={title}>
-          <YGrid ticks={ticks} y={y} digits={0} />
+          <YGrid ticks={ticks} y={y} w={W} digits={0} />
           <path d={area} fill={SERIES} opacity={0.1} />
           <path
             d={line}
@@ -317,6 +350,7 @@ export function LineChart({
         </svg>
         {hovered && hover !== null && (
           <Tooltip
+            w={W}
             x={x(hover)}
             y={y(hovered.value) - 8}
             lines={[`${formatValue(hovered.value, 0)} ${valueLabel}`, hovered.label]}
