@@ -131,7 +131,7 @@ Her aşama ayrı bir dal (branch) ve küçük commit'lerle yapılır. Bir aşama
 - [x] **M3 – Hatalarımdan bulmacalar:** Bulmaca ekranı + aralıklı tekrar
 - [x] **M4 – Panel:** İstatistikler ve grafikler
 - [x] **M5 – Motif etiketleme:** asili-tas, bedava-tasi-almadi, mat, kazanılmış oyunu kaçırma, zaman baskısı
-- [ ] **M6 – Açılış modülü**
+- [x] **M6 – Açılış modülü**
 - [ ] **M7 – Oyun sonu modülü**
 - [ ] **M8 – PWA ve mobil cilalama:** Kurulabilir uygulama, dokunmatik tahta, çevrimdışı çalışma
 - [ ] **Sonra:** Lichess desteği, İngilizce arayüz, Capacitor ile Android uygulaması, motif tespitinin genişletilmesi
@@ -323,3 +323,27 @@ Her aşama ayrı bir dal (branch) ve küçük commit'lerle yapılır. Bir aşama
   kaçtı 27, bedava taş alınmadı 16, zaman baskısı 8, mat kaçtı 4, mata düşme 2. Projenin varsayımı
   (en büyük sorun taş asmak) doğrulandı.
 - **Sonra (v2):** çatal, şiş, açmaz tespiti.
+
+### M6 – Açılış modülü (2026-11-21)
+- **Ekran:** `#/u/:kullanıcı/openings` (oyun listesinde "Açılışlar"). Ortak filtre (tempo + tarih aralığı).
+  Analiz gerektirmez; sadece oyunlar ve PGN'ler kullanılır (`db/openings.ts`).
+- **Açılış ailesi (`core/openings/stats.ts`, `openingFamily`):** Chess.com'un ayrıntılı adı, ilk
+  Opening/Defense/Defence/Game/Gambit/Attack/System kelimesine kadar kısaltılır ("Kings Pawn Opening Leonardis
+  Variation …" → "Kings Pawn Opening"). Böyle bir kelime yoksa hamle numarasından önceki en fazla 3 kelime.
+  Chess.com bazen aynı açılışa farklı ad veriyor ("Italian Game" / "Giuoco Piano Game"); birleştirilmedi.
+  Açılış adı olan oyunlar renk + aileye göre gruplanır: oyun, G/B/M, puan (galibiyet 1, beraberlik ½).
+- **Prensip kontrolleri (`core/openings/principles.ts`):** sadece standart başlangıç pozisyonu; kullanıcının
+  ilk 10 hamlesi (`OPENING_MOVES`):
+  - erken vezir: ilk 5 hamlede vezir oynandı.
+  - rok yok / geç rok: 10. hamleye kadar rok yok; hiç rok yoksa "rok yok", sonra yapıldıysa "geç rok".
+    Oyun 10 hamleden kısaysa bakılmaz.
+  - aynı taşı tekrar: bütün hafif taşlar çıkmadan at/fil/kale/vezir alış yapmadan tekrar oynandı (sayılır).
+  - kenar piyonu: a/h piyonunun alış olmayan hamleleri (sayılır).
+  - gelişmemiş taşlar: 10. hamlede en az 2 at/fil hiç oynamamış ve hâlâ başlangıç karesinde.
+  Her uyarı bir yarım hamle taşır; uyarı etiketleri oyunu o hamlede açar.
+- **Replay hamlelerine** `piece`, `capture`, `castle` alanları eklendi (`core/games/replay.ts`).
+- **Alıştırma:** "İlk 10 hamledeki hatalardan tekrar" ayrı bir ekran olmadı; açılış evresi seçili bulmacalara
+  kısayol (`#/u/:kullanıcı/puzzles/opening`, açılış = ilk 12 hamle).
+- **İlk sonuç (mswindler07, blitz + rapid, son 30 gün, 45 oyun):** aynı taşı tekrar %69, rok yok %27,
+  kenar piyonu %24, geç rok %18, erken vezir %11, gelişmemiş taşlar %9. "Aynı taşı tekrar" saldırıdan kaçan
+  taşı da sayıyor; fazla sık çıkarsa tehdit altındaki taşı hariç tutmayı düşün.
