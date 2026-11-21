@@ -120,6 +120,9 @@ export const tr = {
   'dashboard.trend.weekly': 'Haftalık ortalama',
   'dashboard.trend.monthly': 'Aylık ortalama',
   'dashboard.trend.unit': 'blunder/oyun',
+  'dashboard.tile.accuracy': 'Ortalama isabet',
+  'dashboard.accuracy.title': 'Oyun başına isabet',
+  'dashboard.accuracy.unit': 'isabet',
   'dashboard.games': '{count} oyun',
   'dashboard.phase.title': 'Evreye göre hatalar',
   'dashboard.phase.subtitle': 'Hata + blunder sayısı ve payı',
@@ -331,6 +334,13 @@ export const tr = {
   'viewer.analysis.better': 'Daha iyisi: {move}',
   'viewer.analysis.winChance': '{color} için kazanma şansı: %{before} → %{after}',
   'viewer.analysis.engine': 'Stockfish, derinlik {depth}',
+  'viewer.review.graph': 'Kazanma şansı (beyaz)',
+  'viewer.review.graphHint': 'Grafiğe dokunarak hamleye git.',
+  'viewer.review.keyMoments': 'Kritik anlar',
+  'viewer.review.noKeyMoments': 'Bu oyunda önemli bir hatan yok.',
+  'viewer.review.accuracy': 'İsabet {value}',
+  'viewer.review.bestArrow': 'Motorun önerisini okla göster',
+  'viewer.review.nextBest': 'Bu pozisyonda en iyisi: {move}',
 
   'footer.license': '{name} açık kaynaktır (GPL-3.0). Analiz motoru: Stockfish.',
 } as const

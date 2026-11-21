@@ -2,7 +2,9 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Chessboard } from 'react-chessboard'
 import { sideToMove } from '../../core/analysis/analyzeGame'
 import { formatScore, uciToSan } from '../../core/analysis/display'
+import { gameAccuracy, whiteWinPercents } from '../../core/analysis/accuracy'
 import { tagGame, type Motif } from '../../core/analysis/motifs'
+import { keyMoments } from '../../core/analysis/review'
 import type { MoveAnalysis } from '../../core/analysis/types'
 import type { Color, Game, PlayerInfo } from '../../core/games/model'
 import { buildReplay, clocksAt, fenAt, formatClock, type Replay } from '../../core/games/replay'
@@ -11,8 +13,9 @@ import { filterByDateRange, type GameFilter } from '../../core/games/filter'
 import { getGame, getGameFilter } from '../../db/games'
 import type { AnalysisRecord } from '../../db/schema'
 import { analysisRunner } from '../../engine/runner'
-import { t } from '../../i18n'
+import { formatNumber, formatPercent, t } from '../../i18n'
 import { ErrorChips, MotifChips, ProgressBar } from '../analysis'
+import { EvalGraph } from '../EvalGraph'
 import { MOVE_CLASS_TEXT, MOVE_SYMBOLS, useAnalysisRunner } from '../analysisStyles'
 import {
   endReasonLabel,
@@ -24,6 +27,7 @@ import {
 import { routeHref } from '../router'
 
 const LAST_MOVE_STYLE = { backgroundColor: 'rgba(250, 204, 21, 0.45)' }
+const BEST_ARROW = 'rgba(16, 185, 129, 0.85)'
 
 export function GamePage({
   username,
@@ -105,6 +109,18 @@ function ReplayView({
 }) {
   const total = replay.moves.length
   const [ply, setPly] = useState(() => Math.max(0, Math.min(total, initialPly)))
+  const [showArrow, setShowArrow] = useState(true)
+  const review = useMemo(
+    () =>
+      analysis
+        ? {
+            wins: whiteWinPercents(analysis),
+            accuracy: gameAccuracy(analysis),
+            motifs: tagGame(game, replay, analysis),
+          }
+        : null,
+    [analysis, game, replay],
+  )
   const go = (next: number) => setPly(Math.max(0, Math.min(total, next)))
 
   useEffect(() => {
@@ -133,6 +149,11 @@ function ReplayView({
   const showClocks = game.timeClass !== 'daily'
   const topColor: Color = game.userColor === 'white' ? 'black' : 'white'
   const reason = endReasonLabel(game.endReason)
+  // The engine's best move in the position on the board, as an arrow.
+  const bestMove = analysis && showArrow ? analysis.positions[ply]?.bestMove : null
+  const arrows = bestMove
+    ? [{ startSquare: bestMove.slice(0, 2), endSquare: bestMove.slice(2, 4), color: BEST_ARROW }]
+    : []
 
   return (
     <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
@@ -150,6 +171,7 @@ function ReplayView({
               boardOrientation: game.userColor,
               allowDragging: false,
               allowDrawingArrows: true,
+              arrows,
               squareStyles,
               animationDurationInMs: 150,
               darkSquareStyle: { backgroundColor: '#769656' },
@@ -163,6 +185,20 @@ function ReplayView({
           clock={showClocks ? clocks[game.userColor] : null}
         />
         <Controls ply={ply} total={total} go={go} />
+        {analysis && review && (
+          <>
+            <EvalGraph wins={review.wins} moves={analysis.moves} ply={ply} onSelect={go} />
+            <label className="flex items-center gap-2 self-start text-sm text-slate-300">
+              <input
+                type="checkbox"
+                checked={showArrow}
+                onChange={(e) => setShowArrow(e.target.checked)}
+                className="size-4 accent-emerald-500"
+              />
+              {t('viewer.review.bestArrow')}
+            </label>
+          </>
+        )}
       </div>
 
       <aside className="flex min-w-0 flex-1 flex-col gap-3">
@@ -189,8 +225,18 @@ function ReplayView({
             {t('viewer.openOnChessCom')} ↗
           </a>
         </div>
-        {analysis ? (
-          <MoveInsight game={game} replay={replay} analysis={analysis} ply={ply} />
+        {analysis && review ? (
+          <>
+            <MoveInsight
+              game={game}
+              replay={replay}
+              analysis={analysis}
+              ply={ply}
+              motifs={review.motifs}
+              accuracy={review.accuracy}
+            />
+            <KeyMoments game={game} analysis={analysis} motifs={review.motifs} go={go} ply={ply} />
+          </>
         ) : (
           <AnalyzePrompt game={game} />
         )}
@@ -262,11 +308,15 @@ function MoveInsight({
   replay,
   analysis,
   ply,
+  motifs,
+  accuracy,
 }: {
   game: Game
   replay: Replay
   analysis: AnalysisRecord
   ply: number
+  motifs: Motif[][]
+  accuracy: Record<Color, number | null>
 }) {
   const position = analysis.positions[ply]
   const fen = fenAt(replay, ply)
@@ -279,8 +329,8 @@ function MoveInsight({
   const better =
     isError && before?.bestMove ? uciToSan(fenAt(replay, ply - 1), before.bestMove) : null
   const moveNumber = Math.ceil(ply / 2)
-  const motifs = useMemo(() => tagGame(game, replay, analysis), [game, replay, analysis])
   const moveMotifs = ply > 0 ? (motifs[ply - 1] ?? []) : []
+  const nextBest = position?.bestMove ? uciToSan(fen, position.bestMove) : null
 
   return (
     <div className="flex flex-col gap-2 rounded-xl border border-slate-800 bg-slate-900 p-3 text-sm">
@@ -317,6 +367,9 @@ function MoveInsight({
       {better && (
         <p className="text-emerald-300">{t('viewer.analysis.better', { move: better })}</p>
       )}
+      {nextBest && (
+        <p className="text-slate-400">{t('viewer.review.nextBest', { move: nextBest })}</p>
+      )}
       {moveMotifs.length > 0 && (
         <div className="flex flex-col gap-1">
           <MotifChips motifs={moveMotifs} />
@@ -329,12 +382,74 @@ function MoveInsight({
             <span className={color === game.userColor ? 'text-slate-200' : 'text-slate-400'}>
               {game[color].username}
             </span>
-            <ErrorChips counts={analysis.summary[color]} />
+            <span className="flex items-center gap-3">
+              {accuracy[color] !== null && (
+                <span className="text-slate-300 tabular-nums">
+                  {t('viewer.review.accuracy', { value: formatNumber(accuracy[color] ?? 0, 1) })}
+                </span>
+              )}
+              <ErrorChips counts={analysis.summary[color]} />
+            </span>
           </p>
         ))}
         <p className="text-slate-500">{t('viewer.analysis.engine', { depth: analysis.depth })}</p>
       </div>
     </div>
+  )
+}
+
+/** The user's biggest mistakes of the game, each a button that jumps to the move. */
+function KeyMoments({
+  game,
+  analysis,
+  motifs,
+  ply,
+  go,
+}: {
+  game: Game
+  analysis: AnalysisRecord
+  motifs: Motif[][]
+  ply: number
+  go: (ply: number) => void
+}) {
+  const moments = keyMoments(analysis.moves, game.userColor)
+  return (
+    <section className="flex flex-col gap-2 rounded-xl border border-slate-800 bg-slate-900 p-3 text-sm">
+      <h2 className="font-semibold">{t('viewer.review.keyMoments')}</h2>
+      {moments.length === 0 ? (
+        <p className="text-slate-400">{t('viewer.review.noKeyMoments')}</p>
+      ) : (
+        <ul className="flex flex-col gap-1.5">
+          {moments.map((m) => {
+            const motif = motifs[m.ply - 1]?.[0]
+            return (
+              <li key={m.ply}>
+                <button
+                  type="button"
+                  onClick={() => go(m.ply)}
+                  aria-pressed={ply === m.ply}
+                  className={`flex w-full flex-wrap items-baseline gap-x-2 rounded-lg px-2 py-1.5 text-left hover:bg-slate-800 ${
+                    ply === m.ply ? 'bg-slate-800' : ''
+                  }`}
+                >
+                  <span className="font-mono">
+                    {Math.ceil(m.ply / 2)}
+                    {m.color === 'white' ? '.' : '…'} {m.san}
+                    <span className={MOVE_CLASS_TEXT[m.moveClass]}>
+                      {MOVE_SYMBOLS[m.moveClass]}
+                    </span>
+                  </span>
+                  <span className="text-slate-400 tabular-nums">
+                    {formatPercent(m.winBefore / 100)} → {formatPercent(m.winAfter / 100)}
+                  </span>
+                  {motif && <span className="text-xs text-amber-200">{t(`motif.${motif}`)}</span>}
+                </button>
+              </li>
+            )
+          })}
+        </ul>
+      )}
+    </section>
   )
 }
 

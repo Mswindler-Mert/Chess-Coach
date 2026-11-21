@@ -138,8 +138,12 @@ function Dashboard({ username }: { username: string }) {
             </section>
           )}
 
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
             <StatTile label={t('dashboard.tile.games')} value={String(summary.games)} />
+            <StatTile
+              label={t('dashboard.tile.accuracy')}
+              value={summary.accuracy === null ? '—' : formatNumber(summary.accuracy, 1)}
+            />
             <StatTile label={t('dashboard.tile.blunders')} value={fmt1(summary.blunders)} />
             <StatTile label={t('dashboard.tile.mistakes')} value={fmt1(summary.mistakes)} />
             <StatTile label={t('dashboard.tile.inaccuracies')} value={fmt1(summary.inaccuracies)} />
@@ -155,6 +159,22 @@ function Dashboard({ username }: { username: string }) {
                 value: p.blundersPerGame,
                 detail: t('dashboard.games', { count: p.games }),
               }))}
+            />
+          )}
+
+          {trend.some((p) => p.accuracy !== null) && (
+            <ColumnChart
+              title={t('dashboard.accuracy.title')}
+              subtitle={t(bucket === 'week' ? 'dashboard.trend.weekly' : 'dashboard.trend.monthly')}
+              valueLabel={t('dashboard.accuracy.unit')}
+              digits={0}
+              points={trend
+                .filter((p) => p.accuracy !== null)
+                .map((p) => ({
+                  label: (bucket === 'week' ? weekFormat : monthFormat).format(p.start),
+                  value: p.accuracy ?? 0,
+                  detail: t('dashboard.games', { count: p.games }),
+                }))}
             />
           )}
 

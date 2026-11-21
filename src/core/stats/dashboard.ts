@@ -1,3 +1,4 @@
+import { gameAccuracy } from '../analysis/accuracy'
 import { MOTIFS, type Motif } from '../analysis/motifs'
 import type { ClassCounts, GameAnalysis, MoveClass, Phase } from '../analysis/types'
 import type { DateRange } from '../games/filter'
@@ -19,6 +20,8 @@ export interface GameErrors {
   byPhase: Record<Phase, number>
   /** The user's mistakes + blunders per motif (a move can have several). */
   byMotif: Partial<Record<Motif, number>>
+  /** The user's game accuracy (0–100), null for a game without the user's moves. */
+  accuracy: number | null
 }
 
 /** `motifs` comes from `tagGame` (index = ply − 1); without it no motifs are counted. */
@@ -41,6 +44,7 @@ export function userErrors(
     counts: analysis.summary[game.userColor],
     byPhase,
     byMotif,
+    accuracy: gameAccuracy(analysis)[game.userColor],
   }
 }
 
@@ -56,9 +60,16 @@ export interface DashboardSummary {
   byColor: Record<Color, { games: number; errorsPerGame: number }>
   /** Mistakes + blunders with each motif, most frequent first; motifs never seen are left out. */
   byMotif: { motif: Motif; errors: number }[]
+  /** Mean game accuracy over games that have one; null when none do. */
+  accuracy: number | null
 }
 
 const avg = (total: number, n: number) => (n > 0 ? total / n : 0)
+
+function meanAccuracy(entries: readonly GameErrors[]): number | null {
+  const values = entries.map((e) => e.accuracy).filter((a): a is number => a !== null)
+  return values.length ? values.reduce((s, v) => s + v, 0) / values.length : null
+}
 
 export function summarize(entries: readonly GameErrors[]): DashboardSummary {
   const n = entries.length
@@ -93,6 +104,7 @@ export function summarize(entries: readonly GameErrors[]): DashboardSummary {
     byMotif: MOTIFS.map((motif) => ({ motif, errors: sum((e) => e.byMotif[motif] ?? 0) }))
       .filter((m) => m.errors > 0)
       .sort((a, b) => b.errors - a.errors),
+    accuracy: meanAccuracy(entries),
   }
 }
 
@@ -116,21 +128,25 @@ export interface TrendPoint {
   start: number
   games: number
   blundersPerGame: number
+  /** Mean accuracy of the period's games; null when none has one. */
+  accuracy: number | null
 }
 
 /** Blunders per game over time, oldest first; only periods with games appear. */
 export function blunderTrend(entries: readonly GameErrors[], bucket: Bucket): TrendPoint[] {
-  const groups = new Map<number, { games: number; blunders: number }>()
+  const groups = new Map<number, GameErrors[]>()
   for (const e of entries) {
     const key = bucketStart(e.endTime, bucket)
-    const g = groups.get(key) ?? { games: 0, blunders: 0 }
-    g.games++
-    g.blunders += e.counts.blunder
-    groups.set(key, g)
+    groups.set(key, [...(groups.get(key) ?? []), e])
   }
   return [...groups.entries()]
     .sort(([a], [b]) => a - b)
-    .map(([start, g]) => ({ start, games: g.games, blundersPerGame: g.blunders / g.games }))
+    .map(([start, list]) => ({
+      start,
+      games: list.length,
+      blundersPerGame: list.reduce((s, e) => s + e.counts.blunder, 0) / list.length,
+      accuracy: meanAccuracy(list),
+    }))
 }
 
 export interface RatingPoint {

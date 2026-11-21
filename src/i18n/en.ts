@@ -127,6 +127,9 @@ export const en: Record<MessageKey, string> = {
   'dashboard.trend.weekly': 'Weekly average',
   'dashboard.trend.monthly': 'Monthly average',
   'dashboard.trend.unit': 'blunders/game',
+  'dashboard.tile.accuracy': 'Average accuracy',
+  'dashboard.accuracy.title': 'Accuracy per game',
+  'dashboard.accuracy.unit': 'accuracy',
   'dashboard.games': '{count} games',
   'dashboard.phase.title': 'Mistakes by phase',
   'dashboard.phase.subtitle': 'Mistakes + blunders and their share',
@@ -340,6 +343,13 @@ export const en: Record<MessageKey, string> = {
   'viewer.analysis.better': 'Better was {move}',
   'viewer.analysis.winChance': 'Winning chances for {color}: {before}% → {after}%',
   'viewer.analysis.engine': 'Stockfish, depth {depth}',
+  'viewer.review.graph': 'Winning chances (White)',
+  'viewer.review.graphHint': 'Tap the graph to jump to a move.',
+  'viewer.review.keyMoments': 'Key moments',
+  'viewer.review.noKeyMoments': 'No significant mistakes in this game.',
+  'viewer.review.accuracy': 'Accuracy {value}',
+  'viewer.review.bestArrow': 'Show the engine’s move as an arrow',
+  'viewer.review.nextBest': 'Best move here: {move}',
 
   'footer.license': '{name} is open source (GPL-3.0). Analysis engine: Stockfish.',
 }

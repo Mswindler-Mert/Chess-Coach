@@ -25,6 +25,7 @@ function entry(over: Partial<GameErrors> & { endTime: number }): GameErrors {
     counts: { inaccuracy: 0, mistake: 0, blunder: 0 },
     byPhase: { opening: 0, middlegame: 0, endgame: 0 },
     byMotif: {},
+    accuracy: null,
     ...over,
   }
 }
@@ -49,6 +50,8 @@ describe('userErrors', () => {
     expect(errors.color).toBe('white')
     expect(errors.counts.blunder).toBe(1)
     expect(errors.byPhase).toEqual({ opening: 1, middlegame: 0, endgame: 0 })
+    expect(errors.accuracy).toBeGreaterThan(0)
+    expect(errors.accuracy).toBeLessThan(100)
   })
 })
 
@@ -97,6 +100,16 @@ describe('summarize', () => {
     ])
   })
 
+  it('averages accuracy over games that have one', () => {
+    const s = summarize([
+      entry({ endTime: 1, accuracy: 90 }),
+      entry({ endTime: 2, accuracy: 70 }),
+      entry({ endTime: 3, accuracy: null }),
+    ])
+    expect(s.accuracy).toBe(80)
+    expect(summarize([entry({ endTime: 1 })]).accuracy).toBeNull()
+  })
+
   it('handles no games', () => {
     const s = summarize([])
     expect(s.games).toBe(0)
@@ -132,9 +145,22 @@ describe('blunderTrend', () => {
       'week',
     )
     expect(trend).toEqual([
-      { start: Date.UTC(2026, 10, 9), games: 1, blundersPerGame: 4 },
-      { start: Date.UTC(2026, 10, 16), games: 2, blundersPerGame: 2 },
+      { start: Date.UTC(2026, 10, 9), games: 1, blundersPerGame: 4, accuracy: null },
+      { start: Date.UTC(2026, 10, 16), games: 2, blundersPerGame: 2, accuracy: null },
     ])
+  })
+
+  it('averages accuracy per period, skipping games without one', () => {
+    const trend = blunderTrend(
+      [
+        entry({ endTime: NOW, accuracy: 80 }),
+        entry({ endTime: NOW - DAY, accuracy: 60 }),
+        entry({ endTime: NOW - 2 * DAY, accuracy: null }),
+      ],
+      'week',
+    )
+    expect(trend).toHaveLength(1)
+    expect(trend[0]?.accuracy).toBe(70)
   })
 })
 

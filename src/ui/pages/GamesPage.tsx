@@ -31,7 +31,7 @@ import {
   type AnalysisSummary,
 } from '../../db/analyses'
 import { analysisRunner } from '../../engine/runner'
-import { t, type MessageKey } from '../../i18n'
+import { formatNumber, t, type MessageKey } from '../../i18n'
 import { ErrorChips, ProgressBar } from '../analysis'
 import { useAnalysisRunner } from '../analysisStyles'
 import {
@@ -469,7 +469,18 @@ function GameRow({
           </span>
         </div>
         <p className="truncate text-xs text-slate-400">{game.opening?.name ?? '—'}</p>
-        {summary && <ErrorChips counts={summary[game.userColor]} />}
+        {summary && (
+          <span className="flex items-center gap-3">
+            {summary.accuracy[game.userColor] !== null && (
+              <span className="text-xs text-slate-300 tabular-nums">
+                {t('viewer.review.accuracy', {
+                  value: formatNumber(summary.accuracy[game.userColor] ?? 0, 0),
+                })}
+              </span>
+            )}
+            <ErrorChips counts={summary.counts[game.userColor]} />
+          </span>
+        )}
       </div>
 
       <div className="flex shrink-0 flex-col items-end gap-0.5 text-xs text-slate-400">

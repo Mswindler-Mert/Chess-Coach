@@ -1,3 +1,4 @@
+import { gameAccuracy } from '../core/analysis/accuracy'
 import type { ClassCounts } from '../core/analysis/types'
 import type { Color } from '../core/games/model'
 import { db, type AnalysisRecord } from './schema'
@@ -8,7 +9,10 @@ export const ENGINE_NAME = 'stockfish-19-lite'
 export const DEPTH_OPTIONS = [10, 12, 14, 16] as const
 export const DEFAULT_DEPTH = 12
 
-export type AnalysisSummary = Record<Color, ClassCounts>
+export interface AnalysisSummary {
+  counts: Record<Color, ClassCounts>
+  accuracy: Record<Color, number | null>
+}
 
 export function getAnalysis(gameId: string): Promise<AnalysisRecord | undefined> {
   return db.analyses.get(gameId)
@@ -31,7 +35,9 @@ export async function listAnalysisSummaries(
   await db.analyses
     .where('username')
     .equals(username)
-    .each((record) => summaries.set(record.gameId, record.summary))
+    .each((record) =>
+      summaries.set(record.gameId, { counts: record.summary, accuracy: gameAccuracy(record) }),
+    )
   return summaries
 }
 
