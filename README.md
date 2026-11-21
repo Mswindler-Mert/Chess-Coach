@@ -5,13 +5,19 @@ bunlardan **kişisel alıştırmalar** (bulmaca, açılış, oyun sonu) üreten 
 
 - Hesap veya giriş yok: Chess.com kullanıcı adını girmen yeterli.
 - Her şey tarayıcında çalışır; oyunların ve analizlerin cihazında (IndexedDB) saklanır.
-- Mobil uyumlu; ileride kurulabilir uygulama (PWA) olacak.
+- Mobil uyumlu ve telefona uygulama olarak kurulabilir (PWA); kurulduktan sonra internet olmadan da
+  analiz, bulmaca ve oyun sonu çalışır (yeni oyunları çekmek için internet gerekir).
 
-> Durum: Erken geliştirme aşaması. Yol haritası için [CLAUDE.md](CLAUDE.md) dosyasına bak.
+> Durum: Erken sürüm; temel modüllerin hepsi çalışıyor. Yol haritası için [CLAUDE.md](CLAUDE.md) dosyasına bak.
 
 **Canlı sürüm:** https://mswindler-mert.github.io/Chess-Coach/
 
-## Planlanan özellikler
+### Telefona kurma
+
+- **Android (Chrome):** siteyi aç → menü (⋮) → **Uygulamayı yükle** / **Ana ekrana ekle**.
+- **iPhone (Safari):** siteyi aç → Paylaş → **Ana Ekrana Ekle**.
+
+## Özellikler
 
 | Modül                       | Ne yapar?                                                                       |
 | --------------------------- | ------------------------------------------------------------------------------- |
@@ -41,6 +47,9 @@ React + TypeScript (strict) + Vite · Tailwind CSS · Vitest · oxlint + Prettie
 
 Stockfish dosyaları `npm run dev` / `npm run build` öncesinde `node_modules/stockfish` içinden
 `public/stockfish/` klasörüne kopyalanır (`scripts/copy-engine.mjs`); bu klasör git'e girmez.
+
+Uygulama ikonları (`public/*.png`) `scripts/make-icons.ps1` ile Windows'un kendi çizim kütüphanesinden
+üretilir: `powershell -ExecutionPolicy Bypass -File scripts/make-icons.ps1`.
 
 ### Klasör yapısı
 

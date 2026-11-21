@@ -133,7 +133,7 @@ Her aşama ayrı bir dal (branch) ve küçük commit'lerle yapılır. Bir aşama
 - [x] **M5 – Motif etiketleme:** asili-tas, bedava-tasi-almadi, mat, kazanılmış oyunu kaçırma, zaman baskısı
 - [x] **M6 – Açılış modülü**
 - [x] **M7 – Oyun sonu modülü**
-- [ ] **M8 – PWA ve mobil cilalama:** Kurulabilir uygulama, dokunmatik tahta, çevrimdışı çalışma
+- [x] **M8 – PWA ve mobil cilalama:** Kurulabilir uygulama, dokunmatik tahta, çevrimdışı çalışma
 - [ ] **Sonra:** Lichess desteği, İngilizce arayüz, Capacitor ile Android uygulaması, motif tespitinin genişletilmesi
 
 ## Çalışma Kuralları (Claude Code için)
@@ -369,3 +369,28 @@ Her aşama ayrı bir dal (branch) ve küçük commit'lerle yapılır. Bir aşama
 - **İlerleme:** `settings.endgameProgress` (deneme sayısı, çözüldü mü, en az hamle). Dexie sürümü değişmedi.
 - **Dinamik i18n anahtarları** (`endgame.lesson|desc|hint.<id>`, `endgame.result.*`) `i18n/index.test.ts`
   ile kontrol edilir; yeni ders eklerken üç metni de ekle.
+
+### M8 – PWA ve mobil cilalama (2026-11-22)
+- **Yeni bağımlılık:** `vite-plugin-pwa` 2 (dev; teknoloji tablosunda planlıydı). Manifest + Workbox ile
+  service worker üretir. `npm audit` derleme aracındaki (workbox-build → minimatch) 4 orta seviye uyarı
+  gösteriyor; sitede çalışan koda girmiyor, `--force` ile düzeltilmedi.
+- **Service worker (`vite.config.ts`):** `registerType: 'autoUpdate'`; yeni sürüm arka planda iner ve
+  sayfa bir sonraki yüklemede (ya da etkinleşince otomatik yenilemeyle) güncellenir. Önbelleğe alınanlar:
+  uygulama kabuğu (js/css/html/ikonlar) ve **Stockfish** (`stockfish.js` + `.wasm`, ≈1.8 MB), böylece
+  kurulu uygulama çevrimdışı analiz, bulmaca ve oyun sonu çalıştırır. Chess.com istekleri hep ağa gider.
+  Hash yönlendirme olduğu için `navigateFallback: index.html` yeterli. Geliştirme sunucusunda SW yok.
+- **SW'yi kaldırmak gerekirse:** `selfDestroying: true` yapıp yayınla; kullanıcıların tarayıcısındaki SW
+  kendini siler. Önbellek sorunu şüphesinde ilk bakılacak yer burası.
+- **Kod bölme:** oyun/bulmaca/oyun sonu/açılış/panel sayfaları `React.lazy` ile ayrı parçalar
+  (`ui/lazyPage.ts`). Ana parça ~237 KB (500 KB uyarısı gitti). Yayından sonra eski sürümle açık kalan sekme
+  silinmiş bir parçayı yükleyemezse sayfa **bir kez** yenilenir (`sessionStorage` bayrağı, döngü olmaz).
+- **İkonlar:** `scripts/make-icons.ps1` (PowerShell + System.Drawing, bağımlılık yok, Windows): 192/512 PNG
+  (yuvarlatılmış), maskable 512 (tam zemin, at güvenli dairede), `apple-touch-icon.png` 180. Görünüm
+  favicon ile aynı (zümrüt zemin, beyaz ♞ — Segoe UI Symbol).
+- **iOS:** `apple-mobile-web-app-capable`, durum çubuğu `black` (`black-translucent` içeriği çubuğun altına
+  sokar, ek boşluk ayarı ister). Gövdeye `env(safe-area-inset-*)` boşlukları; düğme/bağlantılarda
+  `touch-action: manipulation` (çift dokunma yakınlaştırma gecikmesi yok). Tahtalar zaten `touch-none`.
+- **Doğrulama:** `npm run build` + `vite preview` (`.claude/launch.json` → "preview", port 4173): SW etkin,
+  manifest okunuyor, Stockfish önbellekte; sunucu kapalıyken sayfa açıldı, bulmaca sayfası yüklendi ve oyun sonu
+  dersinde motor hamle yaptı.
+- **Telefonda denenmedi:** kurulum ve dokunmatik his kullanıcı tarafından denenecek.
