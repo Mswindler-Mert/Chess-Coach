@@ -129,7 +129,7 @@ Her aşama ayrı bir dal (branch) ve küçük commit'lerle yapılır. Bir aşama
 - [x] **M1 – Oyunları çek:** Kullanıcı adı girişi, arşivleri sırayla çekme, IndexedDB, tempo filtresi, oyun listesi, oyunu tahtada izleme
 - [x] **M2 – Analiz motoru:** Stockfish worker, hamle başı değerlendirme, win%, sınıflandırma, evre tespiti, ilerleme çubuğu, testler
 - [x] **M3 – Hatalarımdan bulmacalar:** Bulmaca ekranı + aralıklı tekrar
-- [ ] **M4 – Panel:** İstatistikler ve grafikler
+- [x] **M4 – Panel:** İstatistikler ve grafikler
 - [ ] **M5 – Motif etiketleme:** asili-tas, bedava-tasi-almadi, mat, kazanılmış oyunu kaçırma, zaman baskısı
 - [ ] **M6 – Açılış modülü**
 - [ ] **M7 – Oyun sonu modülü**
@@ -278,3 +278,21 @@ Her aşama ayrı bir dal (branch) ve küçük commit'lerle yapılır. Bir aşama
   oyun adresine isteğe bağlı yarım hamle eklendi (`#/u/:kullanıcı/game/:id/:ply`).
 - **Bilinen:** Dexie sürümü yükselince eski sürümün açık olduğu başka bir sekme yükseltmeyi bekletebilir
   (geliştirmede HMR sonrası "hazırlanıyor"da kaldı, sayfa yenileyince düzeldi).
+
+### M4 – Panel (2026-11-21)
+- **Kapsam:** ortak filtre (tempo + tarih aralığı). İstatistikler sadece analiz edilmiş oyunlardan; reyting
+  grafiği filtredeki tüm puanlı oyunlardan. Saf hesaplar `core/stats/dashboard.ts`, yükleme `db/dashboard.ts`,
+  ekran `#/u/:kullanıcı/dashboard` (oyun listesinde "Panel" düğmesi).
+- **"Hata" sayımı:** evre/renk dağılımı ve odak konusu `mistake` + `blunder` sayar (bulmacalarla aynı);
+  inaccuracy sadece ortalama kutusunda.
+- **Trend:** oyun başına blunder; 30 gün / 3 ay için haftalık (Pazartesi, UTC), "Tümü" için aylık. Sadece oyun
+  olan dönemler gösterilir.
+- **Reyting:** filtredeki tempolardan puanlı oyunu olanlar arasında seçilir; varsayılan en çok oynanan
+  (`mainTimeClass`). CLAUDE.md "rapid" diyor ama kullanıcı çoğunlukla blitz oynuyor, bu yüzden seçilebilir.
+- **Odak konusu:** son 7 günde en çok hata + blunder olan evre (yoksa tüm aralık). Kısayol bulmacaları o evre
+  seçili açar: bulmaca adresine isteğe bağlı `focus` eklendi (`#/u/:kullanıcı/puzzles/:focus`).
+  M5'te motif gelince odak konusu motife dönecek.
+- **Grafikler (`ui/charts.tsx`):** bağımlılık yok, elle SVG. Tek seri rengi `#059669` (dataviz doğrulayıcısı,
+  koyu yüzey `#0f172a`: açıklık bandı + kontrast geçti). Sütun: ≤ 24 px, üstü 4 px yuvarlak; çizgi 2 px + hafif
+  alan; fareyle/dokunmayla ipucu; her grafikte "Tablo olarak göster". Kap genişliği < 520 px ise çizim 360
+  birim genişlikte (yazılar telefonda okunur kalsın). Eksen değerleri `core/stats/ticks.ts` (`niceTicks`).
