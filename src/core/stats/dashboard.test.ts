@@ -24,6 +24,7 @@ function entry(over: Partial<GameErrors> & { endTime: number }): GameErrors {
     color: 'white',
     counts: { inaccuracy: 0, mistake: 0, blunder: 0 },
     byPhase: { opening: 0, middlegame: 0, endgame: 0 },
+    byMotif: {},
     ...over,
   }
 }
@@ -82,6 +83,18 @@ describe('summarize', () => {
       white: { games: 1, errorsPerGame: 3 },
       black: { games: 1, errorsPerGame: 1 },
     })
+  })
+
+  it('ranks motifs by frequency', () => {
+    const s = summarize([
+      entry({ endTime: 1, byMotif: { 'hanging-piece': 3, 'time-pressure': 1 } }),
+      entry({ endTime: 2, byMotif: { 'time-pressure': 1, 'missed-mate': 1 } }),
+    ])
+    expect(s.byMotif).toEqual([
+      { motif: 'hanging-piece', errors: 3 },
+      { motif: 'time-pressure', errors: 2 },
+      { motif: 'missed-mate', errors: 1 },
+    ])
   })
 
   it('handles no games', () => {
@@ -156,7 +169,7 @@ describe('weeklyFocus', () => {
       [phaseErrors(NOW - DAY, 1, 3), phaseErrors(NOW - 20 * DAY, 9, 0)],
       NOW,
     )
-    expect(focus).toEqual({ phase: 'endgame', errors: 3, thisWeek: true })
+    expect(focus).toEqual({ kind: 'phase', phase: 'endgame', errors: 3, thisWeek: true })
   })
 
   it('falls back to the whole range when the week was clean', () => {
@@ -164,7 +177,20 @@ describe('weeklyFocus', () => {
       [phaseErrors(NOW - DAY, 0, 0), phaseErrors(NOW - 20 * DAY, 2, 1)],
       NOW,
     )
-    expect(focus).toEqual({ phase: 'opening', errors: 2, thisWeek: false })
+    expect(focus).toEqual({ kind: 'phase', phase: 'opening', errors: 2, thisWeek: false })
+  })
+
+  it('prefers the most frequent motif, ties going to the higher priority', () => {
+    const withMotifs = (endTime: number, byMotif: GameErrors['byMotif']) =>
+      entry({ endTime, byPhase: { opening: 5, middlegame: 0, endgame: 0 }, byMotif })
+    const focus = weeklyFocus(
+      [
+        withMotifs(NOW - DAY, { 'time-pressure': 2, 'hanging-piece': 2 }),
+        withMotifs(NOW - 2 * DAY, { 'missed-mate': 1 }),
+      ],
+      NOW,
+    )
+    expect(focus).toEqual({ kind: 'motif', motif: 'hanging-piece', errors: 2, thisWeek: true })
   })
 
   it('returns null without errors', () => {

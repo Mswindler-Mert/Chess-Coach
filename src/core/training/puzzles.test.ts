@@ -62,6 +62,7 @@ describe('generatePuzzles', () => {
       color: 'white',
       phase: 'opening',
       moveClass: 'mistake',
+      motifs: [],
       played: { uci: 'd2d3', san: 'd3' },
       solution: { uci: 'e4d5', san: 'exd5' },
       bestScore: { type: 'cp', value: 0 },
@@ -139,16 +140,23 @@ describe('filterPuzzles', () => {
   const base = generatePuzzles(game, replay, analysis)[0] as Puzzle
   const puzzles: Puzzle[] = [
     base,
-    { ...base, id: 'b', color: 'black', phase: 'endgame' },
-    { ...base, id: 'c', phase: 'middlegame' },
+    { ...base, id: 'b', color: 'black', phase: 'endgame', motifs: ['hanging-piece'] },
+    { ...base, id: 'c', phase: 'middlegame', motifs: ['time-pressure', 'hanging-piece'] },
   ]
 
   it('filters by phase and colour', () => {
     expect(filterPuzzles(puzzles, ALL_PUZZLES)).toHaveLength(3)
-    expect(filterPuzzles(puzzles, { phase: 'endgame', color: 'all' }).map((p) => p.id)).toEqual([
+    expect(filterPuzzles(puzzles, { ...ALL_PUZZLES, phase: 'endgame' }).map((p) => p.id)).toEqual([
       'b',
     ])
-    expect(filterPuzzles(puzzles, { phase: 'all', color: 'white' })).toHaveLength(2)
-    expect(filterPuzzles(puzzles, { phase: 'opening', color: 'black' })).toEqual([])
+    expect(filterPuzzles(puzzles, { ...ALL_PUZZLES, color: 'white' })).toHaveLength(2)
+    expect(filterPuzzles(puzzles, { ...ALL_PUZZLES, phase: 'opening', color: 'black' })).toEqual([])
+  })
+
+  it('filters by any of a puzzle’s motifs', () => {
+    expect(
+      filterPuzzles(puzzles, { ...ALL_PUZZLES, motif: 'hanging-piece' }).map((p) => p.id),
+    ).toEqual(['b', 'c'])
+    expect(filterPuzzles(puzzles, { ...ALL_PUZZLES, motif: 'missed-mate' })).toEqual([])
   })
 })

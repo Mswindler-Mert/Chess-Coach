@@ -1,3 +1,4 @@
+import { MOTIFS, type Motif } from '../analysis/motifs'
 import type { ClassCounts, GameAnalysis, MoveClass, Phase } from '../analysis/types'
 import type { DateRange } from '../games/filter'
 import type { Color, Game, TimeClass } from '../games/model'
@@ -16,19 +17,30 @@ export interface GameErrors {
   counts: ClassCounts
   /** The user's mistakes + blunders per phase. */
   byPhase: Record<Phase, number>
+  /** The user's mistakes + blunders per motif (a move can have several). */
+  byMotif: Partial<Record<Motif, number>>
 }
 
-export function userErrors(game: Game, analysis: GameAnalysis): GameErrors {
+/** `motifs` comes from `tagGame` (index = ply − 1); without it no motifs are counted. */
+export function userErrors(
+  game: Game,
+  analysis: GameAnalysis,
+  motifs: readonly Motif[][] = [],
+): GameErrors {
   const byPhase: Record<Phase, number> = { opening: 0, middlegame: 0, endgame: 0 }
-  for (const move of analysis.moves) {
-    if (move.color === game.userColor && SERIOUS.includes(move.moveClass)) byPhase[move.phase]++
-  }
+  const byMotif: Partial<Record<Motif, number>> = {}
+  analysis.moves.forEach((move, index) => {
+    if (move.color !== game.userColor || !SERIOUS.includes(move.moveClass)) return
+    byPhase[move.phase]++
+    for (const motif of motifs[index] ?? []) byMotif[motif] = (byMotif[motif] ?? 0) + 1
+  })
   return {
     gameId: game.id,
     endTime: game.endTime,
     color: game.userColor,
     counts: analysis.summary[game.userColor],
     byPhase,
+    byMotif,
   }
 }
 
@@ -42,6 +54,8 @@ export interface DashboardSummary {
   byPhase: Record<Phase, { errors: number; share: number }>
   /** Games and mistakes + blunders per game, per colour played. */
   byColor: Record<Color, { games: number; errorsPerGame: number }>
+  /** Mistakes + blunders with each motif, most frequent first; motifs never seen are left out. */
+  byMotif: { motif: Motif; errors: number }[]
 }
 
 const avg = (total: number, n: number) => (n > 0 ? total / n : 0)
@@ -76,6 +90,9 @@ export function summarize(entries: readonly GameErrors[]): DashboardSummary {
       PHASES.map((p) => [p, { errors: phaseTotals[p], share: avg(phaseTotals[p], allErrors) }]),
     ) as DashboardSummary['byPhase'],
     byColor: { white: colorStats('white'), black: colorStats('black') },
+    byMotif: MOTIFS.map((motif) => ({ motif, errors: sum((e) => e.byMotif[motif] ?? 0) }))
+      .filter((m) => m.errors > 0)
+      .sort((a, b) => b.errors - a.errors),
   }
 }
 
@@ -138,26 +155,43 @@ export function mainTimeClass(games: readonly Game[]): TimeClass | null {
   return best
 }
 
-export interface Focus {
-  phase: Phase
-  errors: number
-  /** True when the last 7 days had errors; otherwise the whole range was used. */
-  thisWeek: boolean
+export type Focus =
+  | { kind: 'motif'; motif: Motif; errors: number; thisWeek: boolean }
+  | { kind: 'phase'; phase: Phase; errors: number; thisWeek: boolean }
+
+function topMotif(list: readonly GameErrors[]) {
+  let best: { motif: Motif; errors: number } | null = null
+  for (const motif of MOTIFS) {
+    const errors = list.reduce((s, e) => s + (e.byMotif[motif] ?? 0), 0)
+    if (errors > 0 && (!best || errors > best.errors)) best = { motif, errors }
+  }
+  return best
 }
 
-/** "This week's focus": the phase with the most mistakes + blunders in the last 7 days. */
+function topPhase(list: readonly GameErrors[]) {
+  let best: { phase: Phase; errors: number } | null = null
+  for (const phase of PHASES) {
+    const errors = list.reduce((s, e) => s + e.byPhase[phase], 0)
+    if (errors > 0 && (!best || errors > best.errors)) best = { phase, errors }
+  }
+  return best
+}
+
+/**
+ * "This week's focus": the most frequent motif among the user's mistakes + blunders in the last
+ * 7 days (ties go to the higher-priority motif). Without motifs, the phase with the most errors.
+ * A clean week falls back to the whole range.
+ */
 export function weeklyFocus(entries: readonly GameErrors[], now: number): Focus | null {
   const recent = entries.filter((e) => e.endTime >= now - 7 * DAY_MS)
-  const pick = (list: readonly GameErrors[]) => {
-    let best: { phase: Phase; errors: number } | null = null
-    for (const phase of PHASES) {
-      const errors = list.reduce((s, e) => s + e.byPhase[phase], 0)
-      if (errors > 0 && (!best || errors > best.errors)) best = { phase, errors }
-    }
-    return best
+  for (const [list, thisWeek] of [
+    [recent, true],
+    [entries, false],
+  ] as const) {
+    const motif = topMotif(list)
+    if (motif) return { kind: 'motif', ...motif, thisWeek }
+    const phase = topPhase(list)
+    if (phase) return { kind: 'phase', ...phase, thisWeek }
   }
-  const week = pick(recent)
-  if (week) return { ...week, thisWeek: true }
-  const all = pick(entries)
-  return all ? { ...all, thisWeek: false } : null
+  return null
 }

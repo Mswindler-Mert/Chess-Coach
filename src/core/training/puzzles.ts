@@ -1,6 +1,7 @@
 import { Chess } from 'chess.js'
 import type { PositionRequest } from '../analysis/analyzeGame'
 import { uciToSan } from '../analysis/display'
+import { tagGame, type Motif } from '../analysis/motifs'
 import type { GameAnalysis, MoveClass, Phase, PositionEval, Score } from '../analysis/types'
 import { winPercent } from '../analysis/winPercent'
 import type { Color, Game } from '../games/model'
@@ -35,6 +36,8 @@ export interface Puzzle {
   color: Color
   phase: Phase
   moveClass: MoveClass
+  /** Why the game move was bad, main motif first (may be empty). */
+  motifs: Motif[]
   /** What the user played in the game, and the engine's best move. */
   played: PuzzleMove
   solution: PuzzleMove
@@ -74,6 +77,7 @@ export function pvToSan(fen: string, pv: readonly string[], maxPlies = pv.length
 export function generatePuzzles(game: Game, replay: Replay, analysis: GameAnalysis): Puzzle[] {
   if (analysis.moves.length !== replay.moves.length) return []
   const puzzles: Puzzle[] = []
+  const motifs = tagGame(game, replay, analysis)
   for (const move of analysis.moves) {
     if (move.color !== game.userColor || !PUZZLE_CLASSES.includes(move.moveClass)) continue
     const index = move.ply - 1
@@ -94,6 +98,7 @@ export function generatePuzzles(game: Game, replay: Replay, analysis: GameAnalys
       color: move.color,
       phase: move.phase,
       moveClass: move.moveClass,
+      motifs: motifs[index] ?? [],
       played: { uci: move.uci, san: move.san },
       solution: { uci: before.bestMove, san: solutionSan },
       bestScore: before.score,
@@ -140,14 +145,16 @@ export function checkAnswer(
 export interface PuzzleFilter {
   phase: Phase | 'all'
   color: Color | 'all'
+  motif: Motif | 'all'
 }
 
-export const ALL_PUZZLES: PuzzleFilter = { phase: 'all', color: 'all' }
+export const ALL_PUZZLES: PuzzleFilter = { phase: 'all', color: 'all', motif: 'all' }
 
 export function filterPuzzles(puzzles: readonly Puzzle[], filter: PuzzleFilter): Puzzle[] {
   return puzzles.filter(
     (p) =>
       (filter.phase === 'all' || p.phase === filter.phase) &&
-      (filter.color === 'all' || p.color === filter.color),
+      (filter.color === 'all' || p.color === filter.color) &&
+      (filter.motif === 'all' || p.motifs.includes(filter.motif)),
   )
 }
