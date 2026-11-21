@@ -22,6 +22,15 @@ describe('openingFamily', () => {
     expect(openingFamily('Giuoco Piano Game 4.O O Nf6 5.d3 O O')).toBe('Italian Game')
   })
 
+  it('takes the part before the colon in Lichess names', () => {
+    expect(openingFamily('Scandinavian Defense: Mieses-Kotroc Variation')).toBe(
+      'Scandinavian Defense',
+    )
+    expect(openingFamily('Four Knights Game: Italian Variation')).toBe('Four Knights Game')
+    expect(openingFamily('Sicilian Defense: Closed, Grand Prix Attack')).toBe('Sicilian Defense')
+    expect(openingFamily("Queen's Indian Accelerated")).toBe("Queen's Indian Accelerated")
+  })
+
   it('falls back to the words before the moves', () => {
     expect(openingFamily('Ruy Lopez 3...a6')).toBe('Ruy Lopez')
     expect(openingFamily('Caro Kann Exchange Panov Attack')).toBe('Caro Kann Exchange Panov Attack')

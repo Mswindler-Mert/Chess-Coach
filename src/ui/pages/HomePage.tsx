@@ -105,7 +105,7 @@ export function HomePage() {
             }}
             aria-invalid={invalid}
             aria-describedby={invalid ? 'username-error' : undefined}
-            placeholder={t('home.username.placeholder')}
+            placeholder={t(`home.username.placeholder.${site}`)}
             className="min-h-11 flex-1 rounded-lg border border-slate-700 bg-slate-950 px-3 text-base outline-none focus:border-emerald-500 aria-invalid:border-rose-500"
           />
           <button

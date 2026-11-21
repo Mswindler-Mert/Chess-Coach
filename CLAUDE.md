@@ -134,7 +134,7 @@ Her aşama ayrı bir dal (branch) ve küçük commit'lerle yapılır. Bir aşama
 - [x] **M6 – Açılış modülü**
 - [x] **M7 – Oyun sonu modülü**
 - [x] **M8 – PWA ve mobil cilalama:** Kurulabilir uygulama, dokunmatik tahta, çevrimdışı çalışma
-- [ ] **Sonra:** (ayrıntılı plan: ROADMAP.md) Lichess desteği, ~~İngilizce arayüz~~ (yapıldı), Capacitor ile Android uygulaması, motif tespitinin genişletilmesi (çatal, açmaz ve şiş yapıldı; sıradaki fikirler: çifte saldırı, aşırı yüklü taş)
+- [ ] **Sonra:** (ayrıntılı plan: ROADMAP.md) ~~Lichess desteği~~ (yapıldı, R6), ~~İngilizce arayüz~~ (yapıldı), Capacitor ile Android uygulaması, motif tespitinin genişletilmesi (çatal, açmaz ve şiş yapıldı; sıradaki fikirler: çifte saldırı, aşırı yüklü taş)
 
 ## Çalışma Kuralları (Claude Code için)
 
@@ -498,3 +498,27 @@ Her aşama ayrı bir dal (branch) ve küçük commit'lerle yapılır. Bir aşama
   YYYY-MM-DD.json`, Blob + `download`) ve yükle (dosya seçici). Yükleme sonrası sayfa yenilenir.
 - **Boyut:** 62 analiz ≈ 1 MB.
 - **Telefonda denenmedi:** iOS'ta kurulu uygulamada indirme paylaşım menüsü açabilir.
+
+### R6 – Lichess desteği (2026-11-21)
+- **Hesap anahtarı (`core/api/source.ts`):** Chess.com adı olduğu gibi (`hikaru`), Lichess önekli
+  (`lichess:thibault`). Chess.com adlarında `:` olamaz, çakışma yok; mevcut Chess.com verileri ve adresleri
+  değişmedi, Dexie sürümü artmadı. Adres `#/u/lichess%3Athibault`. Lichess oyun kimliği `li-<id>` (Chess.com
+  uuid'leri onaltılık, `li-` ile başlamaz). `sourceOf`, `accountName`, `accountKey`, `gameSource` yardımcıları;
+  ekranda `accountLabel` → "thibault (Lichess)". Lichess adı: 2–30 karakter, harf/rakamla başlar.
+- **Senkronizasyon (`core/api/lichess.ts`, `syncLichess`):** tek akış (NDJSON) isteği
+  `/api/games/user/{u}?pgnInJson&clocks&opening&sort=dateDesc`. İlk seferde en yeni
+  `LICHESS_FIRST_SYNC_MAX = 2000` oyun, sonra en yeni kayıtlı oyunun `endTime`'ından sonrası (`since`).
+  Oyunlar geldikçe 100'lük paketlerle kaydedilir; ilerleme "N oyun alındı" (toplam bilinmiyor, `total: 0`).
+  Son kontrol zamanı `archives` tablosunda `lichess:games` satırı. Hatalar Chess.com'la aynı türler
+  (`ChessComError`: not-found / rate-limited / network / http), arayüz ikisini aynı işler.
+- **Dönüştürme (`normalizeLichessGame`):** sadece `standard` varyant ve gerçekten oynanmış oyunlar
+  (created/started/aborted/noStart atlanır). Tempo: ultraBullet+bullet → bullet, classical → rapid,
+  correspondence → daily. Durumlar Chess.com kodlarına çevrilir (mate → checkmated, resign → resigned,
+  outoftime → timeout, timeout (rakip ayrıldı) → abandoned, draw → agreed…). Açılış adı Lichess'in
+  `opening.name`'i, bağlantı `lichess.org/opening/<eco>`. PGN'deki `[%clk]` biçimi Chess.com'la aynı.
+- **Açılış ailesi:** Lichess adları "Aile: Varyant" biçiminde; `openingFamily` iki noktadan öncesini alır.
+- **Canlı deneme (2026-11-21):** `thibault` hesabı tarayıcıda: 1985 oyun çekildi, otomatik analiz başladı,
+  oyun sayfası (saatler, isabet, grafik, "Lichess'te aç"), açılışlar ve olmayan kullanıcı hatası doğru.
+  Gerçek API'ye karşı ayrıca bir kerelik test: 231 oyunun hepsi PGN'den tekrar oynatılabildi.
+- **Bilinen:** Aynı kişi iki sitede ayrı hesap sayılır (veriler birleştirilmez). Yedek dosyası `usernames`
+  alanında önekli anahtarları taşır; biçim değişmedi (`BACKUP_VERSION` 1).

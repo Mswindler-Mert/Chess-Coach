@@ -53,14 +53,14 @@ Analiz bilgisayarda hızlı; sonuçları telefona taşımak için.
 - [x] İçe aktar: dosya seç → doğrula → birleştir (mevcut kayıtlarla çakışmada yenisi kalır).
 - [x] Saf doğrulama/birleştirme fonksiyonları + testler.
 
-## R6 – Lichess desteği (kod `r6-lichess` dalında; canlı Lichess hesabıyla tarayıcı denemesi, belgeler ve main birleştirmesi kaldı)
+## R6 – Lichess desteği
 
 Arkadaşlardan Lichess kullananlar için.
 
-- [ ] Lichess API istemcisi (`/api/games/user/{u}`, NDJSON, PGN + saatler), sırayla ve hız sınırına uyarak.
-- [ ] Ortak oyun modeline dönüştürme (tempo, sonuç, açılış adı), kaynak alanı (`chesscom` / `lichess`).
-- [ ] Ana sayfada site seçimi; adres `#/u/:kullanıcı` → kaynak önekli kimlik; mevcut veriler bozulmadan.
-- [ ] Testler (fixture NDJSON).
+- [x] Lichess API istemcisi (`/api/games/user/{u}`, NDJSON, PGN + saatler), sırayla ve hız sınırına uyarak.
+- [x] Ortak oyun modeline dönüştürme (tempo, sonuç, açılış adı), kaynak alanı (`chesscom` / `lichess`).
+- [x] Ana sayfada site seçimi; adres `#/u/:kullanıcı` → kaynak önekli kimlik; mevcut veriler bozulmadan.
+- [x] Testler (fixture NDJSON).
 
 ## R7 – Küçük ama kalıcı iyileştirmeler
 

@@ -1,15 +1,16 @@
 # ♞ Satranç Antrenörü (Chess Coach)
 
-Chess.com oyunlarını çekip **Stockfish** ile analiz eden, **sık yaptığın hataları** bulan ve
+**Chess.com** ya da **Lichess** oyunlarını çekip **Stockfish** ile analiz eden, **sık yaptığın hataları** bulan ve
 bunlardan **kişisel alıştırmalar** (bulmaca, açılış, oyun sonu) üreten bir web uygulaması.
 
-- Hesap veya giriş yok: Chess.com kullanıcı adını girmen yeterli.
+- Hesap veya giriş yok: siteyi (Chess.com / Lichess) seçip kullanıcı adını girmen yeterli.
 - Türkçe ve İngilizce arayüz (üst menüdeki düğmeyle değişir). / Turkish and English UI.
 - Her şey tarayıcında çalışır; oyunların ve analizlerin cihazında (IndexedDB) saklanır.
 - Mobil uyumlu ve telefona uygulama olarak kurulabilir (PWA); kurulduktan sonra internet olmadan da
   analiz, bulmaca ve oyun sonu çalışır (yeni oyunları çekmek için internet gerekir).
 
-> Durum: Erken sürüm; temel modüllerin hepsi çalışıyor. Yol haritası için [CLAUDE.md](CLAUDE.md) dosyasına bak.
+> Durum: Erken sürüm; temel modüllerin hepsi çalışıyor. Yol haritası için [ROADMAP.md](ROADMAP.md) ve
+> [CLAUDE.md](CLAUDE.md) dosyalarına bak.
 
 **Canlı sürüm:** https://mswindler-mert.github.io/Chess-Coach/
 

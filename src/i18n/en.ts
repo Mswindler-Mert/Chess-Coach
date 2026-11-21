@@ -9,7 +9,8 @@ export const en: Record<MessageKey, string> = {
     'Analyse your Chess.com or Lichess games, find the mistakes you repeat, and learn from them.',
 
   'home.username.label': 'Your username',
-  'home.username.placeholder': 'e.g. hikaru',
+  'home.username.placeholder.chesscom': 'e.g. hikaru',
+  'home.username.placeholder.lichess': 'e.g. thibault',
   'home.username.submit': 'Get my games',
   'home.username.invalid': 'This username is not valid.',
   'home.continue': 'Continue as {username}',
@@ -203,7 +204,7 @@ export const en: Record<MessageKey, string> = {
   'openings.table.less': 'Show less',
   'openings.recent.title': 'Principle warnings in recent games',
   'openings.note':
-    'Opening names come from Chess.com and are grouped by family. Score: win 1, draw ½. Time controls and date range come from the game list.',
+    'Opening names come from the game’s site (Chess.com or Lichess) and are grouped by family. Score: win 1, draw ½. Time controls and date range come from the game list.',
   'principle.early-queen': 'Early queen',
   'principle.no-castling': 'No castling',
   'principle.late-castling': 'Late castling',

@@ -6,7 +6,8 @@ export const tr = {
     'Chess.com ya da Lichess oyunlarını analiz et, sık yaptığın hataları bul, onlardan öğren.',
 
   'home.username.label': 'Kullanıcı adın',
-  'home.username.placeholder': 'ör. hikaru',
+  'home.username.placeholder.chesscom': 'ör. hikaru',
+  'home.username.placeholder.lichess': 'ör. thibault',
   'home.username.submit': 'Oyunlarımı getir',
   'home.username.invalid': 'Bu kullanıcı adı geçerli değil.',
   'home.continue': '{username} olarak devam et',
@@ -196,7 +197,7 @@ export const tr = {
   'openings.table.less': 'Daha az göster',
   'openings.recent.title': 'Son oyunlarda prensip uyarıları',
   'openings.note':
-    'Açılış adları Chess.com’dan gelir ve ana aileye göre gruplanır. Puan: galibiyet 1, beraberlik ½. Tempo ve tarih aralığı oyun listesindeki seçimden gelir.',
+    'Açılış adları oyunun sitesinden (Chess.com ya da Lichess) gelir ve ana aileye göre gruplanır. Puan: galibiyet 1, beraberlik ½. Tempo ve tarih aralığı oyun listesindeki seçimden gelir.',
   'principle.early-queen': 'Erken vezir çıkışı',
   'principle.no-castling': 'Rok yok',
   'principle.late-castling': 'Geç rok',

@@ -22,8 +22,15 @@ const FAMILY_ALIASES: Record<string, string> = {
  * "Kings Pawn Opening Leonardis Variation 2...Nf6 3.Nf3" → "Kings Pawn Opening",
  * "Pirc Defense Modern Defense Geller System" → "Pirc Defense".
  * Without such a word, the words before the first move number (at most three).
+ * Lichess names are "Family: Variation, Line" ("Sicilian Defense: Alapin Variation"); the part
+ * before the colon is the family.
  */
 export function openingFamily(name: string): string {
+  const colon = name.indexOf(':')
+  if (colon > 0) {
+    const family = name.slice(0, colon).trim()
+    return FAMILY_ALIASES[family] ?? family
+  }
   const words = name.split(/\s+/).filter(Boolean)
   const end = words.findIndex((w) => FAMILY_ENDINGS.has(w))
   if (end >= 0) {
