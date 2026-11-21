@@ -11,17 +11,17 @@ import {
   weeklyFocus,
 } from '../../core/stats/dashboard'
 import { loadDashboard, type DashboardData } from '../../db/dashboard'
-import { t } from '../../i18n'
+import { formatNumber, formatPercent, locale, t } from '../../i18n'
 import { BarList, ColumnChart, LineChart, StatTile } from '../charts'
 import { timeClassLabel } from '../format'
 import { routeHref } from '../router'
 
-const weekFormat = new Intl.DateTimeFormat('tr-TR', { day: 'numeric', month: 'short' })
-const monthFormat = new Intl.DateTimeFormat('tr-TR', { month: 'short', year: '2-digit' })
-const dayFormat = new Intl.DateTimeFormat('tr-TR', { day: 'numeric', month: 'short' })
+const weekFormat = new Intl.DateTimeFormat(locale(), { day: 'numeric', month: 'short' })
+const monthFormat = new Intl.DateTimeFormat(locale(), { month: 'short', year: '2-digit' })
+const dayFormat = new Intl.DateTimeFormat(locale(), { day: 'numeric', month: 'short' })
 
-const fmt1 = (v: number) => v.toLocaleString('tr-TR', { maximumFractionDigits: 1 })
-const pct = (v: number) => `%${Math.round(v * 100)}`
+const fmt1 = (v: number) => formatNumber(v, 1)
+const pct = formatPercent
 
 export function DashboardPage({ username: rawUsername }: { username: string }) {
   const username = normalizeUsername(rawUsername)

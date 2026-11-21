@@ -1,7 +1,10 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
+import { getLanguage } from './i18n'
 import App from './ui/App'
+
+document.documentElement.lang = getLanguage()
 
 const root = document.getElementById('root')
 if (!root) throw new Error('Root element #root not found')

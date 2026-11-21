@@ -4,7 +4,7 @@ import { opponentOf, type Color } from '../../core/games/model'
 import { summarizePrinciples } from '../../core/openings/principles'
 import { openingStats, type OpeningStats } from '../../core/openings/stats'
 import { loadOpenings, type OpeningsData } from '../../db/openings'
-import { t } from '../../i18n'
+import { formatPercent, t } from '../../i18n'
 import { BarList } from '../charts'
 import { formatDate, timeClassLabel } from '../format'
 import { routeHref } from '../router'
@@ -14,7 +14,7 @@ const TOP_OPENINGS = 8
 /** Recent games listed with their principle warnings. */
 const RECENT_WARNINGS = 10
 
-const pct = (v: number) => `%${Math.round(v * 100)}`
+const pct = formatPercent
 
 export function OpeningsPage({ username: rawUsername }: { username: string }) {
   const username = normalizeUsername(rawUsername)

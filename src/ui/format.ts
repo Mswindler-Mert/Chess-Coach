@@ -1,13 +1,14 @@
-import { hasMessage, t } from '../i18n'
+import { hasMessage, locale, t } from '../i18n'
 import type { Outcome, TimeClass } from '../core/games/model'
 import { formatTimeControl } from '../core/games/timeControl'
 
-const dateFormat = new Intl.DateTimeFormat('tr-TR', {
+// Formats follow the UI language; switching language reloads the page.
+const dateFormat = new Intl.DateTimeFormat(locale(), {
   day: 'numeric',
   month: 'short',
   year: 'numeric',
 })
-const dateTimeFormat = new Intl.DateTimeFormat('tr-TR', {
+const dateTimeFormat = new Intl.DateTimeFormat(locale(), {
   day: 'numeric',
   month: 'short',
   year: 'numeric',

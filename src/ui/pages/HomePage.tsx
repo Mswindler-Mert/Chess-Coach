@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { normalizeUsername } from '../../core/api/username'
 import { getLastUsername, setLastUsername } from '../../db/games'
 import { t, type MessageKey } from '../../i18n'
+import { LanguageSwitch } from '../LanguageSwitch'
 import { navigate, routeHref } from '../router'
 
 const features: { icon: string; title: MessageKey; body: MessageKey }[] = [
@@ -34,6 +35,9 @@ export function HomePage() {
   return (
     <div className="flex flex-col gap-8">
       <header className="flex flex-col gap-3">
+        <div className="self-end">
+          <LanguageSwitch />
+        </div>
         <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
           <span aria-hidden="true" className="mr-2">
             ♛

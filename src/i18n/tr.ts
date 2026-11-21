@@ -9,7 +9,7 @@ export const tr = {
   'home.username.submit': 'Oyunlarımı getir',
   'home.username.invalid': 'Geçerli bir Chess.com kullanıcı adı yaz (3–25 harf, rakam, _ veya -).',
   'home.continue': '{username} olarak devam et',
-  'home.features.title': 'Neler olacak?',
+  'home.features.title': 'Neler var?',
   'home.features.puzzles.title': 'Hatalarımdan bulmacalar',
   'home.features.puzzles.body': 'Yaptığın hatalardan önceki pozisyonda en iyi hamleyi bul.',
   'home.features.openings.title': 'Açılış',
@@ -23,6 +23,7 @@ export const tr = {
   'nav.home': 'Ana sayfa',
   'nav.changeUser': 'Kullanıcı değiştir',
   'nav.backToGames': 'Oyunlara dön',
+  'nav.language': 'Dil',
 
   'sync.running': 'Chess.com’dan oyunlar çekiliyor…',
   'sync.progress': '{done}/{total} ay çekildi',

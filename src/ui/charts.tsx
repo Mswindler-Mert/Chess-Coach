@@ -1,6 +1,6 @@
 import { useCallback, useState, type ReactNode } from 'react'
 import { niceTicks } from '../core/stats/ticks'
-import { t } from '../i18n'
+import { formatNumber, t } from '../i18n'
 
 // One series colour, validated (dataviz validator) on the dark chart surface #0f172a.
 const SERIES = '#059669'
@@ -37,7 +37,7 @@ export interface ChartPoint {
 }
 
 function formatValue(v: number, digits: number) {
-  return v.toLocaleString('tr-TR', { maximumFractionDigits: digits })
+  return formatNumber(v, digits)
 }
 
 function Frame({

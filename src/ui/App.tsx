@@ -1,5 +1,6 @@
 import { Suspense } from 'react'
 import { t } from '../i18n'
+import { LanguageSwitch } from './LanguageSwitch'
 import { lazyPage } from './lazyPage'
 import { GamesPage } from './pages/GamesPage'
 import { HomePage } from './pages/HomePage'
@@ -26,12 +27,15 @@ export default function App() {
               </span>
               {t('app.title')}
             </a>
-            <a
-              href={routeHref({ name: 'home' })}
-              className="text-sm text-slate-400 hover:text-slate-200"
-            >
-              {t('nav.changeUser')}
-            </a>
+            <div className="flex items-center gap-3">
+              <a
+                href={routeHref({ name: 'home' })}
+                className="text-sm text-slate-400 hover:text-slate-200"
+              >
+                {t('nav.changeUser')}
+              </a>
+              <LanguageSwitch />
+            </div>
           </div>
         </nav>
       )}
