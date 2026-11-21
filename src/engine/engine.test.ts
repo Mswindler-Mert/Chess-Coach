@@ -1,7 +1,9 @@
 import { createRequire } from 'node:module'
 import { afterAll, describe, expect, it } from 'vitest'
-import { fixtureGame } from '../../tests/helpers'
+import { fixtureGame, OWNER } from '../../tests/helpers'
 import { analyzeGame } from '../core/analysis/analyzeGame'
+import { tagGame } from '../core/analysis/motifs'
+import { normalizeGame, type Game } from '../core/games/model'
 import { buildReplay } from '../core/games/replay'
 import { UciEngine, type EngineTransport } from './engine'
 
@@ -75,5 +77,11 @@ describe('UciEngine with Stockfish', { timeout: 60_000 }, () => {
     const black = analysis.summary.black
     expect(black.mistake + black.blunder).toBeGreaterThan(0)
     expect(analysis.moves.at(-1)?.winAfter).toBe(100)
+
+    // 7… Qg5?? (ply 14) puts the queen where 8. Bxg5 takes it for free.
+    const game = normalizeGame(fixtureGame('ce051fa6'), OWNER) as Game
+    const tags = tagGame(game, replay, analysis)
+    expect(analysis.moves[13]?.san).toBe('Qg5')
+    expect(tags[13]).toContain('hanging-piece')
   })
 })
