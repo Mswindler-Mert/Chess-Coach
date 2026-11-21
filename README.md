@@ -4,6 +4,7 @@ Chess.com oyunlarını çekip **Stockfish** ile analiz eden, **sık yaptığın 
 bunlardan **kişisel alıştırmalar** (bulmaca, açılış, oyun sonu) üreten bir web uygulaması.
 
 - Hesap veya giriş yok: Chess.com kullanıcı adını girmen yeterli.
+- Türkçe ve İngilizce arayüz (üst menüdeki düğmeyle değişir). / Turkish and English UI.
 - Her şey tarayıcında çalışır; oyunların ve analizlerin cihazında (IndexedDB) saklanır.
 - Mobil uyumlu ve telefona uygulama olarak kurulabilir (PWA); kurulduktan sonra internet olmadan da
   analiz, bulmaca ve oyun sonu çalışır (yeni oyunları çekmek için internet gerekir).

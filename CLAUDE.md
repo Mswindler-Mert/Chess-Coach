@@ -134,7 +134,7 @@ Her aşama ayrı bir dal (branch) ve küçük commit'lerle yapılır. Bir aşama
 - [x] **M6 – Açılış modülü**
 - [x] **M7 – Oyun sonu modülü**
 - [x] **M8 – PWA ve mobil cilalama:** Kurulabilir uygulama, dokunmatik tahta, çevrimdışı çalışma
-- [ ] **Sonra:** Lichess desteği, İngilizce arayüz, Capacitor ile Android uygulaması, motif tespitinin genişletilmesi (çatal, açmaz ve şiş yapıldı; sıradaki fikirler: çifte saldırı, aşırı yüklü taş)
+- [ ] **Sonra:** Lichess desteği, ~~İngilizce arayüz~~ (yapıldı), Capacitor ile Android uygulaması, motif tespitinin genişletilmesi (çatal, açmaz ve şiş yapıldı; sıradaki fikirler: çifte saldırı, aşırı yüklü taş)
 
 ## Çalışma Kuralları (Claude Code için)
 
@@ -413,3 +413,14 @@ Her aşama ayrı bir dal (branch) ve küçük commit'lerle yapılır. Bir aşama
   `missed-pin` ("Açmaz kaçtı"), `allowed-skewer` ("Şişe düşme"), `missed-skewer` ("Şiş kaçtı"); kurallar
   çatalla aynı (asılı taş durumunda rakibin ilk cevabı / taş kazandıran en iyi hamle). `motifsForMove` sonucu
   artık `MOTIFS` sırasına göre sıralanır. İlk sonuç: açmaza düşme 2, açmaz kaçtı 2, şiş kaçtı 1.
+
+### İngilizce arayüz (2026-11-22)
+- **Sözlük:** `src/i18n/en.ts`, tipi `Record<MessageKey, string>`: Türkçede olan her anahtar İngilizcede de
+  olmak zorunda (eksik/fazla anahtar tip hatası). `i18n/index.test.ts` iki dilde `{yer tutucuların}` aynı
+  olduğunu ve boş metin olmadığını kontrol eder. **Yeni metin eklerken ikisine de ekle.**
+- **Varsayılan Türkçe;** seçim cihaz başına `localStorage` (`chess-coach:language`). `t()` senkron kaldı,
+  dil değişince sayfa yeniden yüklenir (bağlam/abonelik gerekmedi). Düğme (`ui/LanguageSwitch.tsx`) üst menüde
+  ve ana sayfada; diğer dilin adını gösterir. `<html lang>` açılışta ayarlanır. Manifest Türkçe kaldı.
+- **Biçimler dile göre:** `locale()` (`tr-TR` / `en-GB`), `formatPercent` ("%45" / "45%"), `formatNumber`.
+  Kodda `'tr-TR'` ya da elle `%` yazma; bunları kullan.
+- **Bilinen:** İngilizcede çoğul eki yok ("1 games" gibi). Gerekirse `Intl.PluralRules` ile `t`'ye çoğul desteği ekle.
