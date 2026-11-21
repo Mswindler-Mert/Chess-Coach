@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { ChessComError } from '../../core/api/chesscom'
 import type { SyncProgress } from '../../core/api/sync'
+import { accountName, sourceOf } from '../../core/api/source'
 import { normalizeUsername } from '../../core/api/username'
 import {
   ALL_TIME_CLASSES,
@@ -37,6 +38,7 @@ import { formatNumber, t, type MessageKey } from '../../i18n'
 import { ErrorChips, ProgressBar } from '../analysis'
 import { useAnalysisRunner } from '../analysisStyles'
 import {
+  accountLabel,
   formatDate,
   formatDateTime,
   outcomeStyles,
@@ -55,9 +57,9 @@ type SyncState =
   | { status: 'done' }
   | { status: 'error'; message: MessageKey }
 
-function errorMessage(error: unknown): MessageKey {
+function errorMessage(error: unknown, username: string): MessageKey {
   if (error instanceof ChessComError) {
-    if (error.kind === 'not-found') return 'sync.error.notFound'
+    if (error.kind === 'not-found') return `sync.error.notFound.${sourceOf(username)}`
     if (error.kind === 'rate-limited') return 'sync.error.rateLimited'
     if (error.kind === 'network') return 'sync.error.network'
   }
@@ -108,7 +110,9 @@ function GamesView({ username }: { username: string }) {
         await reload()
         setSync({ status: 'done' })
       })
-      .catch((error: unknown) => setSync({ status: 'error', message: errorMessage(error) }))
+      .catch((error: unknown) =>
+        setSync({ status: 'error', message: errorMessage(error, username) }),
+      )
       // New (or, offline, already stored) games get analysed if automatic analysis is on.
       .finally(() => void autoAnalyzeAfterSync(username))
   }, [username, reload])
@@ -162,7 +166,9 @@ function GamesView({ username }: { username: string }) {
     <div className="flex flex-col gap-5">
       <header className="flex flex-col gap-1">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h1 className="text-2xl font-bold">{t('games.title', { username })}</h1>
+          <h1 className="text-2xl font-bold">
+            {t('games.title', { username: accountLabel(username) })}
+          </h1>
           <div className="flex flex-wrap gap-2">
             <a
               href={routeHref({ name: 'hanging', username })}
@@ -312,9 +318,14 @@ function SyncStatus({
     return (
       <div className="flex flex-col gap-2" role="status">
         <p className="text-sm text-slate-300">
-          {t('sync.running')}{' '}
+          {t(`sync.running.${sourceOf(username)}`)}{' '}
           {progress && progress.total > 0 && (
             <span className="text-slate-400">{t('sync.progress', { ...progress })}</span>
+          )}
+          {progress && progress.total === 0 && progress.done > 0 && (
+            <span className="text-slate-400">
+              {t('sync.progressGames', { done: progress.done })}
+            </span>
           )}
         </p>
         <div className="h-1.5 overflow-hidden rounded-full bg-slate-800">
@@ -331,7 +342,7 @@ function SyncStatus({
     <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
       {sync.status === 'error' ? (
         <p className="text-rose-400" role="alert">
-          {t(sync.message, { username })}
+          {t(sync.message, { username: accountName(username) })}
         </p>
       ) : (
         <p className="text-slate-400">

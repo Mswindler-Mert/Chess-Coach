@@ -2,12 +2,13 @@
 export const tr = {
   'app.title': 'Satranç Antrenörü',
   'app.loading': 'Yükleniyor…',
-  'app.tagline': 'Chess.com oyunlarını analiz et, sık yaptığın hataları bul, onlardan öğren.',
+  'app.tagline':
+    'Chess.com ya da Lichess oyunlarını analiz et, sık yaptığın hataları bul, onlardan öğren.',
 
-  'home.username.label': 'Chess.com kullanıcı adın',
+  'home.username.label': 'Kullanıcı adın',
   'home.username.placeholder': 'ör. hikaru',
   'home.username.submit': 'Oyunlarımı getir',
-  'home.username.invalid': 'Geçerli bir Chess.com kullanıcı adı yaz (3–25 harf, rakam, _ veya -).',
+  'home.username.invalid': 'Bu kullanıcı adı geçerli değil.',
   'home.continue': '{username} olarak devam et',
   'home.features.title': 'Neler var?',
   'home.features.puzzles.title': 'Hatalarımdan bulmacalar',
@@ -25,14 +26,12 @@ export const tr = {
   'nav.backToGames': 'Oyunlara dön',
   'nav.language': 'Dil',
 
-  'sync.running': 'Chess.com’dan oyunlar çekiliyor…',
   'sync.progress': '{done}/{total} ay çekildi',
   'sync.upToDate': 'Oyunlar güncel.',
   'sync.lastSynced': 'Son güncelleme: {time}',
   'sync.refresh': 'Yenile',
-  'sync.error.notFound': '“{username}” Chess.com’da bulunamadı. Kullanıcı adını kontrol et.',
   'sync.error.rateLimited':
-    'Chess.com şu an çok fazla istek aldığını söylüyor. Biraz sonra tekrar dene.',
+    'Site şu an çok fazla istek aldığını söylüyor. Bir dakika sonra tekrar dene.',
   'sync.error.network': 'Bağlantı kurulamadı. İnternetini kontrol edip tekrar dene.',
   'sync.error.other': 'Oyunlar çekilirken bir hata oldu. Tekrar dene.',
 
@@ -329,6 +328,20 @@ export const tr = {
   'backup.error.version': 'Bu yedek başka bir sürümden; desteklenmiyor.',
   'backup.error.shape': 'Yedek dosyası bozuk görünüyor.',
 
+  'home.site.label': 'Oyunların nerede?',
+  'home.username.invalid.chesscom':
+    'Geçerli bir Chess.com kullanıcı adı yaz (3–25 harf, rakam, _ veya -).',
+  'home.username.invalid.lichess':
+    'Geçerli bir Lichess kullanıcı adı yaz (2–30 harf, rakam, _ veya -).',
+  'sync.running.chesscom': 'Chess.com’dan oyunlar çekiliyor…',
+  'sync.running.lichess': 'Lichess’ten oyunlar çekiliyor…',
+  'sync.progressGames': '{done} oyun alındı',
+  'sync.error.notFound.chesscom':
+    '“{username}” Chess.com’da bulunamadı. Kullanıcı adını kontrol et.',
+  'sync.error.notFound.lichess': '“{username}” Lichess’te bulunamadı. Kullanıcı adını kontrol et.',
+  'viewer.open.chesscom': 'Chess.com’da aç',
+  'viewer.open.lichess': 'Lichess’te aç',
+
   'charts.table': 'Tablo olarak göster',
   'charts.period': 'Dönem',
   'charts.date': 'Tarih',
@@ -378,7 +391,6 @@ export const tr = {
   'viewer.prev': 'Önceki hamle',
   'viewer.next': 'Sonraki hamle',
   'viewer.last': 'Sona git',
-  'viewer.openOnChessCom': 'Chess.com’da aç',
   'viewer.keyboardHint': 'İpucu: ← → tuşlarıyla hamleler arasında gezinebilirsin.',
   'viewer.analysis.none': 'Bu oyun henüz analiz edilmedi.',
   'viewer.analysis.analyze': 'Bu oyunu analiz et',

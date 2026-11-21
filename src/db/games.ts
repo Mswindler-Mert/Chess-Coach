@@ -1,4 +1,7 @@
+import { Dexie } from 'dexie'
 import { defaultHttpDeps } from '../core/api/chesscom'
+import { syncLichess, type LichessStore } from '../core/api/lichess'
+import { sourceOf } from '../core/api/source'
 import { syncGames, type SyncProgress, type SyncResult, type SyncStore } from '../core/api/sync'
 import {
   DEFAULT_DATE_RANGE,
@@ -28,6 +31,33 @@ export function createSyncStore(username: string, database: ChessCoachDb = db): 
   }
 }
 
+/** The archives row that records when a Lichess account was last checked. */
+const LICHESS_SYNC_URL = 'lichess:games'
+
+export function createLichessStore(account: string, database: ChessCoachDb = db): LichessStore {
+  return {
+    async newestEndTime() {
+      const newest = await database.games
+        .where('[username+endTime]')
+        .between([account, Dexie.minKey], [account, Dexie.maxKey])
+        .last()
+      return newest?.endTime ?? null
+    },
+    async saveGames(games, fetchedAt) {
+      await database.transaction('rw', database.games, database.archives, async () => {
+        await database.games.bulkPut(games)
+        const previous = await database.archives.get([account, LICHESS_SYNC_URL])
+        await database.archives.put({
+          username: account,
+          url: LICHESS_SYNC_URL,
+          fetchedAt,
+          rawGameCount: (previous?.rawGameCount ?? 0) + games.length,
+        })
+      })
+    },
+  }
+}
+
 type ProgressListener = (progress: SyncProgress) => void
 
 const inFlight = new Map<
@@ -36,7 +66,7 @@ const inFlight = new Map<
 >()
 
 /**
- * Downloads new games of `username` from Chess.com into IndexedDB.
+ * Downloads new games of `username` (a Chess.com name or a "lichess:" key) into IndexedDB.
  * Concurrent calls for the same user share one run, so requests never go out in parallel.
  */
 export function syncUserGames(
@@ -46,12 +76,23 @@ export function syncUserGames(
   let entry = inFlight.get(username)
   if (!entry) {
     const listeners = new Set<ProgressListener>()
-    const promise = syncGames(username, {
-      ...defaultHttpDeps,
-      store: createSyncStore(username),
-      now: () => Date.now(),
-      onProgress: (progress) => listeners.forEach((listener) => listener(progress)),
-    }).finally(() => inFlight.delete(username))
+    const onProgress = (progress: SyncProgress) =>
+      listeners.forEach((listener) => listener(progress))
+    const run =
+      sourceOf(username) === 'lichess'
+        ? syncLichess(username, {
+            fetch: (url, init) => globalThis.fetch(url, init),
+            now: () => Date.now(),
+            store: createLichessStore(username),
+            onProgress: notify,
+          })
+        : syncGames(username, {
+            ...defaultHttpDeps,
+            store: createSyncStore(username),
+            now: () => Date.now(),
+            onProgress: notify,
+          })
+    const promise = run.finally(() => inFlight.delete(username))
     entry = { promise, listeners }
     inFlight.set(username, entry)
   }

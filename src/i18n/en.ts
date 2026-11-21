@@ -5,12 +5,13 @@ import type { MessageKey } from './tr'
 export const en: Record<MessageKey, string> = {
   'app.title': 'Chess Coach',
   'app.loading': 'Loading…',
-  'app.tagline': 'Analyse your Chess.com games, find the mistakes you repeat, and learn from them.',
+  'app.tagline':
+    'Analyse your Chess.com or Lichess games, find the mistakes you repeat, and learn from them.',
 
-  'home.username.label': 'Your Chess.com username',
+  'home.username.label': 'Your username',
   'home.username.placeholder': 'e.g. hikaru',
   'home.username.submit': 'Get my games',
-  'home.username.invalid': 'Enter a valid Chess.com username (3–25 letters, digits, _ or -).',
+  'home.username.invalid': 'This username is not valid.',
   'home.continue': 'Continue as {username}',
   'home.features.title': 'What’s inside?',
   'home.features.puzzles.title': 'Puzzles from my mistakes',
@@ -30,13 +31,11 @@ export const en: Record<MessageKey, string> = {
   'nav.backToGames': 'Back to games',
   'nav.language': 'Language',
 
-  'sync.running': 'Fetching games from Chess.com…',
   'sync.progress': '{done}/{total} months fetched',
   'sync.upToDate': 'Games are up to date.',
   'sync.lastSynced': 'Last update: {time}',
   'sync.refresh': 'Refresh',
-  'sync.error.notFound': '“{username}” was not found on Chess.com. Check the username.',
-  'sync.error.rateLimited': 'Chess.com says it is getting too many requests. Try again in a bit.',
+  'sync.error.rateLimited': 'The site says it is getting too many requests. Try again in a minute.',
   'sync.error.network': 'Could not connect. Check your internet connection and try again.',
   'sync.error.other': 'Something went wrong while fetching games. Try again.',
 
@@ -338,6 +337,18 @@ export const en: Record<MessageKey, string> = {
   'backup.error.version': 'This backup is from an unsupported version.',
   'backup.error.shape': 'The backup file looks damaged.',
 
+  'home.site.label': 'Where are your games?',
+  'home.username.invalid.chesscom':
+    'Enter a valid Chess.com username (3–25 letters, digits, _ or -).',
+  'home.username.invalid.lichess': 'Enter a valid Lichess username (2–30 letters, digits, _ or -).',
+  'sync.running.chesscom': 'Fetching games from Chess.com…',
+  'sync.running.lichess': 'Fetching games from Lichess…',
+  'sync.progressGames': '{done} games received',
+  'sync.error.notFound.chesscom': '“{username}” was not found on Chess.com. Check the username.',
+  'sync.error.notFound.lichess': '“{username}” was not found on Lichess. Check the username.',
+  'viewer.open.chesscom': 'Open on Chess.com',
+  'viewer.open.lichess': 'Open on Lichess',
+
   'charts.table': 'Show as table',
   'charts.period': 'Period',
   'charts.date': 'Date',
@@ -387,7 +398,6 @@ export const en: Record<MessageKey, string> = {
   'viewer.prev': 'Previous move',
   'viewer.next': 'Next move',
   'viewer.last': 'Go to end',
-  'viewer.openOnChessCom': 'Open on Chess.com',
   'viewer.keyboardHint': 'Tip: use the ← → keys to step through the moves.',
   'viewer.analysis.none': 'This game is not analysed yet.',
   'viewer.analysis.analyze': 'Analyse this game',

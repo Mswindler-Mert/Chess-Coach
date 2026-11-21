@@ -1,3 +1,4 @@
+import { accountName, SITE_NAMES, sourceOf } from '../core/api/source'
 import { hasMessage, locale, t } from '../i18n'
 import type { Outcome, TimeClass } from '../core/games/model'
 import { formatTimeControl } from '../core/games/timeControl'
@@ -33,4 +34,10 @@ export const outcomeStyles: Record<Outcome, string> = {
   win: 'bg-emerald-600 text-white',
   loss: 'bg-rose-600 text-white',
   draw: 'bg-slate-500 text-white',
+}
+
+/** "hikaru" for Chess.com, "thibault (Lichess)" for Lichess. */
+export function accountLabel(account: string): string {
+  const name = accountName(account)
+  return sourceOf(account) === 'lichess' ? `${name} (${SITE_NAMES.lichess})` : name
 }

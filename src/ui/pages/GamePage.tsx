@@ -9,6 +9,7 @@ import { keyMoments } from '../../core/analysis/review'
 import type { MoveAnalysis } from '../../core/analysis/types'
 import type { Color, Game, PlayerInfo } from '../../core/games/model'
 import { buildReplay, clocksAt, fenAt, formatClock, type Replay } from '../../core/games/replay'
+import { gameSource } from '../../core/api/source'
 import { getAnalysis } from '../../db/analyses'
 import { filterByDateRange, type GameFilter } from '../../core/games/filter'
 import { getGame, getGameFilter } from '../../db/games'
@@ -245,7 +246,7 @@ function ReplayView({
             rel="noreferrer"
             className="self-start text-emerald-400 hover:underline"
           >
-            {t('viewer.openOnChessCom')} ↗
+            {t(`viewer.open.${gameSource(game.id)}`)} ↗
           </a>
         </div>
         {analysis && review ? (

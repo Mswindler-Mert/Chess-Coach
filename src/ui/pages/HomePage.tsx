@@ -1,7 +1,9 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { normalizeUsername } from '../../core/api/username'
+import { SITE_NAMES, SOURCES, sourceOf, type Source } from '../../core/api/source'
+import { normalizeAccount } from '../../core/api/username'
 import { getLastUsername, setLastUsername } from '../../db/games'
 import { t, type MessageKey } from '../../i18n'
+import { accountLabel } from '../format'
 import { LanguageSwitch } from '../LanguageSwitch'
 import { navigate, routeHref } from '../router'
 
@@ -16,14 +18,22 @@ export function HomePage() {
   const [input, setInput] = useState('')
   const [invalid, setInvalid] = useState(false)
   const [lastUsername, setLast] = useState<string | null>(null)
+  const [site, setSite] = useState<Source>('chesscom')
 
   useEffect(() => {
-    getLastUsername().then(setLast, () => setLast(null))
+    getLastUsername().then(
+      (last) => {
+        setLast(last)
+        // Start on the site the user used last time.
+        if (last) setSite(sourceOf(last))
+      },
+      () => setLast(null),
+    )
   }, [])
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault()
-    const username = normalizeUsername(input)
+    const username = normalizeAccount(site, input)
     if (!username) {
       setInvalid(true)
       return
@@ -52,6 +62,31 @@ export function HomePage() {
         className="flex flex-col gap-2 rounded-xl border border-slate-800 bg-slate-900 p-4"
         onSubmit={onSubmit}
       >
+        <fieldset className="flex flex-col gap-2">
+          <legend className="mb-1 text-sm font-medium text-slate-300">
+            {t('home.site.label')}
+          </legend>
+          <div className="flex gap-2">
+            {SOURCES.map((source) => (
+              <button
+                key={source}
+                type="button"
+                aria-pressed={site === source}
+                onClick={() => {
+                  setSite(source)
+                  setInvalid(false)
+                }}
+                className={`min-h-10 rounded-full border px-4 text-sm font-medium ${
+                  site === source
+                    ? 'border-emerald-500 bg-emerald-600/20 text-emerald-200'
+                    : 'border-slate-700 text-slate-400 hover:border-slate-500'
+                }`}
+              >
+                {SITE_NAMES[source]}
+              </button>
+            ))}
+          </div>
+        </fieldset>
         <label htmlFor="username" className="text-sm font-medium text-slate-300">
           {t('home.username.label')}
         </label>
@@ -82,7 +117,7 @@ export function HomePage() {
         </div>
         {invalid && (
           <p id="username-error" className="text-sm text-rose-400">
-            {t('home.username.invalid')}
+            {t(`home.username.invalid.${site}`)}
           </p>
         )}
         {lastUsername && (
@@ -90,7 +125,7 @@ export function HomePage() {
             href={routeHref({ name: 'games', username: lastUsername })}
             className="self-start text-sm text-emerald-400 underline-offset-2 hover:underline"
           >
-            {t('home.continue', { username: lastUsername })} →
+            {t('home.continue', { username: accountLabel(lastUsername) })} →
           </a>
         )}
       </form>

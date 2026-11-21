@@ -53,7 +53,7 @@ Analiz bilgisayarda hızlı; sonuçları telefona taşımak için.
 - [x] İçe aktar: dosya seç → doğrula → birleştir (mevcut kayıtlarla çakışmada yenisi kalır).
 - [x] Saf doğrulama/birleştirme fonksiyonları + testler.
 
-## R6 – Lichess desteği
+## R6 – Lichess desteği (kod `r6-lichess` dalında; canlı Lichess hesabıyla tarayıcı denemesi, belgeler ve main birleştirmesi kaldı)
 
 Arkadaşlardan Lichess kullananlar için.
 
