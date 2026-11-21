@@ -8,6 +8,7 @@ export const en: Record<MessageKey, string> = {
   'app.tagline':
     'Analyse your Chess.com or Lichess games, find the mistakes you repeat, and learn from them.',
 
+  'home.badge': 'Free · No sign-up · Stockfish in your browser',
   'home.username.label': 'Your username',
   'home.username.placeholder.chesscom': 'e.g. hikaru',
   'home.username.placeholder.lichess': 'e.g. thibault',
@@ -17,6 +18,12 @@ export const en: Record<MessageKey, string> = {
   'home.features.title': 'What’s inside?',
   'home.features.puzzles.title': 'Puzzles from my mistakes',
   'home.features.puzzles.body': 'Find the best move in the position before each of your mistakes.',
+  'home.features.hanging.title': 'Spot the hanging piece',
+  'home.features.hanging.body':
+    'Practise with real moments from your games to stop hanging pieces and missing free ones.',
+  'home.features.daily.title': 'Daily training plan',
+  'home.features.daily.body':
+    'A short personalised plan every day with streak tracking to keep you improving.',
   'home.features.openings.title': 'Openings',
   'home.features.openings.body':
     'See which openings you play and where you break opening principles.',
@@ -28,9 +35,17 @@ export const en: Record<MessageKey, string> = {
     'Your blunder trend, where your mistakes happen, and this week’s focus.',
 
   'nav.home': 'Home',
+  'nav.games': 'Games',
+  'nav.puzzles': 'Puzzles',
+  'nav.hanging': 'Hanging',
+  'nav.openings': 'Openings',
+  'nav.endgames': 'Endgames',
+  'nav.dashboard': 'Dashboard',
   'nav.changeUser': 'Change user',
   'nav.backToGames': 'Back to games',
   'nav.language': 'Language',
+  'nav.soundOn': 'Sound on',
+  'nav.soundOff': 'Sound off',
 
   'sync.progress': '{done}/{total} {total|month|months} fetched',
   'sync.upToDate': 'Games are up to date.',
@@ -66,6 +81,7 @@ export const en: Record<MessageKey, string> = {
   'analysis.allDone': 'All games in the selected time controls and date range are analysed.',
   'analysis.error': 'Analysis stopped: {message}',
   'analysis.depth': 'Depth',
+  'analysis.settings': 'Settings',
   'analysis.hint':
     'Analysis runs in the background while the app is open, newest game first. Every finished game is saved. Higher depth is more accurate but slower. If you pause, it will not restart by itself in this session.',
   'analysis.auto': 'Analyse new games automatically',

@@ -1,12 +1,11 @@
 import { Suspense, useEffect } from 'react'
 import { t } from '../i18n'
-import { AnalysisBadge } from './analysis'
 import { startBackgroundWork } from './background'
-import { LanguageSwitch } from './LanguageSwitch'
 import { lazyPage } from './lazyPage'
+import { BottomNav, TopNav } from './Nav'
 import { GamesPage } from './pages/GamesPage'
 import { HomePage } from './pages/HomePage'
-import { routeHref, useRoute } from './router'
+import { useRoute } from './router'
 
 // The first screens load with the app; the rest (board, charts) load when opened.
 const GamePage = lazyPage(() => import('./pages/GamePage').then((m) => m.GamePage))
@@ -27,30 +26,13 @@ export default function App() {
 
   return (
     <div className="min-h-dvh bg-slate-950 text-slate-100">
-      {route.name !== 'home' && (
-        <nav className="border-b border-slate-800 bg-slate-900/60">
-          <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-3">
-            <a href={routeHref({ name: 'home' })} className="font-semibold">
-              <span aria-hidden="true" className="mr-1">
-                ♛
-              </span>
-              {t('app.title')}
-            </a>
-            <div className="flex items-center gap-3">
-              <AnalysisBadge />
-              <a
-                href={routeHref({ name: 'home' })}
-                className="text-sm text-slate-400 hover:text-slate-200"
-              >
-                {t('nav.changeUser')}
-              </a>
-              <LanguageSwitch />
-            </div>
-          </div>
-        </nav>
-      )}
+      {routeUsername && <TopNav route={route} username={routeUsername} />}
 
-      <main className="mx-auto flex max-w-4xl flex-col gap-8 px-4 py-6 sm:py-10">
+      <main
+        className={`mx-auto flex max-w-4xl flex-col gap-8 px-4 py-6 sm:py-8 ${
+          routeUsername ? 'pb-24 sm:pb-10' : ''
+        }`}
+      >
         <Suspense fallback={<p className="text-slate-400">{t('app.loading')}</p>}>
           {route.name === 'home' && <HomePage />}
           {route.name === 'games' && <GamesPage key={route.username} username={route.username} />}
@@ -91,6 +73,8 @@ export default function App() {
           {t('footer.license', { name: t('app.title') })}
         </footer>
       </main>
+
+      {routeUsername && <BottomNav route={route} username={routeUsername} />}
     </div>
   )
 }

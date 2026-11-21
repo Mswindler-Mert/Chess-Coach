@@ -18,6 +18,7 @@ import { getSharedEngine } from '../../engine/shared'
 import { t } from '../../i18n'
 import { formatDate } from '../format'
 import { routeHref } from '../router'
+import { playMoveSan, playSound } from '../sound'
 
 /** Engine strength while defending: enough to punish mistakes, quick on a phone. */
 const ENGINE_DEPTH = 12
@@ -241,6 +242,7 @@ function Play({ lesson, username }: { lesson: EndgameLesson; username: string })
 
   function finish(result: EndgameResult, moves: number) {
     if (result.outcome === 'continue') return false
+    playSound(result.outcome === 'success' ? 'correct' : 'wrong')
     setPhase({ status: 'done', result })
     void recordEndgameAttempt(lesson.id, result.outcome === 'success', moves)
     void recordActivity()
@@ -255,6 +257,7 @@ function Play({ lesson, username }: { lesson: EndgameLesson; username: string })
     } catch {
       return false
     }
+    playMoveSan(move.san)
     if (move.promotion) promoted.current = true
     const moves = userMoves + 1
     setUserMoves(moves)

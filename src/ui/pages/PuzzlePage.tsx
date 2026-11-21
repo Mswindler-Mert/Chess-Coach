@@ -33,6 +33,7 @@ import { MotifChips } from '../analysis'
 import { MOVE_CLASS_TEXT } from '../analysisStyles'
 import { formatDate } from '../format'
 import { routeHref } from '../router'
+import { playSound } from '../sound'
 
 const SELECTED_STYLE: CSSProperties = { backgroundColor: 'rgba(250, 204, 21, 0.55)' }
 const TARGET_STYLE: CSSProperties = {
@@ -100,6 +101,7 @@ function PuzzleTrainer({
     (currentId && set?.puzzles.find((p) => p.id === currentId)) || plan?.queue[0] || null
 
   function onAnswered(puzzle: Puzzle, correct: boolean) {
+    playSound(correct ? 'correct' : 'wrong')
     void recordActivity()
     setCurrentId(puzzle.id)
     setSession((s) => ({ correct: s.correct + (correct ? 1 : 0), total: s.total + 1 }))

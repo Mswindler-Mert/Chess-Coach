@@ -35,18 +35,24 @@ export function DailyCard({ username, filter }: { username: string; filter: Game
   const done = Math.min(streak.today, DAILY_GOAL)
 
   return (
-    <section className="flex flex-col gap-3 rounded-xl border border-emerald-800 bg-emerald-950/20 p-4">
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h2 className="font-semibold">{t('daily.title')}</h2>
-        <p className="text-sm text-slate-300">
-          {streak.current > 0 ? t('daily.streak', { days: streak.current }) : t('daily.noStreak')}
-          {streak.best > streak.current && (
-            <span className="text-slate-500"> · {t('daily.best', { days: streak.best })}</span>
+    <section className="flex flex-col gap-3.5 rounded-2xl border border-emerald-500/30 bg-gradient-to-br from-emerald-950/40 via-slate-900 to-slate-900 p-4 shadow-sm shadow-emerald-950/30 sm:p-5">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 className="text-base font-semibold tracking-tight text-white">{t('daily.title')}</h2>
+        <div className="flex items-center gap-2 text-xs">
+          {streak.current > 0 ? (
+            <span className="rounded-full border border-amber-500/30 bg-amber-500/15 px-2.5 py-1 font-medium text-amber-200">
+              {t('daily.streak', { days: streak.current })}
+            </span>
+          ) : (
+            <span className="text-slate-400">{t('daily.noStreak')}</span>
           )}
-        </p>
+          {streak.best > streak.current && (
+            <span className="text-slate-500">{t('daily.best', { days: streak.best })}</span>
+          )}
+        </div>
       </div>
-      <div className="flex flex-col gap-1">
-        <p className="text-sm text-slate-400">
+      <div className="flex flex-col gap-1.5">
+        <p className="text-xs font-medium text-slate-300">
           {streak.today >= DAILY_GOAL
             ? t('daily.goalDone', { count: streak.today })
             : t('daily.goal', { done, goal: DAILY_GOAL })}
@@ -56,15 +62,26 @@ export function DailyCard({ username, filter }: { username: string; filter: Game
       {plan.length === 0 ? (
         <p className="text-sm text-slate-400">{t('daily.empty')}</p>
       ) : (
-        <ol className="flex flex-col gap-2">
+        <ol className="grid gap-2 sm:grid-cols-2">
           {plan.map((item) => (
             <li key={item.kind}>
               <a
                 href={routeHref(routeFor(item, username))}
-                className="flex min-h-11 items-center justify-between gap-3 rounded-lg border border-slate-800 bg-slate-900 px-3 py-2 text-sm hover:border-slate-600"
+                className="group flex min-h-12 items-center justify-between gap-3 rounded-xl border border-slate-800 bg-slate-950/60 px-3.5 py-2.5 text-sm transition-colors hover:border-emerald-500/50 hover:bg-slate-900"
               >
-                <span>{labelFor(item)}</span>
-                <span aria-hidden="true" className="text-slate-500">
+                <span className="flex items-center gap-2.5">
+                  <span
+                    aria-hidden="true"
+                    className={`grid size-7 shrink-0 place-items-center rounded-lg text-sm ${badgeStyle(item.kind)}`}
+                  >
+                    {iconFor(item.kind)}
+                  </span>
+                  <span className="font-medium text-slate-100">{labelFor(item)}</span>
+                </span>
+                <span
+                  aria-hidden="true"
+                  className="text-slate-500 transition-transform group-hover:translate-x-0.5 group-hover:text-emerald-400"
+                >
                   →
                 </span>
               </a>
@@ -74,6 +91,32 @@ export function DailyCard({ username, filter }: { username: string; filter: Game
       )}
     </section>
   )
+}
+
+function iconFor(kind: PlanItem['kind']): string {
+  switch (kind) {
+    case 'puzzles':
+      return '♞'
+    case 'hanging':
+      return '🎯'
+    case 'endgame':
+      return '♚'
+    case 'review':
+      return '🔍'
+  }
+}
+
+function badgeStyle(kind: PlanItem['kind']): string {
+  switch (kind) {
+    case 'puzzles':
+      return 'bg-emerald-500/15 text-emerald-300'
+    case 'hanging':
+      return 'bg-rose-500/15 text-rose-300'
+    case 'endgame':
+      return 'bg-amber-500/15 text-amber-300'
+    case 'review':
+      return 'bg-sky-500/15 text-sky-300'
+  }
 }
 
 function routeFor(item: PlanItem, username: string): Route {

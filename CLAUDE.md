@@ -533,3 +533,18 @@ Her aşama ayrı bir dal (branch) ve küçük commit'lerle yapılır. Bir aşama
   yükünü ciddi biçimde artırıyor. Projede zaten 267 Vitest testi (gerçek Stockfish ve fixture PGN/NDJSON
   dahil) var; büyük değişikliklerde canlı tarayıcı denemesi yeterli görüldü. İleride çok sayıda ekran
   regresyonu olursa tekrar değerlendirilir.
+
+### Arayüz yenileme (2026-11-21)
+- **Sabit gezinme (`src/ui/Nav.tsx`):** Kullanıcı seçiliyken sticky üst çubuk (logo, `AnalysisBadge`,
+  `SoundToggle`, kullanıcı değiştir, dil) + masaüstünde 6 ikonlu sekme (Oyunlar, Bulmaca, Asılı taş,
+  Açılışlar, Oyun sonu, Panel), mobilde (`sm:hidden`) 6'lı sabit alt gezinme çubuğu (`safe-area-inset-bottom`
+  destekli). Oyunlar sayfası başlığındaki 5 düğme kaldırıldı.
+- **Oyunlar sayfası ve Günlük Kart:** Tempo/tarih filtreleri ve kompakt analiz şeridi tek araç kartında
+  toplandı; Derinlik, "otomatik analiz" ve açıklama katlanır "Ayarlar" (`<details>`) içine alındı.
+  `DailyCard` gradyan vurgulu, seri rozetli ve ikonlu 2 sütunlu aksiyon kartlarıyla güncellendi.
+- **Dikey Eval Bar (`core/analysis/evalBar.ts` + `ui/EvalBar.tsx`):** Oyun inceleme ekranında analiz varsa
+  tahtanın solunda görünür; mat dışı skorlar %5–%95 bandına sıkıştırılır, tahta yönüne göre döner.
+- **Ses efektleri (`src/ui/sound.ts`):** Sıfır bağımlılık, Web Audio API ile hamle/alış/şah/doğru/yanlış
+  sesleri; tercih `localStorage` (`chess-coach:sound`), üst çubuktaki düğmeyle kapatılabilir.
+- **Ana sayfa (`ui/pages/HomePage.tsx`):** Hero kartı, segment kontrol tarzı site seçici ve 6 renkli
+  özellik kartıyla yenilendi.

@@ -17,8 +17,10 @@ import type { AnalysisRecord } from '../../db/schema'
 import { analysisRunner } from '../../engine/runner'
 import { formatNumber, formatPercent, t } from '../../i18n'
 import { ErrorChips, MotifChips, ProgressBar } from '../analysis'
+import { EvalBar } from '../EvalBar'
 import { EvalGraph } from '../EvalGraph'
 import { MOVE_CLASS_TEXT, MOVE_SYMBOLS, useAnalysisRunner } from '../analysisStyles'
+import { playMoveSan } from '../sound'
 import {
   endReasonLabel,
   formatDateTime,
@@ -125,7 +127,14 @@ function ReplayView({
         : null,
     [analysis, game, replay],
   )
-  const go = (next: number) => setPly(Math.max(0, Math.min(total, next)))
+  const go = (next: number) => {
+    const clamped = Math.max(0, Math.min(total, next))
+    if (clamped !== ply && clamped > 0) {
+      const moved = replay.moves[clamped - 1]
+      if (moved) playMoveSan(moved.san)
+    }
+    setPly(clamped)
+  }
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -139,11 +148,18 @@ function ReplayView({
       const action = actions[e.key]
       if (!action) return
       e.preventDefault()
-      setPly((p) => Math.max(0, Math.min(total, action(p))))
+      setPly((p) => {
+        const clamped = Math.max(0, Math.min(total, action(p)))
+        if (clamped !== p && clamped > 0) {
+          const moved = replay.moves[clamped - 1]
+          if (moved) playMoveSan(moved.san)
+        }
+        return clamped
+      })
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [total])
+  }, [total, replay.moves])
 
   const lastMove = ply > 0 ? replay.moves[ply - 1] : undefined
   const fen = fenAt(replay, ply)
@@ -162,34 +178,44 @@ function ReplayView({
   const topColor: Color = game.userColor === 'white' ? 'black' : 'white'
   const reason = endReasonLabel(game.endReason)
   // The engine's best move in the position on the board, as an arrow.
-  const bestMove = analysis && showArrow ? analysis.positions[ply]?.bestMove : null
+  const positionEval = analysis?.positions[ply]
+  const bestMove = positionEval && showArrow ? positionEval.bestMove : null
   const arrows = bestMove
     ? [{ startSquare: bestMove.slice(0, 2), endSquare: bestMove.slice(2, 4), color: BEST_ARROW }]
     : []
 
   return (
     <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
-      <div className="flex w-full max-w-[560px] flex-col gap-2 self-center lg:self-start">
+      <div className="flex w-full max-w-[592px] flex-col gap-2 self-center lg:self-start">
         <PlayerBar
           player={game[topColor]}
           color={topColor}
           clock={showClocks ? clocks[topColor] : null}
         />
-        <div className="aspect-square w-full touch-none select-none">
-          <Chessboard
-            options={{
-              id: 'game-viewer',
-              position: fen,
-              boardOrientation: game.userColor,
-              allowDragging: false,
-              allowDrawingArrows: true,
-              arrows,
-              squareStyles,
-              animationDurationInMs: 150,
-              darkSquareStyle: { backgroundColor: '#769656' },
-              lightSquareStyle: { backgroundColor: '#eeeed2' },
-            }}
-          />
+        <div className="flex items-stretch gap-2">
+          {positionEval && (
+            <EvalBar
+              score={positionEval.score}
+              sideToMove={sideToMove(fen)}
+              orientation={game.userColor}
+            />
+          )}
+          <div className="aspect-square min-w-0 flex-1 touch-none select-none overflow-hidden rounded-md shadow-lg shadow-black/40">
+            <Chessboard
+              options={{
+                id: 'game-viewer',
+                position: fen,
+                boardOrientation: game.userColor,
+                allowDragging: false,
+                allowDrawingArrows: true,
+                arrows,
+                squareStyles,
+                animationDurationInMs: 150,
+                darkSquareStyle: { backgroundColor: '#769656' },
+                lightSquareStyle: { backgroundColor: '#eeeed2' },
+              }}
+            />
+          </div>
         </div>
         <PlayerBar
           player={game[game.userColor]}

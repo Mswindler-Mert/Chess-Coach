@@ -19,6 +19,7 @@ import { listPuzzleProgress, savePuzzleProgress } from '../../db/puzzles'
 import { t } from '../../i18n'
 import { formatDate } from '../format'
 import { routeHref } from '../router'
+import { playSound } from '../sound'
 
 const ring = (color: string): CSSProperties => ({ boxShadow: `inset 0 0 0 4px ${color}` })
 const SELECTED = ring('rgba(250, 204, 21, 0.95)')
@@ -55,6 +56,7 @@ function HangingTrainer({ username }: { username: string }) {
   const current = (currentId && drills?.find((d) => d.id === currentId)) || plan?.queue[0] || null
 
   function onAnswered(drill: HangingDrill, correct: boolean) {
+    playSound(correct ? 'correct' : 'wrong')
     void recordActivity()
     setCurrentId(drill.id)
     setSession((s) => ({ correct: s.correct + (correct ? 1 : 0), total: s.total + 1 }))

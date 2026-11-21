@@ -165,43 +165,9 @@ function GamesView({ username }: { username: string }) {
   return (
     <div className="flex flex-col gap-5">
       <header className="flex flex-col gap-1">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h1 className="text-2xl font-bold">
-            {t('games.title', { username: accountLabel(username) })}
-          </h1>
-          <div className="flex flex-wrap gap-2">
-            <a
-              href={routeHref({ name: 'hanging', username })}
-              className="grid min-h-10 place-items-center rounded-lg border border-emerald-600 px-4 text-sm font-semibold text-emerald-200 hover:border-emerald-400"
-            >
-              {t('hanging.open')}
-            </a>
-            <a
-              href={routeHref({ name: 'endgames', username })}
-              className="grid min-h-10 place-items-center rounded-lg border border-slate-600 px-4 text-sm font-semibold text-slate-100 hover:border-slate-400"
-            >
-              {t('endgame.open')}
-            </a>
-            <a
-              href={routeHref({ name: 'openings', username })}
-              className="grid min-h-10 place-items-center rounded-lg border border-slate-600 px-4 text-sm font-semibold text-slate-100 hover:border-slate-400"
-            >
-              {t('openings.open')}
-            </a>
-            <a
-              href={routeHref({ name: 'dashboard', username })}
-              className="grid min-h-10 place-items-center rounded-lg border border-slate-600 px-4 text-sm font-semibold text-slate-100 hover:border-slate-400"
-            >
-              {t('dashboard.open')}
-            </a>
-            <a
-              href={routeHref({ name: 'puzzles', username })}
-              className="grid min-h-10 place-items-center rounded-lg bg-emerald-600 px-4 text-sm font-semibold text-white hover:bg-emerald-500"
-            >
-              ♞ {t('puzzles.open')}
-            </a>
-          </div>
-        </div>
+        <h1 className="text-2xl font-bold tracking-tight">
+          {t('games.title', { username: accountLabel(username) })}
+        </h1>
         <SyncStatus sync={sync} syncedAt={syncedAt} username={username} onRefresh={onRefresh} />
       </header>
 
@@ -209,62 +175,78 @@ function GamesView({ username }: { username: string }) {
         <DailyCard username={username} filter={{ timeClasses, dateRange }} />
       )}
 
-      <fieldset className="flex flex-col gap-2">
-        <legend className="mb-2 text-sm text-slate-400">{t('games.filter.label')}</legend>
-        <div className="flex flex-wrap gap-2">
-          {ALL_TIME_CLASSES.map((tc) => {
-            const active = timeClasses?.includes(tc) ?? false
-            return (
-              <button
-                key={tc}
-                type="button"
-                aria-pressed={active}
-                onClick={() => onToggle(tc)}
-                className={`min-h-10 rounded-full border px-4 text-sm font-medium ${
-                  active
-                    ? 'border-emerald-500 bg-emerald-600/20 text-emerald-200'
-                    : 'border-slate-700 text-slate-400 hover:border-slate-500'
-                }`}
-              >
-                {timeClassLabel(tc)} <span className="opacity-70">{counts[tc]}</span>
-              </button>
-            )
-          })}
-        </div>
-      </fieldset>
+      <section className="flex flex-col gap-4 rounded-xl border border-slate-800/90 bg-slate-900/70 p-4">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <fieldset className="flex flex-col gap-2">
+            <legend className="mb-1.5 text-xs font-medium tracking-wide text-slate-400 uppercase">
+              {t('games.filter.label')}
+            </legend>
+            <div className="flex flex-wrap gap-1.5">
+              {ALL_TIME_CLASSES.map((tc) => {
+                const active = timeClasses?.includes(tc) ?? false
+                return (
+                  <button
+                    key={tc}
+                    type="button"
+                    aria-pressed={active}
+                    onClick={() => onToggle(tc)}
+                    className={`min-h-9 rounded-full border px-3.5 text-sm font-medium transition-colors ${
+                      active
+                        ? 'border-emerald-500/80 bg-emerald-600/20 text-emerald-200'
+                        : 'border-slate-700/80 text-slate-400 hover:border-slate-500 hover:text-slate-200'
+                    }`}
+                  >
+                    {timeClassLabel(tc)} <span className="opacity-70">{counts[tc]}</span>
+                  </button>
+                )
+              })}
+            </div>
+          </fieldset>
 
-      <fieldset className="flex flex-col gap-2">
-        <legend className="mb-2 text-sm text-slate-400">{t('games.range.label')}</legend>
-        <div className="flex flex-wrap gap-2">
-          {DATE_RANGES.map((range) => {
-            const active = dateRange === range
-            return (
-              <button
-                key={range}
-                type="button"
-                aria-pressed={active}
-                onClick={() => onRange(range)}
-                className={`min-h-10 rounded-full border px-4 text-sm font-medium ${
-                  active
-                    ? 'border-emerald-500 bg-emerald-600/20 text-emerald-200'
-                    : 'border-slate-700 text-slate-400 hover:border-slate-500'
-                }`}
-              >
-                {t(`games.range.${range}`)}
-              </button>
-            )
-          })}
+          <fieldset className="flex flex-col gap-2">
+            <legend className="mb-1.5 text-xs font-medium tracking-wide text-slate-400 uppercase">
+              {t('games.range.label')}
+            </legend>
+            <div className="flex flex-wrap gap-1.5">
+              {DATE_RANGES.map((range) => {
+                const active = dateRange === range
+                return (
+                  <button
+                    key={range}
+                    type="button"
+                    aria-pressed={active}
+                    onClick={() => onRange(range)}
+                    className={`min-h-9 rounded-full border px-3.5 text-sm font-medium transition-colors ${
+                      active
+                        ? 'border-emerald-500/80 bg-emerald-600/20 text-emerald-200'
+                        : 'border-slate-700/80 text-slate-400 hover:border-slate-500 hover:text-slate-200'
+                    }`}
+                  >
+                    {t(`games.range.${range}`)}
+                  </button>
+                )
+              })}
+            </div>
+          </fieldset>
         </div>
+
         {fewGames && (
           <p className="text-sm text-amber-300" role="note">
             {t('games.range.fewGames')}
           </p>
         )}
-      </fieldset>
 
-      {games && timeClasses && dateRange && (
-        <AnalysisPanel username={username} games={games} eligible={visible} summaries={summaries} />
-      )}
+        {games && timeClasses && dateRange && (
+          <div className="border-t border-slate-800/80 pt-3">
+            <AnalysisPanel
+              username={username}
+              games={games}
+              eligible={visible}
+              summaries={summaries}
+            />
+          </div>
+        )}
+      </section>
 
       {games && (
         <p className="text-sm text-slate-400">
@@ -395,30 +377,22 @@ function AnalysisPanel({
   }
 
   return (
-    <section className="flex flex-col gap-3 rounded-xl border border-slate-800 bg-slate-900 p-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="font-semibold">{t('analysis.title')}</h2>
-        <div className="flex items-center gap-3">
-          <label className="flex items-center gap-2 text-sm text-slate-400">
-            {t('analysis.depth')}
-            <select
-              value={depth ?? ''}
-              disabled={depth === null}
-              onChange={(e) => onDepth(Number(e.target.value))}
-              className="min-h-10 rounded-lg border border-slate-700 bg-slate-950 px-2 text-slate-100"
-            >
-              {DEPTH_OPTIONS.map((d) => (
-                <option key={d} value={d}>
-                  {d}
-                </option>
-              ))}
-            </select>
-          </label>
+    <div className="flex flex-col gap-2.5">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-col gap-0.5">
+          <h2 className="text-sm font-semibold text-slate-200">{t('analysis.title')}</h2>
+          <p className="text-xs text-slate-400">
+            {allDone && eligible.length > 0
+              ? t('analysis.allDone')
+              : t('analysis.progress', { analyzed, total: eligible.length })}
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
           {running ? (
             <button
               type="button"
               onClick={() => analysisRunner.pause()}
-              className="min-h-10 rounded-lg border border-slate-600 px-4 text-sm font-medium hover:border-slate-400"
+              className="min-h-9 rounded-lg border border-slate-600 px-3.5 text-sm font-medium transition-colors hover:border-slate-400"
             >
               {t('analysis.pause')}
             </button>
@@ -427,7 +401,7 @@ function AnalysisPanel({
               type="button"
               disabled={allDone}
               onClick={() => analysisRunner.start(username)}
-              className="min-h-10 rounded-lg bg-emerald-600 px-4 text-sm font-semibold text-white hover:bg-emerald-500 disabled:opacity-40"
+              className="min-h-9 rounded-lg bg-emerald-600 px-3.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-500 disabled:opacity-40"
             >
               {t('analysis.start')}
             </button>
@@ -435,16 +409,11 @@ function AnalysisPanel({
         </div>
       </div>
 
-      <p className="text-sm text-slate-300">
-        {allDone && eligible.length > 0
-          ? t('analysis.allDone')
-          : t('analysis.progress', { analyzed, total: eligible.length })}
-      </p>
       <ProgressBar value={eligible.length ? analyzed / eligible.length : 0} />
 
       {running && (
         <div className="flex flex-col gap-1.5" role="status">
-          <p className="text-sm text-slate-400">
+          <p className="text-xs text-slate-400">
             {current && currentGame
               ? t('analysis.running', {
                   opponent: opponentOf(currentGame).username,
@@ -463,23 +432,52 @@ function AnalysisPanel({
         </p>
       )}
 
-      <label className="flex items-center gap-2 text-sm text-slate-300">
-        <input
-          type="checkbox"
-          checked={auto ?? false}
-          disabled={auto === null}
-          onChange={(e) => {
-            const on = e.target.checked
-            setAuto(on)
-            void setAutoAnalyze(on)
-            if (on) analysisRunner.start(username)
-          }}
-          className="size-4 accent-emerald-500"
-        />
-        {t('analysis.auto')}
-      </label>
-      <p className="text-xs text-slate-500">{t('analysis.hint')}</p>
-    </section>
+      <details className="group">
+        <summary className="cursor-pointer list-none text-xs font-medium text-slate-400 select-none hover:text-slate-200">
+          <span className="inline-flex items-center gap-1">
+            <span>⚙ {t('analysis.settings')}</span>
+            <span className="text-slate-500">
+              ({t('analysis.depth')} {depth ?? '…'})
+            </span>
+          </span>
+        </summary>
+        <div className="mt-3 flex flex-col gap-3 rounded-lg border border-slate-800 bg-slate-950/60 p-3">
+          <div className="flex flex-wrap items-center gap-4">
+            <label className="flex items-center gap-2 text-sm text-slate-300">
+              {t('analysis.depth')}
+              <select
+                value={depth ?? ''}
+                disabled={depth === null}
+                onChange={(e) => onDepth(Number(e.target.value))}
+                className="min-h-9 rounded-lg border border-slate-700 bg-slate-900 px-2 text-slate-100"
+              >
+                {DEPTH_OPTIONS.map((d) => (
+                  <option key={d} value={d}>
+                    {d}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="flex items-center gap-2 text-sm text-slate-300">
+              <input
+                type="checkbox"
+                checked={auto ?? false}
+                disabled={auto === null}
+                onChange={(e) => {
+                  const on = e.target.checked
+                  setAuto(on)
+                  void setAutoAnalyze(on)
+                  if (on) analysisRunner.start(username)
+                }}
+                className="size-4 accent-emerald-500"
+              />
+              {t('analysis.auto')}
+            </label>
+          </div>
+          <p className="text-xs text-slate-500">{t('analysis.hint')}</p>
+        </div>
+      </details>
+    </div>
   )
 }
 
@@ -496,7 +494,7 @@ function GameRow({
   return (
     <a
       href={routeHref({ name: 'game', username, id: game.id })}
-      className="flex items-center gap-3 rounded-xl border border-slate-800 bg-slate-900 p-3 hover:border-slate-600"
+      className="flex items-center gap-3 rounded-xl border border-slate-800/90 bg-slate-900/80 p-3 transition-colors hover:border-emerald-500/40 hover:bg-slate-900"
     >
       <span
         title={t(`outcome.${game.outcome}`)}

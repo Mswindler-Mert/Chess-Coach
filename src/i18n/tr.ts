@@ -5,6 +5,7 @@ export const tr = {
   'app.tagline':
     'Chess.com ya da Lichess oyunlarını analiz et, sık yaptığın hataları bul, onlardan öğren.',
 
+  'home.badge': 'Ücretsiz · Giriş gerektirmez · Tarayıcıda Stockfish',
   'home.username.label': 'Kullanıcı adın',
   'home.username.placeholder.chesscom': 'ör. hikaru',
   'home.username.placeholder.lichess': 'ör. thibault',
@@ -14,6 +15,12 @@ export const tr = {
   'home.features.title': 'Neler var?',
   'home.features.puzzles.title': 'Hatalarımdan bulmacalar',
   'home.features.puzzles.body': 'Yaptığın hatalardan önceki pozisyonda en iyi hamleyi bul.',
+  'home.features.hanging.title': 'Asılı taşı bul',
+  'home.features.hanging.body':
+    'Kendi oyunlarından pozisyonlarla taş asmayı ve bedava taş kaçırmayı azalt.',
+  'home.features.daily.title': 'Günlük antrenman planı',
+  'home.features.daily.body':
+    'Her gün birkaç dakikalık kişisel plan ve seri takibiyle düzenli geliş.',
   'home.features.openings.title': 'Açılış',
   'home.features.openings.body': 'Hangi açılışları oynadığını ve prensip hatalarını gör.',
   'home.features.endgames.title': 'Oyun sonu',
@@ -23,9 +30,17 @@ export const tr = {
   'home.features.dashboard.body': 'Blunder trendin, hata dağılımın ve haftanın odak konusu.',
 
   'nav.home': 'Ana sayfa',
+  'nav.games': 'Oyunlar',
+  'nav.puzzles': 'Bulmaca',
+  'nav.hanging': 'Asılı taş',
+  'nav.openings': 'Açılışlar',
+  'nav.endgames': 'Oyun sonu',
+  'nav.dashboard': 'Panel',
   'nav.changeUser': 'Kullanıcı değiştir',
   'nav.backToGames': 'Oyunlara dön',
   'nav.language': 'Dil',
+  'nav.soundOn': 'Sesler açık',
+  'nav.soundOff': 'Sesler kapalı',
 
   'sync.progress': '{done}/{total} ay çekildi',
   'sync.upToDate': 'Oyunlar güncel.',
@@ -60,6 +75,7 @@ export const tr = {
   'analysis.allDone': 'Seçili tempo ve tarih aralığındaki tüm oyunlar analiz edildi.',
   'analysis.error': 'Analiz durdu: {message}',
   'analysis.depth': 'Derinlik',
+  'analysis.settings': 'Ayarlar',
   'analysis.hint':
     'Analiz uygulama açıkken arka planda sürer, en yeni oyundan başlar. Biten her oyun kaydedilir. Derinlik arttıkça analiz daha doğru ama daha yavaş olur. Duraklatırsan bu oturumda kendiliğinden yeniden başlamaz.',
   'analysis.auto': 'Yeni oyunları otomatik analiz et',
