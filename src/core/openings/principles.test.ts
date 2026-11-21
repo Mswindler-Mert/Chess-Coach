@@ -28,7 +28,8 @@ describe('checkPrinciples', () => {
     const warnings = checkPrinciples(buildReplay(pgn), 'white')
     expect(warnings).toEqual([
       { principle: 'edge-pawns', ply: 1, count: 2 },
-      { principle: 'same-piece-twice', ply: 7, count: 6 },
+      // Nb5 and the second Ra3 count; Na3, Nb1 and both Rb3 moves escape an attack.
+      { principle: 'same-piece-twice', ply: 7, count: 2 },
       { principle: 'no-castling', ply: 19, count: 1 },
       { principle: 'undeveloped-pieces', ply: 19, count: 3 },
     ])
@@ -78,5 +79,18 @@ describe('summarizePrinciples', () => {
       share: 2 / 3,
     })
     expect(summary.rates.find((r) => r.principle === 'no-castling')?.share).toBe(0)
+  })
+})
+
+describe('same-piece-twice', () => {
+  it('does not count a piece escaping an attack', () => {
+    // 3. Nd5? is answered by 3… c6, so 4. Ne3 only runs away from the pawn.
+    const pgn = '1. e4 e5 2. Nc3 Nf6 3. Nd5 c6 4. Ne3 d5'
+    expect(principles(pgn, 'white')).toEqual(['same-piece-twice'])
+    const warnings = checkPrinciples(buildReplay(pgn), 'white')
+    expect(warnings.find((w) => w.principle === 'same-piece-twice')).toMatchObject({
+      ply: 5,
+      count: 1,
+    })
   })
 })

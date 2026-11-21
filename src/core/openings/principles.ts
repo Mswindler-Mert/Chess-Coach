@@ -1,5 +1,6 @@
+import { Chess, type Square } from 'chess.js'
 import type { Color } from '../games/model'
-import type { Replay } from '../games/replay'
+import { fenAt, type Replay } from '../games/replay'
 
 const STANDARD_START = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
 
@@ -60,14 +61,20 @@ export function checkPrinciples(replay: Replay, color: Color): PrincipleWarning[
     else if (castled >= OPENING_MOVES) add('late-castling', own[castled]?.ply ?? tenth.ply)
   }
 
-  // Same piece twice before all minor pieces are out (captures are fine: they answer threats).
+  // Same piece twice before all minor pieces are out. Captures and escapes from an attack are
+  // fine: they answer threats rather than waste time.
   const homes = new Set(MINOR_HOMES[color])
   const moved = new Set<string>() // squares of pieces that have moved, by current square
   let repeats = 0
   let firstRepeat = 0
   for (const { move, ply } of window) {
     if (move.piece !== 'p' && move.piece !== 'k' && !move.castle) {
-      if (moved.has(move.from) && homes.size > 0 && !move.capture) {
+      if (
+        moved.has(move.from) &&
+        homes.size > 0 &&
+        !move.capture &&
+        !isUnderAttack(fenAt(replay, ply - 1), move.from, color)
+      ) {
         repeats++
         firstRepeat ||= ply
       }
@@ -95,6 +102,15 @@ export function checkPrinciples(replay: Replay, color: Color): PrincipleWarning[
   }
 
   return warnings.sort((a, b) => a.ply - b.ply)
+}
+
+/** True when the piece of `color` on `square` is attacked by the other side in `fen`. */
+function isUnderAttack(fen: string, square: string, color: Color): boolean {
+  try {
+    return new Chess(fen).isAttacked(square as Square, color === 'white' ? 'b' : 'w')
+  } catch {
+    return false
+  }
 }
 
 /** True when `square` holds a knight or bishop of `color` on the FEN board. */

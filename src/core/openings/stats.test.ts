@@ -18,6 +18,10 @@ describe('openingFamily', () => {
     expect(openingFamily('Three Knights Opening 3...Bc5')).toBe('Three Knights Opening')
   })
 
+  it('merges names Chess.com uses for the same opening', () => {
+    expect(openingFamily('Giuoco Piano Game 4.O O Nf6 5.d3 O O')).toBe('Italian Game')
+  })
+
   it('falls back to the words before the moves', () => {
     expect(openingFamily('Ruy Lopez 3...a6')).toBe('Ruy Lopez')
     expect(openingFamily('Caro Kann Exchange Panov Attack')).toBe('Caro Kann Exchange Panov Attack')

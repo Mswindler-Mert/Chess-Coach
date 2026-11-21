@@ -11,6 +11,12 @@ const FAMILY_ENDINGS = new Set([
   'System',
 ])
 
+/** Chess.com sometimes names the same opening differently; these families are merged. */
+const FAMILY_ALIASES: Record<string, string> = {
+  'Giuoco Piano Game': 'Italian Game',
+  'Kings Indian Defence': 'Kings Indian Defense',
+}
+
 /**
  * The opening family from Chess.com's detailed name:
  * "Kings Pawn Opening Leonardis Variation 2...Nf6 3.Nf3" → "Kings Pawn Opening",
@@ -20,7 +26,10 @@ const FAMILY_ENDINGS = new Set([
 export function openingFamily(name: string): string {
   const words = name.split(/\s+/).filter(Boolean)
   const end = words.findIndex((w) => FAMILY_ENDINGS.has(w))
-  if (end >= 0) return words.slice(0, end + 1).join(' ')
+  if (end >= 0) {
+    const family = words.slice(0, end + 1).join(' ')
+    return FAMILY_ALIASES[family] ?? family
+  }
   const firstMove = words.findIndex((w) => /^\d/.test(w))
   return words.slice(0, Math.min(firstMove >= 0 ? firstMove : words.length, 3)).join(' ') || name
 }
