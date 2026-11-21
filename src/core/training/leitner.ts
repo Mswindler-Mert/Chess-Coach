@@ -46,22 +46,30 @@ export function recordAttempt(
   }
 }
 
-export interface PuzzleQueue {
-  /** Puzzles to show, in order: due reviews (most overdue first), then new ones (newest game first). */
-  queue: Puzzle[]
+/** What the scheduler needs from a drill: puzzles, hanging-piece drills, … */
+export interface Schedulable {
+  id: string
+  /** When the source game ended (ms); newer games come first among new items. */
+  endTime: number
+  ply: number
+}
+
+export interface PuzzleQueue<T extends Schedulable = Puzzle> {
+  /** Items to show, in order: due reviews (most overdue first), then new ones (newest game first). */
+  queue: T[]
   due: number
   fresh: number
   /** Seen puzzles not due yet. */
   waiting: number
 }
 
-export function planPuzzles(
-  puzzles: readonly Puzzle[],
+export function planPuzzles<T extends Schedulable>(
+  puzzles: readonly T[],
   progress: ReadonlyMap<string, PuzzleProgress>,
   now: number,
-): PuzzleQueue {
-  const due: { puzzle: Puzzle; dueAt: number }[] = []
-  const fresh: Puzzle[] = []
+): PuzzleQueue<T> {
+  const due: { puzzle: T; dueAt: number }[] = []
+  const fresh: T[] = []
   let waiting = 0
   for (const puzzle of puzzles) {
     const p = progress.get(puzzle.id)
