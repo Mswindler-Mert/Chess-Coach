@@ -43,8 +43,9 @@ export interface Puzzle {
   solution: PuzzleMove
   /** Engine score of `fen` for the user. */
   bestScore: Score
-  /** The opponent's best reply line after the move played in the game, in SAN. */
+  /** The opponent's best reply line after the move played in the game, in SAN and UCI. */
   refutation: string[]
+  refutationUci: string[]
   /** Win% the user had before and after the game move. */
   winBefore: number
   winAfter: number
@@ -103,6 +104,7 @@ export function generatePuzzles(game: Game, replay: Replay, analysis: GameAnalys
       solution: { uci: before.bestMove, san: solutionSan },
       bestScore: before.score,
       refutation: pvToSan(fenAt(replay, move.ply), after.pv, REFUTATION_PLIES),
+      refutationUci: after.pv.slice(0, REFUTATION_PLIES),
       winBefore: move.winBefore,
       winAfter: move.winAfter,
       endTime: game.endTime,

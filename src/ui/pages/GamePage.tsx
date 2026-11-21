@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Chessboard } from 'react-chessboard'
 import { sideToMove } from '../../core/analysis/analyzeGame'
+import { explainMistake } from '../../core/analysis/coachExplain'
 import { formatScore, uciToSan } from '../../core/analysis/display'
+import { describeMove } from '../../core/analysis/explainMove'
 import { gameAccuracy, whiteWinPercents } from '../../core/analysis/accuracy'
 import { tagGame, type Motif } from '../../core/analysis/motifs'
 import { hangingPieces } from '../../core/analysis/hanging'
@@ -28,6 +30,7 @@ import {
   timeClassLabel,
   timeControlLabel,
 } from '../format'
+import { formatBestReason, formatCoachTip, formatMoveAction, formatPlayedReason } from '../moveText'
 import { routeHref } from '../router'
 
 const LAST_MOVE_STYLE = { backgroundColor: 'rgba(250, 204, 21, 0.45)' }
@@ -380,10 +383,22 @@ function MoveInsight({
     isError && before?.bestMove ? uciToSan(fenAt(replay, ply - 1), before.bestMove) : null
   const moveNumber = Math.ceil(ply / 2)
   const moveMotifs = ply > 0 ? (motifs[ply - 1] ?? []) : []
+  const nextBestMove = position?.bestMove ? describeMove(fen, position.bestMove) : null
   const nextBest = position?.bestMove ? uciToSan(fen, position.bestMove) : null
+  const coaching =
+    isError && move && before?.bestMove && position
+      ? explainMistake({
+          fen: fenAt(replay, ply - 1),
+          color: move.color,
+          playedUci: move.uci,
+          bestUci: before.bestMove,
+          afterPlayedPv: position.pv,
+          motifs: moveMotifs,
+        })
+      : null
 
   return (
-    <div className="flex flex-col gap-2 rounded-xl border border-slate-800 bg-slate-900 p-3 text-sm">
+    <div className="flex flex-col gap-2.5 rounded-xl border border-slate-800 bg-slate-900 p-3.5 text-sm">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         {move ? (
           <p className="font-medium">
@@ -406,7 +421,7 @@ function MoveInsight({
         )}
       </div>
       {move && (
-        <p className="text-slate-400">
+        <p className="text-xs text-slate-400">
           {t('viewer.analysis.winChance', {
             color: t(`color.${move.color}`),
             before: Math.round(move.winBefore),
@@ -414,17 +429,38 @@ function MoveInsight({
           })}
         </p>
       )}
-      {better && (
-        <p className="text-emerald-300">{t('viewer.analysis.better', { move: better })}</p>
+      {coaching ? (
+        <div className="flex flex-col gap-2 rounded-lg border border-slate-800 bg-slate-950/60 p-2.5">
+          {moveMotifs.length > 0 && <MotifChips motifs={moveMotifs} />}
+          <p className="text-slate-200">{formatPlayedReason(coaching)}</p>
+          <p className="text-emerald-300">
+            ✓ {formatBestReason(coaching.best.move, coaching.best.reason)}
+          </p>
+          {move?.color === game.userColor && (
+            <p className="border-t border-slate-800/80 pt-1.5 text-xs text-amber-200/90">
+              💡 {formatCoachTip(coaching)}
+            </p>
+          )}
+        </div>
+      ) : (
+        <>
+          {better && (
+            <p className="text-emerald-300">{t('viewer.analysis.better', { move: better })}</p>
+          )}
+          {moveMotifs.length > 0 && (
+            <div className="flex flex-col gap-1">
+              <MotifChips motifs={moveMotifs} />
+              <p className="text-xs text-slate-400">{t(`motif.desc.${moveMotifs[0] as Motif}`)}</p>
+            </div>
+          )}
+        </>
       )}
       {nextBest && (
-        <p className="text-slate-400">{t('viewer.review.nextBest', { move: nextBest })}</p>
-      )}
-      {moveMotifs.length > 0 && (
-        <div className="flex flex-col gap-1">
-          <MotifChips motifs={moveMotifs} />
-          <p className="text-xs text-slate-400">{t(`motif.desc.${moveMotifs[0] as Motif}`)}</p>
-        </div>
+        <p className="text-xs text-slate-400">
+          {t('viewer.review.nextBest', {
+            move: nextBestMove ? formatMoveAction(nextBestMove) : nextBest,
+          })}
+        </p>
       )}
       <div className="flex flex-col gap-1 border-t border-slate-800 pt-2 text-xs">
         {(['white', 'black'] as const).map((color) => (

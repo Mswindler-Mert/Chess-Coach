@@ -437,5 +437,73 @@ export const en: Record<MessageKey, string> = {
   'viewer.review.bestArrow': 'Show the engine’s move as an arrow',
   'viewer.review.nextBest': 'Best move here: {move}',
 
+  'coach.whyGood': 'Why is this the best move?',
+  'coach.whyBad': 'Why was your game move bad?',
+  'coach.howToThink': 'How to think next time',
+  'coach.hint': 'Get a hint',
+  'coach.hintPiece': 'Which piece moves?',
+  'coach.hintPieceMsg': 'Look for the best move with the highlighted piece.',
+  'coach.viewBest': 'Best move',
+  'coach.viewPlayed': 'What you played',
+  'coach.watchLine': 'Step through the opponent’s reply',
+  'coach.step': 'Step {step}/{total}',
+  'coach.youAre': 'You are: {color}',
+  'coach.turnYours': 'Your turn ({color})',
+  'coach.turnEnemy': 'Opponent’s turn ({color})',
+  'coach.showBetter': 'Show better move',
+  'coach.showHanging': 'Show the threat',
+  'coach.betterSuggestion': 'Instead: {action}.',
+  'coach.tip.hanging-piece':
+    'Pause 2 seconds before moving and ask: “Is the destination square attacked? Did I leave another piece undefended?”',
+  'coach.tip.missed-free-piece':
+    'Before every move check Checks – Captures – Threats: did your opponent leave a piece undefended?',
+  'coach.tip.allowed-fork':
+    'Watch enemy knights and queens closely: avoid placing two pieces where a single move can attack both.',
+  'coach.tip.missed-fork':
+    'Look for checks or moves that attack two enemy targets at once (especially the king plus a rook or queen).',
+  'coach.tip.allowed-pin':
+    'Check if a valuable piece (king, queen, rook) lines up behind another piece on a file or diagonal.',
+  'coach.tip.missed-pin':
+    'Look for an enemy piece sitting in front of their king, queen, or rook — a bishop or rook can pin it.',
+  'coach.tip.allowed-skewer':
+    'If your king or queen stands in front of an undefended piece on a line, step off that line.',
+  'coach.tip.missed-skewer':
+    'When the enemy king or queen is lined up in front of another piece, attack the front one to win the piece behind.',
+  'coach.tip.missed-mate':
+    'When the enemy king has few escape squares, check every possible checking move first.',
+  'coach.tip.walked-into-mate':
+    'Check your own king’s safety first — watch out for back-rank mates and open lines toward your king.',
+  'coach.tip.blew-winning-position':
+    'When ahead, don’t rush: keep your pieces protected, trade down cleanly, and deny counterplay.',
+  'coach.tip.time-pressure':
+    'When low on time, pick the simplest safe move that keeps your pieces defended.',
+  'coach.tip.saves-piece':
+    'After every opponent move, ask first: “What are they attacking?” Rescue your threatened piece before anything else.',
+  'coach.tip.general':
+    'Before every move check 3 things: 1) Do I have a check? 2) Can I win a free piece? 3) Are all my pieces safe?',
+
+  'openings.tab.learn': 'Learn openings',
+  'openings.tab.stats': 'My opening stats',
+  'openings.guide.intro':
+    'Get to know key openings with short guides, then practise every variation step by step on the board.',
+  'openings.guide.back': 'All openings',
+  'openings.guide.idea': 'Core idea',
+  'openings.guide.pros': 'Strengths',
+  'openings.guide.cons': 'Watch out for',
+  'openings.guide.variations': 'Variations (how the opponent replies)',
+  'openings.guide.modeLearn': 'Guided learn',
+  'openings.guide.modePractice': 'Practice (no arrows)',
+  'openings.guide.yourTurn': 'Your turn — play the move on the board.',
+  'openings.guide.opponentMove': 'Opponent replies…',
+  'openings.guide.tryAgain': 'That move isn’t part of this plan — try again or use a hint.',
+  'openings.guide.hint': 'Show hint',
+  'openings.guide.restart': 'Restart',
+  'openings.guide.done': 'Well done! You completed this variation.',
+  'openings.guide.nextLine': 'Next variation',
+  'openings.guide.switchPractice': 'Now try it without arrows',
+  'openings.guide.progress': '{done}/{total} {total|variation|variations} completed',
+  'openings.guide.playAs': 'Played as {color}',
+  'openings.guide.stepOf': 'Move {step}/{total}',
+
   'footer.license': '{name} is open source (GPL-3.0). Analysis engine: Stockfish.',
 }

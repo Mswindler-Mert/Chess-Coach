@@ -429,6 +429,74 @@ export const tr = {
   'viewer.review.bestArrow': 'Motorun önerisini okla göster',
   'viewer.review.nextBest': 'Bu pozisyonda en iyisi: {move}',
 
+  'coach.whyGood': 'Neden en iyi hamle?',
+  'coach.whyBad': 'Oyundaki hamlen neden kötüydü?',
+  'coach.howToThink': 'Bir dahaki sefere nasıl düşünmelisin?',
+  'coach.hint': 'İpucu al',
+  'coach.hintPiece': 'Hangi taşla oynanır?',
+  'coach.hintPieceMsg': 'Mavi halkalı taşla en iyi hamleyi ara.',
+  'coach.viewBest': 'En iyi hamle',
+  'coach.viewPlayed': 'Oyunda oynadığın',
+  'coach.watchLine': 'Rakibin cevabını adım adım izle',
+  'coach.step': 'Adım {step}/{total}',
+  'coach.youAre': 'Sen: {color}',
+  'coach.turnYours': 'Sıra sende ({color})',
+  'coach.turnEnemy': 'Sıra rakipte ({color})',
+  'coach.showBetter': 'Öneriyi tahtada gör',
+  'coach.showHanging': 'Tehlikeyi gör',
+  'coach.betterSuggestion': 'Bunun yerine: {action}.',
+  'coach.tip.hanging-piece':
+    'Hamleni yapmadan 2 saniye dur ve sor: “Taşımı koyacağım kareye rakip saldırıyor mu? Geride korumasız bir taşım kaldı mı?”',
+  'coach.tip.missed-free-piece':
+    'Her hamleden önce Şah – Alış – Tehdit sırasıyla bak: Rakibin son hamlesi bir taşını korumasız bıraktı mı?',
+  'coach.tip.allowed-fork':
+    'Özellikle rakibin atına ve vezirine dikkat et: İki taşının aynı anda tek taştan saldırı yiyebileceği karelere girmesini önle.',
+  'coach.tip.missed-fork':
+    'Önce şah çekerek ya da iki rakip taşa (özellikle şah + kale/vezir) aynı anda saldırarak taş kazanıp kazanamayacağına bak.',
+  'coach.tip.allowed-pin':
+    'Değerli taşların (vezir, kale, şah) aynı hat veya çaprazda dizilirken aradaki taşın rakip fil/kale tarafından bağlanıp bağlanmadığını kontrol et.',
+  'coach.tip.missed-pin':
+    'Rakip şah, vezir veya kale ile aynı çizgide duran bir taş var mı? Fil ya da kaleyle onu açmaza almayı ara.',
+  'coach.tip.allowed-skewer':
+    'Şahın ya da vezirin arkasında korumasız bir taş duruyorsa o çizgiden bir an önce çık.',
+  'coach.tip.missed-skewer':
+    'Rakibin şahı veya veziri arkasında bir başka taşla aynı hat üzerindeyse öndekine saldırıp arkadakini kazanabilirsin.',
+  'coach.tip.missed-mate':
+    'Rakip şahın kaçacak karesi azaldığında önce tüm şah çekme hamlelerini sırayla kontrol et.',
+  'coach.tip.walked-into-mate':
+    'Önce kendi şahının güvende olduğundan emin ol; son sıradaki (arka koridor) mat tehditlerini ve şah önündeki açık çizgileri kontrol et.',
+  'coach.tip.blew-winning-position':
+    'Öndeyken acele etme: Kendi taşlarını koru, basit takaslarla oyunu sadeleştir ve rakibe karşı şans verme.',
+  'coach.tip.time-pressure':
+    'Süre azaldığında karmaşık planlar yerine taşlarını güvende tutan en sade, sağlam hamleyi seç.',
+  'coach.tip.saves-piece':
+    'Rakip hamle yapınca ilk soru hep şu olsun: “Hangi taşıma saldırdı?” Tehdit altındaki taşı önce güvene al.',
+  'coach.tip.general':
+    'Her hamleden önce 3 şeye bak: 1) Şah çekebiliyor muyum? 2) Bedava taş alabiliyor muyum? 3) Kendi taşlarım güvende mi?',
+
+  'openings.tab.learn': 'Açılış öğren',
+  'openings.tab.stats': 'Oyunlarımdaki açılışlar',
+  'openings.guide.intro':
+    'Temel açılışları kısa anlatımla tanı, sonra tahtada adım adım pratik yaparak maçlara hazır ol.',
+  'openings.guide.back': 'Tüm açılışlar',
+  'openings.guide.idea': 'Temel fikir',
+  'openings.guide.pros': 'Avantajları',
+  'openings.guide.cons': 'Dikkat edilecekler',
+  'openings.guide.variations': 'Varyasyonlar (rakip ne oynarsa?)',
+  'openings.guide.modeLearn': 'Rehberli öğren',
+  'openings.guide.modePractice': 'Kendin dene (pratik)',
+  'openings.guide.yourTurn': 'Sıra sende — doğru hamleyi tahtada yap.',
+  'openings.guide.opponentMove': 'Rakip cevap veriyor…',
+  'openings.guide.tryAgain': 'Bu hamle bu açılış planının dışında — tekrar dene ya da ipucu al.',
+  'openings.guide.hint': 'İpucu göster',
+  'openings.guide.restart': 'Baştan başla',
+  'openings.guide.done': 'Harika! Bu varyasyonu tamamladın.',
+  'openings.guide.nextLine': 'Sıradaki varyasyon',
+  'openings.guide.switchPractice': 'Şimdi ok olmadan kendin dene',
+  'openings.guide.progress': '{done}/{total} varyasyon tamamlandı',
+  'openings.guide.playAs': '{color} ile oynanır',
+  'openings.guide.stepOf': 'Hamle {step}/{total}',
+
   'footer.license': '{name} açık kaynaktır (GPL-3.0). Analiz motoru: Stockfish.',
 } as const
 

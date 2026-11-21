@@ -3,6 +3,24 @@ import type { Game } from '../core/games/model'
 import { buildReplay } from '../core/games/replay'
 import { checkPrinciples, type PrincipleWarning } from '../core/openings/principles'
 import { getGameFilter, listGames } from './games'
+import { db } from './schema'
+
+const OPENING_PROGRESS_KEY = 'openingProgress'
+
+export type OpeningProgress = Record<string, boolean>
+
+export async function getOpeningProgress(): Promise<OpeningProgress> {
+  const row = await db.settings.get(OPENING_PROGRESS_KEY)
+  if (!row || typeof row.value !== 'object' || row.value === null) return {}
+  return row.value as OpeningProgress
+}
+
+export async function markOpeningLineDone(lineKey: string): Promise<OpeningProgress> {
+  const current = await getOpeningProgress()
+  const next = { ...current, [lineKey]: true }
+  await db.settings.put({ key: OPENING_PROGRESS_KEY, value: next })
+  return next
+}
 
 export interface OpeningsData {
   filter: GameFilter

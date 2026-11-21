@@ -28,14 +28,24 @@ import {
 import { recordActivity } from '../../db/daily'
 import { judgeAttempt } from '../../engine/judge'
 import { t } from '../../i18n'
+import { explainMistake, type MistakeCoaching } from '../../core/analysis/coachExplain'
 import { isMotif, MOTIFS, type Motif } from '../../core/analysis/motifs'
 import { MotifChips } from '../analysis'
 import { MOVE_CLASS_TEXT } from '../analysisStyles'
 import { formatDate } from '../format'
+import {
+  formatBestReason,
+  formatCoachTip,
+  formatEnemyReply,
+  formatMoveAction,
+  formatPlayedReason,
+} from '../moveText'
 import { routeHref } from '../router'
-import { playSound } from '../sound'
+import { playMoveSan, playSound } from '../sound'
 
 const SELECTED_STYLE: CSSProperties = { backgroundColor: 'rgba(250, 204, 21, 0.55)' }
+const LAST_MOVE_STYLE: CSSProperties = { backgroundColor: 'rgba(250, 204, 21, 0.4)' }
+const HINT_STYLE: CSSProperties = { boxShadow: 'inset 0 0 0 4px rgba(56, 189, 248, 0.95)' }
 const TARGET_STYLE: CSSProperties = {
   background: 'radial-gradient(circle, rgba(15, 23, 42, 0.35) 22%, transparent 24%)',
 }
@@ -286,6 +296,22 @@ function PuzzleBoard({
   const [answer, setAnswer] = useState<Answer>({ status: 'solving' })
   const [selected, setSelected] = useState<Square | null>(null)
   const [opponent, setOpponent] = useState<string | null>(null)
+  const [hintLevel, setHintLevel] = useState<0 | 1 | 2>(0)
+  const [reviewMode, setReviewMode] = useState<'best' | 'played'>('best')
+  const [refStep, setRefStep] = useState(0)
+
+  const coaching = useMemo(
+    () =>
+      explainMistake({
+        fen: puzzle.fen,
+        color: puzzle.color,
+        playedUci: puzzle.played.uci,
+        bestUci: puzzle.solution.uci,
+        afterPlayedPv: puzzle.refutationUci,
+        motifs: puzzle.motifs,
+      }),
+    [puzzle],
+  )
 
   useEffect(() => {
     void getGame(puzzle.gameId).then((game) => {
@@ -352,53 +378,184 @@ function PuzzleBoard({
 
   const done = answer.status === 'done' ? answer : null
   const wrong = done && !done.result.correct
-  // After a wrong answer, go back to the puzzle position and show both moves as arrows.
-  const position =
-    answer.status === 'checking' ? answer.fen : done && done.result.correct ? done.fen : puzzle.fen
-  const arrows = wrong
-    ? [
+  const refSteps = coaching?.played.refutationSteps ?? []
+
+  // Determine which board position, arrows and square highlights to show.
+  let position: string
+  let arrows: { startSquare: string; endSquare: string; color: string }[] = []
+  const squareStyles: Record<string, CSSProperties> = {}
+
+  if (done && reviewMode === 'played' && coaching) {
+    if (refStep === 0) {
+      position = coaching.played.move.fenAfter
+      squareStyles[coaching.played.move.from] = LAST_MOVE_STYLE
+      squareStyles[coaching.played.move.to] = LAST_MOVE_STYLE
+      if (coaching.played.enemyReply) {
+        arrows = [arrow(coaching.played.enemyReply.uci, ARROW_BAD)]
+      }
+    } else {
+      const step = refSteps[Math.min(refStep, refSteps.length) - 1]
+      position = step ? step.fenAfter : coaching.played.move.fenAfter
+      if (step) {
+        squareStyles[step.move.from] = LAST_MOVE_STYLE
+        squareStyles[step.move.to] = LAST_MOVE_STYLE
+      }
+      const nextStep = refSteps[refStep]
+      if (nextStep) {
+        arrows = [arrow(nextStep.move.uci, ARROW_BAD)]
+      }
+    }
+  } else {
+    position =
+      answer.status === 'checking'
+        ? answer.fen
+        : done && done.result.correct
+          ? done.fen
+          : puzzle.fen
+    if (wrong) {
+      arrows = [
         arrow(puzzle.solution.uci, ARROW_GOOD),
         ...(done.uci && done.uci !== puzzle.solution.uci ? [arrow(done.uci, ARROW_BAD)] : []),
       ]
-    : []
-
-  const squareStyles: Record<string, CSSProperties> = {}
-  if (selected) {
-    squareStyles[selected] = SELECTED_STYLE
-    for (const square of targets) squareStyles[square] = TARGET_STYLE
+    } else if (done && done.result.correct) {
+      arrows = [arrow(puzzle.solution.uci, ARROW_GOOD)]
+    }
+    if (solving) {
+      if (hintLevel >= 2 && coaching) {
+        squareStyles[coaching.hintSquare] = HINT_STYLE
+      }
+      if (selected) {
+        squareStyles[selected] = SELECTED_STYLE
+        for (const square of targets) squareStyles[square] = TARGET_STYLE
+      }
+    }
   }
+
+  function stepRefutation(next: number) {
+    const clamped = Math.max(0, Math.min(refSteps.length, next))
+    if (clamped !== refStep) {
+      if (clamped > 0) {
+        const s = refSteps[clamped - 1]
+        if (s) playMoveSan(s.move.san)
+      } else if (coaching) {
+        playMoveSan(coaching.played.move.san)
+      }
+    }
+    setRefStep(clamped)
+  }
+
   const moveNumber = Math.ceil(puzzle.ply / 2)
 
   return (
     <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
-      <div className="aspect-square w-full max-w-[560px] touch-none self-center select-none lg:self-start">
-        <Chessboard
-          options={{
-            id: 'puzzle-board',
-            position,
-            boardOrientation: puzzle.color,
-            allowDragging: solving,
-            canDragPiece: ({ piece }) => solving && piece.pieceType.startsWith(myPrefix),
-            onPieceDrop: ({ sourceSquare, targetSquare }) =>
-              targetSquare ? tryMove(sourceSquare, targetSquare) : false,
-            onSquareClick: ({ piece, square }) => onSquareClick(square, piece?.pieceType),
-            arrows,
-            allowDrawingArrows: false,
-            squareStyles,
-            animationDurationInMs: 150,
-            darkSquareStyle: { backgroundColor: '#769656' },
-            lightSquareStyle: { backgroundColor: '#eeeed2' },
-          }}
-        />
+      <div className="flex w-full max-w-[560px] flex-col gap-2.5 self-center lg:self-start">
+        <div className="aspect-square w-full touch-none select-none overflow-hidden rounded-md shadow-lg shadow-black/40">
+          <Chessboard
+            options={{
+              id: 'puzzle-board',
+              position,
+              boardOrientation: puzzle.color,
+              allowDragging: solving,
+              canDragPiece: ({ piece }) => solving && piece.pieceType.startsWith(myPrefix),
+              onPieceDrop: ({ sourceSquare, targetSquare }) =>
+                targetSquare ? tryMove(sourceSquare, targetSquare) : false,
+              onSquareClick: ({ piece, square }) => onSquareClick(square, piece?.pieceType),
+              arrows,
+              allowDrawingArrows: false,
+              squareStyles,
+              animationDurationInMs: 150,
+              darkSquareStyle: { backgroundColor: '#769656' },
+              lightSquareStyle: { backgroundColor: '#eeeed2' },
+            }}
+          />
+        </div>
+
+        {done && coaching && (
+          <div className="flex flex-col gap-2 rounded-xl border border-slate-800 bg-slate-900 p-2.5">
+            <div className="grid grid-cols-2 gap-1.5">
+              <button
+                type="button"
+                aria-pressed={reviewMode === 'best'}
+                onClick={() => setReviewMode('best')}
+                className={`min-h-9 rounded-lg px-3 text-sm font-medium transition-colors ${
+                  reviewMode === 'best'
+                    ? 'bg-emerald-600/25 text-emerald-200 ring-1 ring-emerald-500/70'
+                    : 'bg-slate-950/60 text-slate-400 hover:text-slate-100'
+                }`}
+              >
+                ✓ {t('coach.viewBest')}
+              </button>
+              <button
+                type="button"
+                aria-pressed={reviewMode === 'played'}
+                onClick={() => {
+                  setReviewMode('played')
+                  setRefStep(0)
+                  playMoveSan(coaching.played.move.san)
+                }}
+                className={`min-h-9 rounded-lg px-3 text-sm font-medium transition-colors ${
+                  reviewMode === 'played'
+                    ? 'bg-rose-600/25 text-rose-200 ring-1 ring-rose-500/70'
+                    : 'bg-slate-950/60 text-slate-400 hover:text-slate-100'
+                }`}
+              >
+                ✕ {t('coach.viewPlayed')}
+              </button>
+            </div>
+            {reviewMode === 'played' && refSteps.length > 0 && (
+              <div className="flex flex-col gap-1.5 border-t border-slate-800 pt-2">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-xs font-medium text-slate-300">
+                    {t('coach.watchLine')} (
+                    {t('coach.step', { step: refStep, total: refSteps.length })})
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      disabled={refStep === 0}
+                      onClick={() => stepRefutation(refStep - 1)}
+                      className="min-h-8 rounded-md bg-slate-800 px-3 text-xs font-semibold hover:bg-slate-700 disabled:opacity-40"
+                    >
+                      ◀
+                    </button>
+                    <button
+                      type="button"
+                      disabled={refStep >= refSteps.length}
+                      onClick={() => stepRefutation(refStep + 1)}
+                      className="min-h-8 rounded-md bg-rose-600/80 px-3 text-xs font-semibold text-white hover:bg-rose-500 disabled:opacity-40"
+                    >
+                      ▶
+                    </button>
+                  </div>
+                </div>
+                <p className="text-xs text-slate-400">
+                  {refStep === 0 && coaching.played.enemyReply
+                    ? formatEnemyReply(coaching.played.enemyReply)
+                    : refStep > 0 && refSteps[refStep - 1]
+                      ? `${refStep}. ${formatMoveAction(refSteps[refStep - 1]!.move)}`
+                      : null}
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <aside className="flex min-w-0 flex-1 flex-col gap-3 text-sm">
-        <div className="flex flex-col gap-1 rounded-xl border border-slate-800 bg-slate-900 p-3">
-          <p className="text-base font-semibold">{t('puzzles.prompt')}</p>
-          <p className="text-slate-300">
-            {t('puzzles.toMove', { color: t(`color.${puzzle.color}`) })}
-          </p>
-          <p className="text-slate-400">
+        <div className="flex flex-col gap-2 rounded-xl border border-slate-800 bg-slate-900 p-3.5">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-base font-semibold text-white">{t('puzzles.prompt')}</p>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-700 bg-slate-950 px-2.5 py-0.5 text-xs font-medium text-slate-200">
+              <span
+                aria-hidden="true"
+                className={`inline-block size-2.5 rounded-sm border border-slate-400 ${
+                  puzzle.color === 'white' ? 'bg-slate-100' : 'bg-slate-950'
+                }`}
+              />
+              {t('coach.turnYours', { color: t(`color.${puzzle.color}`) })}
+            </span>
+          </div>
+          <p className="text-xs text-slate-400">
             {t('puzzles.context', {
               date: formatDate(puzzle.endTime),
               opponent: opponent ?? '…',
@@ -412,9 +569,28 @@ function PuzzleBoard({
           {answered && <MotifChips motifs={puzzle.motifs} />}
         </div>
 
-        <Feedback puzzle={puzzle} answer={answer} box={answeredBox} />
+        {solving && hintLevel >= 1 && coaching && (
+          <div className="flex flex-col gap-1.5 rounded-xl border border-sky-700/60 bg-sky-950/30 p-3 text-sm">
+            <p className="font-semibold text-sky-300">💡 {t('coach.howToThink')}</p>
+            <p className="text-slate-200">{formatCoachTip(coaching)}</p>
+            {hintLevel >= 2 && (
+              <p className="text-xs font-medium text-sky-300">{t('coach.hintPieceMsg')}</p>
+            )}
+          </div>
+        )}
+
+        <Feedback puzzle={puzzle} coaching={coaching} answer={answer} box={answeredBox} />
 
         <div className="flex flex-wrap gap-2">
+          {solving && coaching && hintLevel < 2 && (
+            <button
+              type="button"
+              onClick={() => setHintLevel((h) => (h === 0 ? 1 : 2))}
+              className="min-h-11 rounded-lg border border-sky-600/70 bg-sky-950/30 px-4 font-medium text-sky-200 transition-colors hover:border-sky-400"
+            >
+              💡 {hintLevel === 0 ? t('coach.hint') : t('coach.hintPiece')}
+            </button>
+          )}
           {solving && (
             <button
               type="button"
@@ -449,10 +625,12 @@ function PuzzleBoard({
 
 function Feedback({
   puzzle,
+  coaching,
   answer,
   box,
 }: {
   puzzle: Puzzle
+  coaching: MistakeCoaching | null
   answer: Answer
   box: number | undefined
 }) {
@@ -474,32 +652,76 @@ function Feedback({
 
   const { result, san } = answer
   return (
-    <div
-      role="status"
-      className={`flex flex-col gap-1.5 rounded-xl border p-3 ${
-        result.correct ? 'border-emerald-700 bg-emerald-950/40' : 'border-rose-800 bg-rose-950/30'
-      }`}
-    >
-      {result.correct ? (
-        <p className="font-semibold text-emerald-300">
-          {result.exact
-            ? t('puzzles.correct', { move: san ?? '' })
-            : t('puzzles.correctAlt', { move: san ?? '', best: puzzle.solution.san })}
-        </p>
-      ) : (
-        <>
-          <p className="font-semibold text-rose-300">
-            {san ? t('puzzles.wrong', { move: san }) : t('puzzles.revealed')}
+    <div role="status" className="flex flex-col gap-2.5">
+      <div
+        className={`flex flex-col gap-1.5 rounded-xl border p-3.5 ${
+          result.correct ? 'border-emerald-700 bg-emerald-950/40' : 'border-rose-800 bg-rose-950/30'
+        }`}
+      >
+        {result.correct ? (
+          <p className="text-base font-semibold text-emerald-300">
+            {result.exact
+              ? t('puzzles.correct', { move: san ?? '' })
+              : t('puzzles.correctAlt', { move: san ?? '', best: puzzle.solution.san })}
           </p>
-          <p className="text-emerald-300">{t('puzzles.solution', { move: puzzle.solution.san })}</p>
+        ) : (
+          <>
+            <p className="text-base font-semibold text-rose-300">
+              {san ? t('puzzles.wrong', { move: san }) : t('puzzles.revealed')}
+            </p>
+            <p className="font-medium text-emerald-300">
+              {t('puzzles.solution', {
+                move: coaching ? formatMoveAction(coaching.best.move) : puzzle.solution.san,
+              })}
+            </p>
+          </>
+        )}
+        {coaching && (
+          <div className="mt-1 flex flex-col gap-0.5 border-t border-slate-800/80 pt-2">
+            <p className="text-xs font-semibold tracking-wide text-emerald-300/90 uppercase">
+              ✓ {t('coach.whyGood')}
+            </p>
+            <p className="text-slate-200">
+              {formatBestReason(coaching.best.move, coaching.best.reason)}
+            </p>
+          </div>
+        )}
+      </div>
+
+      {coaching ? (
+        <>
+          <div className="flex flex-col gap-1 rounded-xl border border-rose-900/60 bg-slate-900 p-3.5">
+            <p className="text-xs font-semibold tracking-wide text-rose-300 uppercase">
+              ✕ {t('coach.whyBad')}
+            </p>
+            <p className="text-slate-200">{formatPlayedReason(coaching)}</p>
+            <p className="text-xs text-slate-400">
+              {t('viewer.analysis.winChance', {
+                color: t(`color.${puzzle.color}`),
+                before: Math.round(puzzle.winBefore),
+                after: Math.round(puzzle.winAfter),
+              })}
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-1 rounded-xl border border-amber-700/50 bg-amber-950/20 p-3.5">
+            <p className="text-xs font-semibold tracking-wide text-amber-300 uppercase">
+              💡 {t('coach.howToThink')}
+            </p>
+            <p className="text-slate-200">{formatCoachTip(coaching)}</p>
+          </div>
         </>
+      ) : (
+        <div className="rounded-xl border border-slate-800 bg-slate-900 p-3">
+          <p className="text-slate-300">{t('puzzles.gameMove', { move: puzzle.played.san })}</p>
+          {puzzle.refutation.length > 0 && (
+            <p className="text-slate-400">
+              {t('puzzles.refutation', { line: puzzle.refutation.join(' ') })}
+            </p>
+          )}
+        </div>
       )}
-      <p className="text-slate-300">{t('puzzles.gameMove', { move: puzzle.played.san })}</p>
-      {puzzle.refutation.length > 0 && (
-        <p className="text-slate-400">
-          {t('puzzles.refutation', { line: puzzle.refutation.join(' ') })}
-        </p>
-      )}
+
       {box !== undefined && (
         <p className="text-xs text-slate-500">
           {t('puzzles.nextDue', { days: intervalDays(box) })}

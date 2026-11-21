@@ -7,6 +7,7 @@ import { loadOpenings, type OpeningsData } from '../../db/openings'
 import { formatPercent, t } from '../../i18n'
 import { BarList } from '../charts'
 import { formatDate, timeClassLabel } from '../format'
+import { OpeningTrainer } from '../OpeningTrainer'
 import { routeHref } from '../router'
 
 /** Openings shown per colour before "show all". */
@@ -24,6 +25,7 @@ export function OpeningsPage({ username: rawUsername }: { username: string }) {
 
 function Openings({ username }: { username: string }) {
   const [now] = useState(() => Date.now())
+  const [tab, setTab] = useState<'learn' | 'stats'>('learn')
   const [data, setData] = useState<OpeningsData | null>(null)
 
   useEffect(() => {
@@ -36,24 +38,62 @@ function Openings({ username }: { username: string }) {
     [data],
   )
 
-  const back = (
-    <a
-      href={routeHref({ name: 'games', username })}
-      className="self-start text-sm text-emerald-400 hover:underline"
-    >
-      ← {t('nav.backToGames')}
-    </a>
-  )
+  return (
+    <div className="flex flex-col gap-5">
+      <header className="flex flex-col gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h1 className="text-2xl font-bold tracking-tight">{t('openings.title')}</h1>
+          <div className="grid grid-cols-2 gap-1 rounded-xl border border-slate-800 bg-slate-900 p-1">
+            <button
+              type="button"
+              aria-pressed={tab === 'learn'}
+              onClick={() => setTab('learn')}
+              className={`min-h-9 rounded-lg px-3.5 text-sm font-medium transition-colors ${
+                tab === 'learn'
+                  ? 'bg-emerald-600 text-white'
+                  : 'text-slate-400 hover:text-slate-100'
+              }`}
+            >
+              📖 {t('openings.tab.learn')}
+            </button>
+            <button
+              type="button"
+              aria-pressed={tab === 'stats'}
+              onClick={() => setTab('stats')}
+              className={`min-h-9 rounded-lg px-3.5 text-sm font-medium transition-colors ${
+                tab === 'stats'
+                  ? 'bg-emerald-600 text-white'
+                  : 'text-slate-400 hover:text-slate-100'
+              }`}
+            >
+              📊 {t('openings.tab.stats')}
+            </button>
+          </div>
+        </div>
+      </header>
 
-  if (!data || !principles) {
-    return (
-      <div className="flex flex-col gap-3">
-        {back}
+      {tab === 'learn' ? (
+        <OpeningTrainer />
+      ) : !data || !principles ? (
         <p className="text-slate-400">{t('openings.loading')}</p>
-      </div>
-    )
-  }
+      ) : (
+        <OpeningStatsView username={username} data={data} stats={stats} principles={principles} />
+      )}
+    </div>
+  )
+}
 
+function OpeningStatsView({
+  username,
+  data,
+  stats,
+  principles,
+}: {
+  username: string
+  data: OpeningsData
+  stats: OpeningStats[]
+  principles: ReturnType<typeof summarizePrinciples>
+}) {
   const scope = [
     data.filter.timeClasses.map(timeClassLabel).join(', ') || '—',
     t(`games.range.${data.filter.dateRange}`),
@@ -64,13 +104,9 @@ function Openings({ username }: { username: string }) {
 
   return (
     <div className="flex flex-col gap-5">
-      {back}
-      <header className="flex flex-col gap-1">
-        <h1 className="text-2xl font-bold">{t('openings.title')}</h1>
-        <p className="text-sm text-slate-400">
-          {t('openings.scope', { scope, games: data.games.length })}
-        </p>
-      </header>
+      <p className="text-sm text-slate-400">
+        {t('openings.scope', { scope, games: data.games.length })}
+      </p>
 
       {data.games.length === 0 ? (
         <p className="rounded-xl border border-slate-800 bg-slate-900 p-4 text-slate-300">

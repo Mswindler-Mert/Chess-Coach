@@ -1,4 +1,4 @@
-import { Chess, type Square } from 'chess.js'
+import { Chess, type PieceSymbol, type Square } from 'chess.js'
 import type { Color } from '../games/model'
 
 const VALUES: Record<string, number> = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 1000 }
@@ -84,4 +84,48 @@ export function hangingPieces(fen: string, color: Color): string[] {
   return found
     .sort((a, b) => b.value - a.value || a.square.localeCompare(b.square))
     .map((f) => f.square)
+}
+
+export interface ThreatCapture {
+  from: string
+  to: string
+  attackerPiece: PieceSymbol
+  targetPiece: PieceSymbol
+  /** Net material points the attacker wins in static exchange. */
+  gain: number
+}
+
+/**
+ * Finds the cheapest legal capture by `attacker` onto `square` when `staticExchange` is positive.
+ * Used to draw an explicit red threat arrow and explain who can take a hanging piece.
+ */
+export function cheapestCapturer(
+  fen: string,
+  square: string,
+  attacker: Color,
+): ThreatCapture | null {
+  const gain = staticExchange(fen, square, attacker)
+  if (gain <= 0) return null
+  let chess: Chess
+  try {
+    chess = new Chess(withTurn(fen, attacker))
+  } catch {
+    return null
+  }
+  const target = chess.get(square as Square)
+  if (!target || target.color === letter(attacker)) return null
+  const captures = chess
+    .moves({ verbose: true })
+    .filter((m) => m.to === square && (m.isCapture() || m.isEnPassant()))
+  if (captures.length === 0) return null
+  const cheapest = captures.reduce((a, b) =>
+    (VALUES[a.piece] ?? 0) <= (VALUES[b.piece] ?? 0) ? a : b,
+  )
+  return {
+    from: cheapest.from,
+    to: square,
+    attackerPiece: cheapest.piece,
+    targetPiece: target.type,
+    gain,
+  }
 }

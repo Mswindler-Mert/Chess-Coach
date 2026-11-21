@@ -67,6 +67,7 @@ describe('generatePuzzles', () => {
       solution: { uci: 'e4d5', san: 'exd5' },
       bestScore: { type: 'cp', value: 0 },
       refutation: ['dxe4', 'dxe4+'],
+      refutationUci: ['d5e4', 'd3e4'],
       winBefore: 50,
       endTime: game.endTime,
     })

@@ -21,14 +21,18 @@ export interface HangingDrill {
   ply: number
   /** The position shown. */
   fen: string
+  /** Position before the user's move (for showing the engine's alternative on the board). */
+  fenBefore: string
   /** The user's colour: the board is shown from this side. */
   color: Color
   /** Squares to tap: hanging user pieces (`own`) or free enemy pieces (`free`). */
   answer: string[]
   /** The move the user played in the game. */
   playedSan: string
+  playedUci: string
   /** The engine's move in the position before the user's move. */
   bestSan: string | null
+  bestUci: string | null
   endTime: number
 }
 
@@ -54,9 +58,12 @@ export function generateHangingDrills(
     const base = {
       gameId: game.id,
       ply: move.ply,
+      fenBefore,
       color: game.userColor,
       playedSan: move.san,
+      playedUci: move.uci,
       bestSan: best ? uciToSan(fenBefore, best) : null,
+      bestUci: best ?? null,
       endTime: game.endTime,
     }
     if (tags.includes('hanging-piece')) {

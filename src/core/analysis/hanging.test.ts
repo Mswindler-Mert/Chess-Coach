@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { hangingPieces, staticExchange } from './hanging'
+import { cheapestCapturer, hangingPieces, staticExchange } from './hanging'
 
 describe('staticExchange', () => {
   it('wins an undefended piece outright', () => {
@@ -59,5 +59,24 @@ describe('hangingPieces', () => {
     // Knight e4 defended by the d3 pawn, attacked only by a knight: Nxe4 dxe4 is an even trade.
     const fen = '4k3/8/5n2/8/4N3/3P4/8/4K3 w - - 0 1'
     expect(hangingPieces(fen, 'white')).toEqual([])
+  })
+})
+
+describe('cheapestCapturer', () => {
+  it('identifies the cheapest piece that wins material on a square', () => {
+    // Black queen d8 and pawn c6 could take white bishop on d5; cheapest is pawn c6.
+    const fen = '3qk3/8/2p5/3B4/8/8/8/4K3 w - - 0 1'
+    expect(cheapestCapturer(fen, 'd5', 'black')).toEqual({
+      from: 'c6',
+      to: 'd5',
+      attackerPiece: 'p',
+      targetPiece: 'b',
+      gain: 3,
+    })
+  })
+
+  it('returns null when capturing does not win material', () => {
+    const fen = '4k3/8/8/3q4/4N3/3P4/8/4K3 b - - 0 1'
+    expect(cheapestCapturer(fen, 'e4', 'black')).toBeNull()
   })
 })

@@ -548,3 +548,27 @@ Her aşama ayrı bir dal (branch) ve küçük commit'lerle yapılır. Bir aşama
   sesleri; tercih `localStorage` (`chess-coach:sound`), üst çubuktaki düğmeyle kapatılabilir.
 - **Ana sayfa (`ui/pages/HomePage.tsx`):** Hero kartı, segment kontrol tarzı site seçici ve 6 renkli
   özellik kartıyla yenilendi.
+
+### Gerçek Antrenör Modu + Etkileşimli Açılış Rehberi (2026-11-21)
+- **İnsan dili hamle anlatımı (`core/analysis/explainMove.ts` + `ui/moveText.ts`):** Şifreli SAN notasyonları
+  (`19... Rxa2`, `O-O`, `Bxd5`) yerine doğal Türkçe/İngilizce anlatım (parantez içinde kısa kodu korunur:
+  "Kalenle a2’deki piyonu aldın (Rxa2)", "kısa rok yapmak (O-O)"). Türkçe kare ve iyelik ekleri testlidir.
+- **Koç açıklama motoru (`core/analysis/coachExplain.ts` + `cheapestCapturer`):** Her hata anında 3 net
+  öğretici çıktı üretir: (1) En iyi hamle neden iyi (bedava alış, çatal/açmaz/şiş, tehdit altındaki taşı
+  kurtarma, rok, mat), (2) Oyundaki hamle neden kötü (korumasız kalan taş + en ucuz rakip alıcı, rakibin
+  ceza hamlesi ve adım adım ceza varyantı), (3) Bir dahaki sefere nasıl düşünmelisin (motife özel zihinsel
+  kontrol listesi).
+- **Bulmacalar (`ui/pages/PuzzlePage.tsx`):** Çözmeden önce 2 kademeli **İpucu** (1. tık düşünme rehberi,
+  2. tık oynanacak taşın karesini mavi halkayla vurgulama). Çözümden sonra tahtada **En iyi hamle / Oyunda
+  oynadığın** geçişi ve rakibin ceza varyantını ◀/▶ ile tahtada adım adım izleme.
+- **Asılı Taş (`ui/pages/HangingPage.tsx`):** Belirgin "Sen: Beyaz/Siyah" ve sıra rozeti; oynanan hamle
+  sarı karelerle işaretli; kontrol sonrası her asılı taşa en ucuz alıcıdan **kırmızı saldırı oku** + Türkçe
+  açıklama + "Öneriyi tahtada gör" geçişi.
+- **Oyun İnceleme (`ui/pages/GamePage.tsx`):** Hatalı hamlelerde aynı Türkçe koç açıklaması ve düşünme
+  ipucu görünür.
+- **Etkileşimli Açılış Rehberi (`core/openings/guides.ts`, `ui/OpeningTrainer.tsx`):** 5 temel açılış
+  (İtalyan Açılışı, Londra Sistemi, Klasik 1…e5, Caro-Kann, Kabul Edilmemiş Vezir Gambiti), toplam 11
+  varyasyon. Kısa tanıtım (Temel fikir, Avantajları, Dikkat edilecekler) + iki mod: **Rehberli öğren**
+  (yeşil ok + hamle açıklaması + otomatik rakip cevabı) ve **Kendin dene (pratik)** (oksuz, ipuçlu).
+  İlerleme `settings.openingProgress` içinde saklanır (Dexie sürümü artmadı), tamamlanan varyasyon günlük
+  seriye +1 ekler. Tüm varyasyon hamleleri `guides.test.ts` içinde `chess.js` ile doğrulanır.
