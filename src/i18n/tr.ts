@@ -186,6 +186,68 @@ export const tr = {
   'principle.desc.edge-pawns': 'İlk 10 hamlede a/h piyonu ileri sürüldü (alış değil).',
   'principle.desc.undeveloped-pieces': '10. hamlede en az iki at/fil hâlâ başlangıç karesindeydi.',
 
+  'endgame.open': 'Oyun sonu',
+  'endgame.title': 'Oyun sonu',
+  'endgame.intro':
+    'Stockfish’e karşı oyna: kendi oyunlarında kaçırdığın kazanılmış oyun sonlarını kazan, temel oyun sonlarını öğren.',
+  'endgame.loading': 'Hazırlanıyor…',
+  'endgame.notFound': 'Bu çalışma bulunamadı.',
+  'endgame.back': 'Oyun sonu çalışmaları',
+  'endgame.own.heading': 'Kendi oyunlarından: bunu kazan',
+  'endgame.own.empty':
+    'Seçili tempo ve tarih aralığındaki analiz edilmiş oyunlarında kaçırılmış kazanılmış oyun sonu yok.',
+  'endgame.own.title': '{move}. hamlede kaçan oyun sonu',
+  'endgame.own.body': '{date} · kazanma şansın %{win} iken {move} oynadın.',
+  'endgame.own.view': 'Oyunda gör ({move})',
+  'endgame.curriculum.heading': 'Temel oyun sonları',
+  'endgame.solved': 'çözüldü',
+  'endgame.attempts': '{count} deneme',
+  'endgame.goal.mate': '{moves} hamlede mat et',
+  'endgame.goal.win': '{moves} hamlede kazan',
+  'endgame.goal.draw': '{moves} hamle dayan (beraberlik)',
+  'endgame.moves': 'Hamle: {used}/{limit}',
+  'endgame.thinking': 'Stockfish düşünüyor…',
+  'endgame.restart': 'Baştan başla',
+  'endgame.lesson.queen-mate': 'Vezirle mat',
+  'endgame.lesson.two-rooks-mate': 'İki kaleyle mat',
+  'endgame.lesson.rook-mate': 'Kaleyle mat',
+  'endgame.lesson.opposition': 'Karşılık (opposition)',
+  'endgame.lesson.square-rule': 'Kare kuralı',
+  'endgame.lesson.lucena': 'Lucena pozisyonu',
+  'endgame.lesson.philidor': 'Philidor pozisyonu',
+  'endgame.desc.queen-mate': 'Vezir ve şahla çıplak şahı mat et.',
+  'endgame.desc.two-rooks-mate': 'İki kaleyle “merdiven” matı.',
+  'endgame.desc.rook-mate': 'Kale ve şahla şahı kenara sıkıştırıp mat et.',
+  'endgame.desc.opposition': 'Piyonlu şah oyun sonunda karşılığı alıp piyonu vezir yap.',
+  'endgame.desc.square-rule': 'Şahınla rakibin piyonunu yakala.',
+  'endgame.desc.lucena': 'Kale + piyon karşı kale: köprü kurarak kazan.',
+  'endgame.desc.philidor': 'Kale karşı kale + piyon: doğru savunmayla berabere kal.',
+  'endgame.hint.queen-mate':
+    'Veziri şahtan bir at hamlesi uzağa koyup şahı kenara it; pat yapmamaya dikkat et, sonra şahını yaklaştır.',
+  'endgame.hint.two-rooks-mate':
+    'Kaleler sırayla şah çekip şahı kenara doğru basamak basamak itsin.',
+  'endgame.hint.rook-mate':
+    'Kaleyle bir çizgi çekip şahı küçük bir kutuya hapset, şahını yaklaştırıp kutuyu daralt.',
+  'endgame.hint.opposition':
+    'Şahlar arasında tek kare kalacak şekilde karşı karşıya gelmek karşılıktır. Piyonun yedek hamlesini doğru anda kullan.',
+  'endgame.hint.square-rule':
+    'Piyondan vezir karesine kadar bir kare çiz: şahın bu karenin içine girebiliyorsa piyonu yakalar.',
+  'endgame.hint.lucena':
+    'Kaleni 4. sıraya getirip “köprü” kur: şahın çıkınca gelen yandan şahları kaleyle kes.',
+  'endgame.hint.philidor':
+    'Kaleni 6. sırada tut; piyon 6. sıraya ilerleyince kaleyi geri götürüp arkadan şah çek.',
+  'endgame.result.success.mate': 'Mat! Başardın.',
+  'endgame.result.success.forced-mate': 'Kazandın: artık zorlayıcı bir mat var.',
+  'endgame.result.success.promoted': 'Kazandın: piyon vezir oldu ve fark büyük.',
+  'endgame.result.success.held': 'Başardın: hamle sınırına kadar dayandın.',
+  'endgame.result.success.rules-draw': 'Başardın: oyun berabere bitti.',
+  'endgame.result.fail.mated': 'Mat oldun. Baştan dene.',
+  'endgame.result.fail.rules-draw':
+    'Oyun berabere bitti (pat, tekrar ya da yetersiz materyal). Baştan dene.',
+  'endgame.result.fail.advantage-lost': 'Üstünlük kaçtı. Baştan dene.',
+  'endgame.result.fail.lost': 'Pozisyon kaybedildi. Baştan dene.',
+  'endgame.result.fail.limit': 'Hamle sınırı doldu. Baştan dene.',
+
   'charts.table': 'Tablo olarak göster',
   'charts.period': 'Dönem',
   'charts.date': 'Tarih',

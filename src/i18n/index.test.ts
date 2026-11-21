@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { hasMessage, t } from './index'
+import { CURRICULUM } from '../core/endgames/curriculum'
 
 describe('t', () => {
   it('returns the Turkish string for a key', () => {
@@ -20,5 +21,22 @@ describe('t', () => {
 
   it('leaves unknown placeholders untouched', () => {
     expect(t('footer.license', {})).toContain('{name}')
+  })
+})
+
+describe('dynamic endgame keys', () => {
+  it('has a title, description and hint for every lesson', () => {
+    for (const { id } of CURRICULUM) {
+      for (const kind of ['lesson', 'desc', 'hint']) {
+        expect(hasMessage(`endgame.${kind}.${id}`), `endgame.${kind}.${id}`).toBe(true)
+      }
+    }
+  })
+
+  it('has a message for every result', () => {
+    const success = ['mate', 'forced-mate', 'promoted', 'held', 'rules-draw']
+    const fail = ['mated', 'rules-draw', 'advantage-lost', 'lost', 'limit']
+    for (const reason of success) expect(hasMessage(`endgame.result.success.${reason}`)).toBe(true)
+    for (const reason of fail) expect(hasMessage(`endgame.result.fail.${reason}`)).toBe(true)
   })
 })

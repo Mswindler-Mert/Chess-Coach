@@ -70,6 +70,7 @@ describe('UciEngine with Stockfish', { timeout: 60_000 }, () => {
   })
 
   it('agrees with every endgame lesson’s goal', async () => {
+    const verdicts: { id: string; fits: boolean; score: string }[] = []
     for (const lesson of CURRICULUM) {
       await engine.newGame()
       const { score } = await engine.evaluate(
@@ -77,17 +78,15 @@ describe('UciEngine with Stockfish', { timeout: 60_000 }, () => {
         { depth: 16 },
       )
       // The user is to move, so the score is the user's.
-      if (lesson.goal === 'draw') {
-        expect({ id: lesson.id, score }).toEqual({
-          id: lesson.id,
-          score: expect.objectContaining({ type: 'cp' }),
-        })
-        expect(Math.abs(score.value), lesson.id).toBeLessThanOrEqual(100)
-      } else {
-        const winning = score.type === 'mate' ? score.value > 0 : score.value >= 300
-        expect(winning, `${lesson.id}: ${score.type} ${score.value}`).toBe(true)
-      }
+      const fits =
+        lesson.goal === 'draw'
+          ? score.type === 'cp' && Math.abs(score.value) <= 100
+          : score.type === 'mate'
+            ? score.value > 0
+            : score.value >= 300
+      verdicts.push({ id: lesson.id, fits, score: `${score.type} ${score.value}` })
     }
+    expect(verdicts.filter((v) => !v.fits)).toEqual([])
   })
 
   it('analyses a real game and finds the losing side’s errors', async () => {

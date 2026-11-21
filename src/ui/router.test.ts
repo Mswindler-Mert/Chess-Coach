@@ -11,6 +11,9 @@ describe('router', () => {
     { name: 'puzzles', username: 'mswindler07', focus: 'endgame' },
     { name: 'dashboard', username: 'mswindler07' },
     { name: 'openings', username: 'mswindler07' },
+    { name: 'endgames', username: 'mswindler07' },
+    { name: 'endgames', username: 'mswindler07', lesson: 'lucena' },
+    { name: 'endgames', username: 'mswindler07', lesson: 'abc-123:57' },
   ]
 
   it('round-trips every route through its hash', () => {

@@ -9,6 +9,8 @@ export type Route =
   | { name: 'puzzles'; username: string; focus?: string }
   | { name: 'dashboard'; username: string }
   | { name: 'openings'; username: string }
+  /** Without `lesson`: the list; with it, a curriculum id or an own drill id (`gameId:ply`). */
+  | { name: 'endgames'; username: string; lesson?: string }
 
 export function parseRoute(hash: string): Route {
   const parts = hash
@@ -30,6 +32,11 @@ export function parseRoute(hash: string): Route {
     }
     if (parts[2] === 'dashboard') return { name: 'dashboard', username: parts[1] }
     if (parts[2] === 'openings') return { name: 'openings', username: parts[1] }
+    if (parts[2] === 'endgames') {
+      return parts[3]
+        ? { name: 'endgames', username: parts[1], lesson: parts[3] }
+        : { name: 'endgames', username: parts[1] }
+    }
     return { name: 'games', username: parts[1] }
   }
   return { name: 'home' }
@@ -53,6 +60,10 @@ export function routeHref(route: Route): string {
       return `#/u/${encodeURIComponent(route.username)}/dashboard`
     case 'openings':
       return `#/u/${encodeURIComponent(route.username)}/openings`
+    case 'endgames':
+      return `#/u/${encodeURIComponent(route.username)}/endgames${
+        route.lesson ? `/${encodeURIComponent(route.lesson)}` : ''
+      }`
   }
 }
 

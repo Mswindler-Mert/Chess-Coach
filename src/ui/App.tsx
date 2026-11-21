@@ -3,6 +3,7 @@ import { GamePage } from './pages/GamePage'
 import { GamesPage } from './pages/GamesPage'
 import { HomePage } from './pages/HomePage'
 import { DashboardPage } from './pages/DashboardPage'
+import { EndgamesPage } from './pages/EndgamesPage'
 import { OpeningsPage } from './pages/OpeningsPage'
 import { PuzzlePage } from './pages/PuzzlePage'
 import { routeHref, useRoute } from './router'
@@ -47,6 +48,13 @@ export default function App() {
             key={`${route.username}:${route.focus ?? ''}`}
             username={route.username}
             focus={route.focus}
+          />
+        )}
+        {route.name === 'endgames' && (
+          <EndgamesPage
+            key={`${route.username}:${route.lesson ?? ''}`}
+            username={route.username}
+            lesson={route.lesson}
           />
         )}
         {route.name === 'openings' && (
