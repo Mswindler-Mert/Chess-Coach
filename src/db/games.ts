@@ -76,8 +76,7 @@ export function syncUserGames(
   let entry = inFlight.get(username)
   if (!entry) {
     const listeners = new Set<ProgressListener>()
-    const onProgress = (progress: SyncProgress) =>
-      listeners.forEach((listener) => listener(progress))
+    const notify = (progress: SyncProgress) => listeners.forEach((listener) => listener(progress))
     const run =
       sourceOf(username) === 'lichess'
         ? syncLichess(username, {
