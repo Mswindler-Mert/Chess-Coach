@@ -3,6 +3,7 @@ import { afterAll, describe, expect, it } from 'vitest'
 import { fixtureGame, OWNER } from '../../tests/helpers'
 import { analyzeGame } from '../core/analysis/analyzeGame'
 import { tagGame } from '../core/analysis/motifs'
+import { CURRICULUM } from '../core/endgames/curriculum'
 import { normalizeGame, type Game } from '../core/games/model'
 import { buildReplay } from '../core/games/replay'
 import { UciEngine, type EngineTransport } from './engine'
@@ -66,6 +67,27 @@ describe('UciEngine with Stockfish', { timeout: 60_000 }, () => {
     ])
     expect(a.depth).toBe(4)
     expect(b.depth).toBe(5)
+  })
+
+  it('agrees with every endgame lesson’s goal', async () => {
+    for (const lesson of CURRICULUM) {
+      await engine.newGame()
+      const { score } = await engine.evaluate(
+        { startFen: lesson.fen, moves: [], fen: lesson.fen },
+        { depth: 16 },
+      )
+      // The user is to move, so the score is the user's.
+      if (lesson.goal === 'draw') {
+        expect({ id: lesson.id, score }).toEqual({
+          id: lesson.id,
+          score: expect.objectContaining({ type: 'cp' }),
+        })
+        expect(Math.abs(score.value), lesson.id).toBeLessThanOrEqual(100)
+      } else {
+        const winning = score.type === 'mate' ? score.value > 0 : score.value >= 300
+        expect(winning, `${lesson.id}: ${score.type} ${score.value}`).toBe(true)
+      }
+    }
   })
 
   it('analyses a real game and finds the losing side’s errors', async () => {
