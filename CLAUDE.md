@@ -132,7 +132,7 @@ Her aşama ayrı bir dal (branch) ve küçük commit'lerle yapılır. Bir aşama
 - [x] **M4 – Panel:** İstatistikler ve grafikler
 - [x] **M5 – Motif etiketleme:** asili-tas, bedava-tasi-almadi, mat, kazanılmış oyunu kaçırma, zaman baskısı
 - [x] **M6 – Açılış modülü**
-- [ ] **M7 – Oyun sonu modülü**
+- [x] **M7 – Oyun sonu modülü**
 - [ ] **M8 – PWA ve mobil cilalama:** Kurulabilir uygulama, dokunmatik tahta, çevrimdışı çalışma
 - [ ] **Sonra:** Lichess desteği, İngilizce arayüz, Capacitor ile Android uygulaması, motif tespitinin genişletilmesi
 
@@ -347,3 +347,25 @@ Her aşama ayrı bir dal (branch) ve küçük commit'lerle yapılır. Bir aşama
 - **İlk sonuç (mswindler07, blitz + rapid, son 30 gün, 45 oyun):** aynı taşı tekrar %69, rok yok %27,
   kenar piyonu %24, geç rok %18, erken vezir %11, gelişmemiş taşlar %9. "Aynı taşı tekrar" saldırıdan kaçan
   taşı da sayıyor; fazla sık çıkarsa tehdit altındaki taşı hariç tutmayı düşün.
+
+### M7 – Oyun sonu modülü (2026-11-21)
+- **Ekranlar:** `#/u/:kullanıcı/endgames` (liste, oyun listesinde "Oyun sonu") ve
+  `#/u/:kullanıcı/endgames/:ders` (oyna). Ders kimliği müfredat id'si ya da kendi oyunundan `gameId:ply`.
+- **Müfredat (`core/endgames/curriculum.ts`):** vezirle mat (15 hamle), iki kaleyle mat (15), kaleyle mat (30),
+  karşılık (kazan, 30), kare kuralı (siyah, beraberlik, 15), Lucena (kazan, 40), Philidor (siyah, beraberlik, 30).
+  **Her FEN Stockfish ile doğrulandı** ve `engine.test.ts` bunu her test koşusunda tekrar kontrol eder
+  (derinlik 16: mat/kazan → mat ya da ≥ +3, beraberlik → |değer| ≤ 1). Karşılık için ilk adaylar beraberlik
+  çıktı; seçilen pozisyon "8/8/3k4/8/3K4/8/3P4/8 w": beyaz ancak d2-d3 tempo hamlesiyle kazanır.
+- **Kendi oyunlarından (`core/endgames/fromGames.ts`):** kullanıcının oyun sonu evresindeki hamlesi win%'i
+  ≥ 80'den ≤ 50'ye düşürdüyse, o hamleden önceki pozisyon "bunu kazan" çalışması olur (40 hamle). Ortak filtre
+  (tempo + tarih aralığı) ve analiz gerekir.
+- **Hedef kontrolü (`core/endgames/judge.ts`, saf):** mat → başarı (her hedefte), mat olmak → başarısız;
+  kural beraberliği (pat, yetersiz materyal, üç tekrar, 50 hamle) sadece beraberlik hedefinde başarı. Motor
+  skoru (kullanıcının açısından): mat/kazan hedefinde < +2 → "üstünlük kaçtı"; kazan hedefinde zorlayıcı mat
+  ya da vezir terfisi + ≥ +5 → başarı; beraberlik hedefinde ≤ −5 ya da mat → kaybedildi. Hamle sınırı
+  kullanıcının sırası geldiğinde kontrol edilir (beraberlikte sınıra ulaşmak başarı).
+- **Motor:** paylaşılan worker, derinlik 12 (`ENGINE_DEPTH`). Kullanıcı hamlesinden sonraki pozisyon bir kez
+  aranır: hem skor (hedef kontrolü) hem motorun cevabı buradan gelir. Terfi her zaman vezir.
+- **İlerleme:** `settings.endgameProgress` (deneme sayısı, çözüldü mü, en az hamle). Dexie sürümü değişmedi.
+- **Dinamik i18n anahtarları** (`endgame.lesson|desc|hint.<id>`, `endgame.result.*`) `i18n/index.test.ts`
+  ile kontrol edilir; yeni ders eklerken üç metni de ekle.
