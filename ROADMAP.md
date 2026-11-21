@@ -39,10 +39,10 @@ Asılı taşı görmeyi doğrudan çalıştırmak.
 
 ## R4 – Günlük antrenman planı
 
-- [ ] Oyun listesinin üstünde **"Bugünün antrenmanı"** kartı: vadesi gelen bulmacalar, 1 asılı taş turu,
+- [x] Oyun listesinin üstünde **"Bugünün antrenmanı"** kartı: vadesi gelen bulmacalar, 1 asılı taş turu,
       1 oyun sonu dersi (çözülmemiş ilk ders), son oyunun incelemesi.
-- [ ] **Seri (streak):** antrenman yapılan ardışık gün sayısı; günlük hedef (ör. 10 bulmaca) ilerleme çubuğu.
-- [ ] Saf fonksiyonlar (plan üretimi, seri hesabı) + testler.
+- [x] **Seri (streak):** antrenman yapılan ardışık gün sayısı; günlük hedef (ör. 10 bulmaca) ilerleme çubuğu.
+- [x] Saf fonksiyonlar (plan üretimi, seri hesabı) + testler.
 
 ## R5 – Yedekle / geri yükle
 

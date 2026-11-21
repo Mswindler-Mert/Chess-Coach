@@ -471,3 +471,15 @@ Her aşama ayrı bir dal (branch) ve küçük commit'lerle yapılır. Bir aşama
   `RunnerState.remaining` kalan oyun sayısı (sürmekte olan dahil).
 - **Gösterge:** üst menüde "Analiz: N oyun" (yeşil nabız), o kullanıcının oyun listesine götürür.
 - **Telefonda:** arka plan analizi pil ve işlemci kullanır; gerekirse ayardan kapatılabilir.
+
+### R4 – Günlük antrenman planı (2026-11-22)
+- **Etkinlik kaydı:** `settings.activityLog` = `{ "YYYY-MM-DD": sayı }`, **yerel** takvim günü
+  (`core/training/daily.ts`, `dayKey`). Biten her bulmaca, asılı taş alıştırması ve oyun sonu denemesi +1
+  (`db/daily.ts`, `recordActivity`). 400 günden eski kayıtlar atılır.
+- **Seri:** bugüne kadar ardışık aktif günler; bugün henüz bir şey yapılmadıysa dünden geriye sayılır (seri gün
+  bitene kadar yaşar). En uzun seri de tutulur. Günlük hedef `DAILY_GOAL = 10`.
+- **Plan (`buildDailyPlan`):** sırayla en fazla 5 bulmaca (önce vadesi gelenler), en fazla 3 asılı taş
+  alıştırması, çözülmemiş ilk müfredat dersi, son analiz edilmiş oyunun ilk kritik anı. Yapılacak bir şey yoksa
+  o madde çıkmaz. Yükleyici her oyunu bir kez tekrar oynatıp hem bulmacaları hem alıştırmaları üretir.
+- **Kart:** oyun listesinde başlığın altında "Bugünün antrenmanı"; ekrandaki filtreyi kullanır (filtre değişince
+  yenilenir), arka plan analizi bitince de yenilenir.
