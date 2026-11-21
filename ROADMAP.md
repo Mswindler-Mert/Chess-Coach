@@ -32,10 +32,10 @@ Asılı taşı görmeyi doğrudan çalıştırmak.
 
 ## R3 – Otomatik analiz
 
-- [ ] Ayar: "Yeni oyunları otomatik analiz et" (varsayılan açık). Senkronizasyon bitince filtredeki
+- [x] Ayar: "Yeni oyunları otomatik analiz et" (varsayılan açık). Senkronizasyon bitince filtredeki
       analiz edilmemiş oyunlar kendiliğinden kuyruğa girer.
-- [ ] Uygulama açılınca (son kullanıcıyla) arka planda senkronizasyon + analiz devam eder.
-- [ ] Üst menüde küçük analiz durumu göstergesi (ör. "Analiz 12/45").
+- [x] Uygulama açılınca (son kullanıcıyla) arka planda senkronizasyon + analiz devam eder.
+- [x] Üst menüde küçük analiz durumu göstergesi (ör. "Analiz 12/45").
 
 ## R4 – Günlük antrenman planı
 

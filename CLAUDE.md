@@ -236,7 +236,7 @@ Her aşama ayrı bir dal (branch) ve küçük commit'lerle yapılır. Bir aşama
   ardından devam eder; filtrede kapalı tempodaki oyun için düğme yerine uyarı çıkar.
 - **Hız (2026-11, masaüstü):** derinlik 12'de oyun başı ~1 sn; 638 blitz+rapid oyunun tamamı ~10–15 dk.
 - **Bilinen eksikler:** değerlendirme grafiği yok (M4), tahtada en iyi hamle oku yok (M3'te bulmacada),
-  kuyruk sekme kapanınca durur (sayfa açılınca kendiliğinden başlamaz, "Analizi başlat" gerekir).
+  kuyruk sekme kapanınca durur. (R3 ile analiz artık kendiliğinden başlıyor; bkz. R3.)
 
 ### Tarih aralığı filtresi (2026-11-21)
 - **Seçenekler:** Son 30 gün / Son 3 ay / Tümü (`DateRange`: `'30d' | '90d' | 'all'`, `core/games/filter.ts`).
@@ -457,3 +457,17 @@ Her aşama ayrı bir dal (branch) ve küçük commit'lerle yapılır. Bir aşama
   bedava taş ise ek kısayol. Seçim sarı halka; sonuçta yeşil = bulunan, kırmızı = kaçırılan, turuncu = yanlış.
 - **Tehdit görünümü:** oyun sayfasında onay kutusu; iki tarafın asılı taşlarını kırmızı halkayla gösterir.
 - **İlk sonuç (blitz + rapid, son 30 gün):** 63 alıştırma.
+
+### R3 – Otomatik analiz (2026-11-22)
+- **Ayar:** `settings.autoAnalyze` (varsayılan **açık**), analiz kutusunda onay kutusu. Kapatınca sadece
+  "Analizi başlat" ile çalışır.
+- **Ne zaman başlar:** (1) oyun listesinde senkronizasyon bittiğinde (hata/çevrimdışı olsa da, kayıtlı oyunlar
+  için), (2) tempo ya da tarih aralığı değişince (filtreye yeni giren oyunlar), (3) **uygulama açılınca**
+  (`ui/background.ts`, `startBackgroundWork`): ekrandaki kullanıcı ya da son kullanıcı için arka planda
+  senkronizasyon + analiz, hangi sayfadan açılırsa açılsın. Uygulama başına bir kez.
+- **Duraklat'a saygı:** `analysisRunner.autoStart` kullanıcı bu oturumda duraklattıysa ya da başka kullanıcının
+  analizi sürüyorsa hiçbir şey yapmaz; elle başlatınca bayrak kalkar. Sayfa yenilenince sıfırlanır.
+- **Motor gereksiz başlamaz:** çalıştırıcı önce kuyruğu planlar, analiz edilecek oyun varsa Stockfish'i başlatır.
+  `RunnerState.remaining` kalan oyun sayısı (sürmekte olan dahil).
+- **Gösterge:** üst menüde "Analiz: N oyun" (yeşil nabız), o kullanıcının oyun listesine götürür.
+- **Telefonda:** arka plan analizi pil ve işlemci kullanır; gerekirse ayardan kapatılabilir.
