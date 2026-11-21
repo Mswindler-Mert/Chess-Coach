@@ -136,6 +136,10 @@ export const tr = {
   'motif.missed-free-piece': 'Bedava taş alınmadı',
   'motif.allowed-fork': 'Çatala düşme',
   'motif.missed-fork': 'Çatal kaçtı',
+  'motif.allowed-pin': 'Açmaza düşme',
+  'motif.missed-pin': 'Açmaz kaçtı',
+  'motif.allowed-skewer': 'Şişe düşme',
+  'motif.missed-skewer': 'Şiş kaçtı',
   'motif.missed-mate': 'Mat kaçtı',
   'motif.walked-into-mate': 'Mata düşme',
   'motif.blew-winning-position': 'Kazanılmış oyun kaçtı',
@@ -146,6 +150,14 @@ export const tr = {
     'Hamleden sonra rakip tek taşla iki taşa birden saldıran bir çatal yapıp taş kazanabiliyordu.',
   'motif.desc.missed-fork':
     'İki taşa birden saldıran, taş kazandıran bir çatal vardı ama oynanmadı.',
+  'motif.desc.allowed-pin':
+    'Hamleden sonra rakip bir taşını arkasındaki daha değerli taşa (çoğu zaman şaha) bağlayıp taş kazanabiliyordu.',
+  'motif.desc.missed-pin':
+    'Rakibin bir taşını arkasındaki daha değerli taşa bağlayıp taş kazandıran bir açmaz vardı.',
+  'motif.desc.allowed-skewer':
+    'Hamleden sonra rakip değerli bir taşına (ya da şahına) saldırıp arkasındaki taşı kazanabiliyordu.',
+  'motif.desc.missed-skewer':
+    'Değerli bir taşa (ya da şaha) saldırıp arkasındaki taşı kazandıran bir şiş vardı.',
   'motif.desc.missed-mate': 'Zorlayıcı bir mat vardı ama kaçtı.',
   'motif.desc.walked-into-mate': 'Hamleden sonra rakibin zorlayıcı bir matı vardı.',
   'motif.desc.blew-winning-position': 'Kazanma şansı %80’in üstündeyken %50’nin altına düştü.',

@@ -138,6 +138,29 @@ describe('motifsForMove', () => {
     expect(result).toEqual(['missed-fork'])
   })
 
+  it('finds a pin the mover walked into', () => {
+    // After Black's move, Ba4 pins the c6 rook; Ke7 unpins but the rook still falls.
+    const result = motifsForMove(
+      ctx({
+        move: move({ color: 'black', moveClass: 'blunder' }),
+        fenAfter: '4k3/8/2r5/8/8/8/8/3BK3 w - - 0 1',
+        after: pos(cp(500), ['d1a4', 'e8e7', 'a4c6', 'e7d6']),
+      }),
+    )
+    expect(result).toEqual(['hanging-piece', 'allowed-pin'])
+  })
+
+  it('finds a skewer the mover missed', () => {
+    const result = motifsForMove(
+      ctx({
+        move: move({ uci: 'e1e2', san: 'Ke2' }),
+        fenBefore: 'q3k3/8/8/8/8/8/8/4K2R w - - 0 1',
+        before: pos(cp(900), ['h1h8', 'e8d7', 'h8a8', 'd7c6'], 'h1h8'),
+      }),
+    )
+    expect(result).toEqual(['missed-skewer'])
+  })
+
   it('finds a missed mate and walking into mate', () => {
     expect(motifsForMove(ctx({ before: pos(mate(2), ['h5f7']), after: pos(cp(-300)) }))).toContain(
       'missed-mate',

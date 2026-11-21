@@ -2,7 +2,7 @@ import { Chess } from 'chess.js'
 import type { Game } from '../games/model'
 import { fenAt, type Replay } from '../games/replay'
 import { parseTimeControl } from '../games/timeControl'
-import { isForkingMove } from './tactics'
+import { moveTactics, type MoveTactics } from './tactics'
 import type { GameAnalysis, MoveAnalysis, PositionEval } from './types'
 
 /**
@@ -12,8 +12,12 @@ import type { GameAnalysis, MoveAnalysis, PositionEval } from './types'
 export const MOTIFS = [
   'hanging-piece',
   'allowed-fork',
+  'allowed-pin',
+  'allowed-skewer',
   'missed-free-piece',
   'missed-fork',
+  'missed-pin',
+  'missed-skewer',
   'missed-mate',
   'walked-into-mate',
   'blew-winning-position',
@@ -103,6 +107,14 @@ export interface MotifContext {
   baseSeconds: number | null
 }
 
+function pushTactics(
+  motifs: Motif[],
+  tactics: MoveTactics,
+  names: Record<keyof MoveTactics, Motif>,
+): void {
+  for (const kind of ['fork', 'pin', 'skewer'] as const) if (tactics[kind]) motifs.push(names[kind])
+}
+
 /** Motifs of one move, in priority order. Only inaccuracies and worse get motifs. */
 export function motifsForMove(ctx: MotifContext): Motif[] {
   const { move, before, after, fenBefore, fenAfter, clock, baseSeconds } = ctx
@@ -112,8 +124,14 @@ export function motifsForMove(ctx: MotifContext): Motif[] {
   // After the move, the opponent's best line wins material…
   if (lineMaterialChange(fenAfter, after.pv, move.color) <= -MATERIAL_SWING) {
     motifs.push('hanging-piece')
-    // …starting with a fork.
-    if (after.pv[0] && isForkingMove(fenAfter, after.pv[0])) motifs.push('allowed-fork')
+    // …starting with a fork, pin or skewer.
+    if (after.pv[0]) {
+      pushTactics(motifs, moveTactics(fenAfter, after.pv[0]), {
+        fork: 'allowed-fork',
+        pin: 'allowed-pin',
+        skewer: 'allowed-skewer',
+      })
+    }
   }
   // The best move captured something that stays won, and a different move was played.
   if (
@@ -124,14 +142,17 @@ export function motifsForMove(ctx: MotifContext): Motif[] {
   ) {
     motifs.push('missed-free-piece')
   }
-  // The best move was a fork that wins material, and a different move was played.
+  // The best move was a fork, pin or skewer that wins material, and a different move was played.
   if (
     before.bestMove &&
     before.bestMove !== move.uci &&
-    isForkingMove(fenBefore, before.bestMove) &&
     lineMaterialChange(fenBefore, before.pv, move.color) >= MATERIAL_SWING
   ) {
-    motifs.push('missed-fork')
+    pushTactics(motifs, moveTactics(fenBefore, before.bestMove), {
+      fork: 'missed-fork',
+      pin: 'missed-pin',
+      skewer: 'missed-skewer',
+    })
   }
   // Scores are for the side to move: `before` is the mover's, `after` the opponent's.
   const hadMate = before.score.type === 'mate' && before.score.value > 0
@@ -147,7 +168,7 @@ export function motifsForMove(ctx: MotifContext): Motif[] {
   if (clock !== null && baseSeconds && clock < baseSeconds * LOW_TIME_SHARE) {
     motifs.push('time-pressure')
   }
-  return motifs
+  return motifs.sort((a, b) => MOTIFS.indexOf(a) - MOTIFS.indexOf(b))
 }
 
 /** Motifs for every move of an analysed game (index = ply − 1). */
