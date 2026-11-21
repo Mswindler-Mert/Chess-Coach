@@ -3,6 +3,7 @@ import { GamePage } from './pages/GamePage'
 import { GamesPage } from './pages/GamesPage'
 import { HomePage } from './pages/HomePage'
 import { DashboardPage } from './pages/DashboardPage'
+import { OpeningsPage } from './pages/OpeningsPage'
 import { PuzzlePage } from './pages/PuzzlePage'
 import { routeHref, useRoute } from './router'
 
@@ -47,6 +48,9 @@ export default function App() {
             username={route.username}
             focus={route.focus}
           />
+        )}
+        {route.name === 'openings' && (
+          <OpeningsPage key={route.username} username={route.username} />
         )}
         {route.name === 'dashboard' && (
           <DashboardPage key={route.username} username={route.username} />

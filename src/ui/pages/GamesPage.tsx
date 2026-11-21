@@ -155,7 +155,13 @@ function GamesView({ username }: { username: string }) {
       <header className="flex flex-col gap-1">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h1 className="text-2xl font-bold">{t('games.title', { username })}</h1>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
+            <a
+              href={routeHref({ name: 'openings', username })}
+              className="grid min-h-10 place-items-center rounded-lg border border-slate-600 px-4 text-sm font-semibold text-slate-100 hover:border-slate-400"
+            >
+              {t('openings.open')}
+            </a>
             <a
               href={routeHref({ name: 'dashboard', username })}
               className="grid min-h-10 place-items-center rounded-lg border border-slate-600 px-4 text-sm font-semibold text-slate-100 hover:border-slate-400"

@@ -8,6 +8,7 @@ export type Route =
   /** `focus` preselects a puzzle filter, e.g. a phase ("endgame") from the dashboard. */
   | { name: 'puzzles'; username: string; focus?: string }
   | { name: 'dashboard'; username: string }
+  | { name: 'openings'; username: string }
 
 export function parseRoute(hash: string): Route {
   const parts = hash
@@ -28,6 +29,7 @@ export function parseRoute(hash: string): Route {
         : { name: 'puzzles', username: parts[1] }
     }
     if (parts[2] === 'dashboard') return { name: 'dashboard', username: parts[1] }
+    if (parts[2] === 'openings') return { name: 'openings', username: parts[1] }
     return { name: 'games', username: parts[1] }
   }
   return { name: 'home' }
@@ -49,6 +51,8 @@ export function routeHref(route: Route): string {
       }`
     case 'dashboard':
       return `#/u/${encodeURIComponent(route.username)}/dashboard`
+    case 'openings':
+      return `#/u/${encodeURIComponent(route.username)}/openings`
   }
 }
 

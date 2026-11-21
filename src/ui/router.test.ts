@@ -10,6 +10,7 @@ describe('router', () => {
     { name: 'puzzles', username: 'mswindler07' },
     { name: 'puzzles', username: 'mswindler07', focus: 'endgame' },
     { name: 'dashboard', username: 'mswindler07' },
+    { name: 'openings', username: 'mswindler07' },
   ]
 
   it('round-trips every route through its hash', () => {
