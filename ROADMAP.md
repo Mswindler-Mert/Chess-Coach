@@ -48,10 +48,10 @@ Asılı taşı görmeyi doğrudan çalıştırmak.
 
 Analiz bilgisayarda hızlı; sonuçları telefona taşımak için.
 
-- [ ] Dışa aktar: oyunlar hariç (yeniden çekilebilir) analizler, bulmaca ilerlemesi, ayarlar, oyun sonu
+- [x] Dışa aktar: oyunlar hariç (yeniden çekilebilir) analizler, bulmaca ilerlemesi, ayarlar, oyun sonu
       ilerlemesi → tek JSON dosyası (sürüm alanlı).
-- [ ] İçe aktar: dosya seç → doğrula → birleştir (mevcut kayıtlarla çakışmada yenisi kalır).
-- [ ] Saf doğrulama/birleştirme fonksiyonları + testler.
+- [x] İçe aktar: dosya seç → doğrula → birleştir (mevcut kayıtlarla çakışmada yenisi kalır).
+- [x] Saf doğrulama/birleştirme fonksiyonları + testler.
 
 ## R6 – Lichess desteği
 

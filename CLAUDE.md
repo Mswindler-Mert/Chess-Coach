@@ -483,3 +483,18 @@ Her aşama ayrı bir dal (branch) ve küçük commit'lerle yapılır. Bir aşama
   o madde çıkmaz. Yükleyici her oyunu bir kez tekrar oynatıp hem bulmacaları hem alıştırmaları üretir.
 - **Kart:** oyun listesinde başlığın altında "Bugünün antrenmanı"; ekrandaki filtreyi kullanır (filtre değişince
   yenilenir), arka plan analizi bitince de yenilenir.
+
+### R5 – Yedekle / geri yükle (2026-11-22)
+- **Biçim (`core/backup/backup.ts`):** `{ format: 'chess-coach-backup', version: 1, exportedAt, usernames,
+  analyses, puzzleProgress, endgameProgress, activityLog }`. Oyunlar ve cihaz tercihleri (filtre, derinlik, dil,
+  otomatik analiz) **girmez**; oyunlar diğer cihazda aynı kullanıcı adı açılınca yeniden çekilir, analizler
+  Chess.com oyun kimliğiyle eşleşir. Biçim değişirse `BACKUP_VERSION`'ı artır ve `readBackup`'a göç ekle.
+- **Doğrulama:** `readBackup(text)` JSON'u ve her kaydın şeklini kontrol eder (analizde
+  pozisyon sayısı = hamle + 1); geçmeyen dosya hiç yazılmaz.
+- **Birleştirme (`db/backup.ts`, tek işlem):** analiz `analyzedAt`'e, bulmaca ilerlemesi `lastAttemptAt`'e
+  göre yeni olan kalır; oyun sonu ilerlemesi ders ders (deneme en çok, çözüldü veya, en az hamle); etkinlik gün
+  gün büyük sayı (aynı alıştırma iki kez sayılmaz). Bu cihazdan hiçbir şey silinmez.
+- **Ekran:** oyun listesinin en altında katlanır "Yedekle ve taşı" kutusu; indir (`chess-coach-backup-
+  YYYY-MM-DD.json`, Blob + `download`) ve yükle (dosya seçici). Yükleme sonrası sayfa yenilenir.
+- **Boyut:** 62 analiz ≈ 1 MB.
+- **Telefonda denenmedi:** iOS'ta kurulu uygulamada indirme paylaşım menüsü açabilir.
