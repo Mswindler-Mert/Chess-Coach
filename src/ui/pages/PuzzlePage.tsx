@@ -27,6 +27,8 @@ import {
 } from '../../db/puzzles'
 import { judgeAttempt } from '../../engine/judge'
 import { t } from '../../i18n'
+import { isMotif, MOTIFS, type Motif } from '../../core/analysis/motifs'
+import { MotifChips } from '../analysis'
 import { MOVE_CLASS_TEXT } from '../analysisStyles'
 import { formatDate } from '../format'
 import { routeHref } from '../router'
@@ -61,6 +63,7 @@ export function PuzzlePage({
 }
 
 function filterFromFocus(focus: string | undefined): PuzzleFilter {
+  if (isMotif(focus)) return { ...ALL_PUZZLES, motif: focus }
   return PHASES.includes(focus as Phase) ? { ...ALL_PUZZLES, phase: focus as Phase } : ALL_PUZZLES
 }
 
@@ -148,7 +151,7 @@ function PuzzleTrainer({
         </p>
       </header>
 
-      <Filters filter={filter} onChange={onFilter} />
+      <Filters filter={filter} onChange={onFilter} puzzles={set.puzzles} />
 
       {current ? (
         <PuzzleBoard
@@ -189,10 +192,18 @@ function PuzzleTrainer({
 function Filters({
   filter,
   onChange,
+  puzzles,
 }: {
   filter: PuzzleFilter
   onChange: (filter: PuzzleFilter) => void
+  puzzles: readonly Puzzle[]
 }) {
+  // Only motifs that occur (plus the selected one), with how many puzzles have each.
+  const motifCounts = new Map<Motif, number>()
+  for (const p of puzzles) {
+    for (const m of p.motifs) motifCounts.set(m, (motifCounts.get(m) ?? 0) + 1)
+  }
+  const motifs = MOTIFS.filter((m) => motifCounts.has(m) || filter.motif === m)
   const chip = (active: boolean) =>
     `min-h-9 rounded-full border px-3 text-sm font-medium ${
       active
@@ -231,6 +242,25 @@ function Filters({
           </button>
         ))}
       </fieldset>
+      {motifs.length > 0 && (
+        <label className="flex items-center gap-2 text-sm text-slate-400">
+          {t('puzzles.filter.motif')}
+          <select
+            value={filter.motif}
+            onChange={(e) =>
+              onChange({ ...filter, motif: isMotif(e.target.value) ? e.target.value : 'all' })
+            }
+            className="min-h-9 rounded-lg border border-slate-700 bg-slate-950 px-2 text-slate-100"
+          >
+            <option value="all">{t('puzzles.filter.all')}</option>
+            {motifs.map((m) => (
+              <option key={m} value={m}>
+                {t(`motif.${m}`)} ({motifCounts.get(m) ?? 0})
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
     </div>
   )
 }
@@ -261,6 +291,8 @@ function PuzzleBoard({
 
   const myPrefix = puzzle.color === 'white' ? 'w' : 'b'
   const solving = answer.status === 'solving'
+  // Motifs describe the game move's error, so they would give the answer away: show them after.
+  const answered = answer.status === 'done'
 
   const targets = useMemo(() => {
     if (!selected) return []
@@ -373,6 +405,7 @@ function PuzzleBoard({
               {t(`moveClass.${puzzle.moveClass}`)}
             </span>
           </p>
+          {answered && <MotifChips motifs={puzzle.motifs} />}
         </div>
 
         <Feedback puzzle={puzzle} answer={answer} box={answeredBox} />

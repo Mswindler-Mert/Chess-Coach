@@ -106,19 +106,34 @@ function Dashboard({ username }: { username: string }) {
             <section className="flex flex-col gap-2 rounded-xl border border-emerald-800 bg-emerald-950/30 p-4">
               <h2 className="text-sm text-emerald-300">{t('dashboard.focus.title')}</h2>
               <p className="text-lg font-semibold">
-                {t('dashboard.focus.phase', {
-                  phase: t(`phase.${focus.phase}`),
-                  errors: focus.errors,
-                })}
+                {focus.kind === 'motif'
+                  ? t('dashboard.focus.motif', {
+                      motif: t(`motif.${focus.motif}`),
+                      errors: focus.errors,
+                    })
+                  : t('dashboard.focus.phase', {
+                      phase: t(`phase.${focus.phase}`),
+                      errors: focus.errors,
+                    })}
               </p>
+              {focus.kind === 'motif' && (
+                <p className="text-sm text-slate-300">{t(`motif.desc.${focus.motif}`)}</p>
+              )}
               <p className="text-sm text-slate-400">
                 {focus.thisWeek ? t('dashboard.focus.week') : t('dashboard.focus.range')}
               </p>
               <a
-                href={routeHref({ name: 'puzzles', username, focus: focus.phase })}
+                href={routeHref({
+                  name: 'puzzles',
+                  username,
+                  focus: focus.kind === 'motif' ? focus.motif : focus.phase,
+                })}
                 className="grid min-h-10 place-items-center self-start rounded-lg bg-emerald-600 px-4 text-sm font-semibold text-white hover:bg-emerald-500"
               >
-                {t('dashboard.focus.practice', { phase: t(`phase.${focus.phase}`) })}
+                {t('dashboard.focus.practice', {
+                  topic:
+                    focus.kind === 'motif' ? t(`motif.${focus.motif}`) : t(`phase.${focus.phase}`),
+                })}
               </a>
             </section>
           )}
@@ -139,6 +154,19 @@ function Dashboard({ username }: { username: string }) {
                 label: (bucket === 'week' ? weekFormat : monthFormat).format(p.start),
                 value: p.blundersPerGame,
                 detail: t('dashboard.games', { count: p.games }),
+              }))}
+            />
+          )}
+
+          {summary.byMotif.length > 0 && (
+            <BarList
+              title={t('dashboard.motif.title')}
+              subtitle={t('dashboard.motif.subtitle')}
+              valueHead={t('dashboard.motif.head')}
+              format={(v) => String(v)}
+              rows={summary.byMotif.map(({ motif, errors }) => ({
+                label: t(`motif.${motif}`),
+                value: errors,
               }))}
             />
           )}

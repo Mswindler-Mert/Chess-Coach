@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Chessboard } from 'react-chessboard'
 import { sideToMove } from '../../core/analysis/analyzeGame'
 import { formatScore, uciToSan } from '../../core/analysis/display'
+import { tagGame, type Motif } from '../../core/analysis/motifs'
 import type { MoveAnalysis } from '../../core/analysis/types'
 import type { Color, Game, PlayerInfo } from '../../core/games/model'
 import { buildReplay, clocksAt, fenAt, formatClock, type Replay } from '../../core/games/replay'
@@ -11,7 +12,7 @@ import { getGame, getGameFilter } from '../../db/games'
 import type { AnalysisRecord } from '../../db/schema'
 import { analysisRunner } from '../../engine/runner'
 import { t } from '../../i18n'
-import { ErrorChips, ProgressBar } from '../analysis'
+import { ErrorChips, MotifChips, ProgressBar } from '../analysis'
 import { MOVE_CLASS_TEXT, MOVE_SYMBOLS, useAnalysisRunner } from '../analysisStyles'
 import {
   endReasonLabel,
@@ -278,6 +279,8 @@ function MoveInsight({
   const better =
     isError && before?.bestMove ? uciToSan(fenAt(replay, ply - 1), before.bestMove) : null
   const moveNumber = Math.ceil(ply / 2)
+  const motifs = useMemo(() => tagGame(game, replay, analysis), [game, replay, analysis])
+  const moveMotifs = ply > 0 ? (motifs[ply - 1] ?? []) : []
 
   return (
     <div className="flex flex-col gap-2 rounded-xl border border-slate-800 bg-slate-900 p-3 text-sm">
@@ -313,6 +316,12 @@ function MoveInsight({
       )}
       {better && (
         <p className="text-emerald-300">{t('viewer.analysis.better', { move: better })}</p>
+      )}
+      {moveMotifs.length > 0 && (
+        <div className="flex flex-col gap-1">
+          <MotifChips motifs={moveMotifs} />
+          <p className="text-xs text-slate-400">{t(`motif.desc.${moveMotifs[0] as Motif}`)}</p>
+        </div>
       )}
       <div className="flex flex-col gap-1 border-t border-slate-800 pt-2 text-xs">
         {(['white', 'black'] as const).map((color) => (

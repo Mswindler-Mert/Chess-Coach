@@ -1,4 +1,6 @@
+import { tagGame } from '../core/analysis/motifs'
 import { applyGameFilter, type GameFilter } from '../core/games/filter'
+import { buildReplay } from '../core/games/replay'
 import type { Game } from '../core/games/model'
 import { userErrors, type GameErrors } from '../core/stats/dashboard'
 import { getGameFilter, listGames } from './games'
@@ -19,7 +21,14 @@ export async function loadDashboard(username: string, now: number): Promise<Dash
   const errors: GameErrors[] = []
   games.forEach((game, i) => {
     const analysis = analyses[i]
-    if (analysis && analysis.moves.length > 0) errors.push(userErrors(game, analysis))
+    if (!analysis || analysis.moves.length === 0) return
+    let motifs: ReturnType<typeof tagGame> = []
+    try {
+      motifs = tagGame(game, buildReplay(game.pgn), analysis)
+    } catch {
+      // Unreadable PGN: count the errors without motifs.
+    }
+    errors.push(userErrors(game, analysis, motifs))
   })
   return { filter, games, errors }
 }
