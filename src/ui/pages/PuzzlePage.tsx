@@ -25,6 +25,7 @@ import {
   savePuzzleProgress,
   type PuzzleSet,
 } from '../../db/puzzles'
+import { recordActivity } from '../../db/daily'
 import { judgeAttempt } from '../../engine/judge'
 import { t } from '../../i18n'
 import { isMotif, MOTIFS, type Motif } from '../../core/analysis/motifs'
@@ -99,6 +100,7 @@ function PuzzleTrainer({
     (currentId && set?.puzzles.find((p) => p.id === currentId)) || plan?.queue[0] || null
 
   function onAnswered(puzzle: Puzzle, correct: boolean) {
+    void recordActivity()
     setCurrentId(puzzle.id)
     setSession((s) => ({ correct: s.correct + (correct ? 1 : 0), total: s.total + 1 }))
     const next = recordAttempt(

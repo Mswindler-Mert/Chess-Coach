@@ -302,6 +302,20 @@ export const tr = {
   'viewer.review.threats': 'Asılı taşları göster (tehdit görünümü)',
   'viewer.review.threatsLegend': 'Kırmızı halka: alınırsa malzeme kaybettiren taş.',
 
+  'daily.title': 'Bugünün antrenmanı',
+  'daily.streak': '🔥 {days} günlük seri',
+  'daily.noStreak': 'Bugün bir alıştırma çöz, seri başlasın.',
+  'daily.best': 'en uzun: {days} gün',
+  'daily.goal': 'Günlük hedef: {done}/{goal} alıştırma',
+  'daily.goalDone': 'Günlük hedef tamam! Bugün {count} alıştırma çözdün.',
+  'daily.empty':
+    'Şimdilik plan yok: oyunların analiz edildikçe bulmaca ve alıştırmalar burada çıkacak.',
+  'daily.item.puzzles': '{count} bulmaca çöz',
+  'daily.item.puzzlesDue': '{count} bulmaca çöz ({due} tekrar zamanı gelmiş)',
+  'daily.item.hanging': '{count} asılı taş alıştırması',
+  'daily.item.endgame': 'Oyun sonu: {lesson}',
+  'daily.item.review': 'Son oyununun kritik anına bak',
+
   'charts.table': 'Tablo olarak göster',
   'charts.period': 'Dönem',
   'charts.date': 'Tarih',

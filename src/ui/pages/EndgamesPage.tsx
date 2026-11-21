@@ -13,6 +13,7 @@ import {
   recordEndgameAttempt,
   type EndgameProgress,
 } from '../../db/endgames'
+import { recordActivity } from '../../db/daily'
 import { getSharedEngine } from '../../engine/shared'
 import { t } from '../../i18n'
 import { formatDate } from '../format'
@@ -242,6 +243,7 @@ function Play({ lesson, username }: { lesson: EndgameLesson; username: string })
     if (result.outcome === 'continue') return false
     setPhase({ status: 'done', result })
     void recordEndgameAttempt(lesson.id, result.outcome === 'success', moves)
+    void recordActivity()
     return true
   }
 

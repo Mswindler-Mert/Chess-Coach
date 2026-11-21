@@ -13,6 +13,7 @@ import {
   type HangingDrill,
   type SquareCheck,
 } from '../../core/training/hangingDrills'
+import { recordActivity } from '../../db/daily'
 import { loadHangingDrills } from '../../db/hanging'
 import { listPuzzleProgress, savePuzzleProgress } from '../../db/puzzles'
 import { t } from '../../i18n'
@@ -54,6 +55,7 @@ function HangingTrainer({ username }: { username: string }) {
   const current = (currentId && drills?.find((d) => d.id === currentId)) || plan?.queue[0] || null
 
   function onAnswered(drill: HangingDrill, correct: boolean) {
+    void recordActivity()
     setCurrentId(drill.id)
     setSession((s) => ({ correct: s.correct + (correct ? 1 : 0), total: s.total + 1 }))
     const next = recordAttempt(

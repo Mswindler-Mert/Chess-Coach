@@ -44,6 +44,7 @@ import {
   timeControlLabel,
 } from '../format'
 import { autoAnalyzeAfterSync } from '../background'
+import { DailyCard } from '../DailyCard'
 import { routeHref } from '../router'
 
 const PAGE_SIZE = 50
@@ -196,6 +197,10 @@ function GamesView({ username }: { username: string }) {
         </div>
         <SyncStatus sync={sync} syncedAt={syncedAt} username={username} onRefresh={onRefresh} />
       </header>
+
+      {games && games.length > 0 && timeClasses && dateRange && (
+        <DailyCard username={username} filter={{ timeClasses, dateRange }} />
+      )}
 
       <fieldset className="flex flex-col gap-2">
         <legend className="mb-2 text-sm text-slate-400">{t('games.filter.label')}</legend>
