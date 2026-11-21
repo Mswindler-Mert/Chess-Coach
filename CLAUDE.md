@@ -130,7 +130,7 @@ Her aşama ayrı bir dal (branch) ve küçük commit'lerle yapılır. Bir aşama
 - [x] **M2 – Analiz motoru:** Stockfish worker, hamle başı değerlendirme, win%, sınıflandırma, evre tespiti, ilerleme çubuğu, testler
 - [x] **M3 – Hatalarımdan bulmacalar:** Bulmaca ekranı + aralıklı tekrar
 - [x] **M4 – Panel:** İstatistikler ve grafikler
-- [ ] **M5 – Motif etiketleme:** asili-tas, bedava-tasi-almadi, mat, kazanılmış oyunu kaçırma, zaman baskısı
+- [x] **M5 – Motif etiketleme:** asili-tas, bedava-tasi-almadi, mat, kazanılmış oyunu kaçırma, zaman baskısı
 - [ ] **M6 – Açılış modülü**
 - [ ] **M7 – Oyun sonu modülü**
 - [ ] **M8 – PWA ve mobil cilalama:** Kurulabilir uygulama, dokunmatik tahta, çevrimdışı çalışma
@@ -296,3 +296,30 @@ Her aşama ayrı bir dal (branch) ve küçük commit'lerle yapılır. Bir aşama
   koyu yüzey `#0f172a`: açıklık bandı + kontrast geçti). Sütun: ≤ 24 px, üstü 4 px yuvarlak; çizgi 2 px + hafif
   alan; fareyle/dokunmayla ipucu; her grafikte "Tablo olarak göster". Kap genişliği < 520 px ise çizim 360
   birim genişlikte (yazılar telefonda okunur kalsın). Eksen değerleri `core/stats/ticks.ts` (`niceTicks`).
+
+### M5 – Motif etiketleme (2026-11-21)
+- **Kod adları İngilizce, arayüz Türkçe** (`core/analysis/motifs.ts`, `MOTIFS` öncelik sırasıyla):
+  `hanging-piece` (asili-tas), `missed-free-piece` (bedava-tasi-almadi), `missed-mate` (mati-kacirdi),
+  `walked-into-mate` (mata-dustu), `blew-winning-position` (kazanilmis-oyunu-kacirdi),
+  `time-pressure` (zaman-baskisi). Bir hamlenin birden çok motifi olabilir; ilki "ana" motif.
+- **Saklanmaz, analizden hesaplanır** (`tagGame(game, replay, analysis)`): analiz kayıtlarında her pozisyonun
+  motor varyantı (pv) zaten var, yeniden analiz gerekmedi, `ANALYSIS_VERSION` değişmedi.
+- **Sadece inaccuracy ve daha kötü hamleler** etiketlenir (iki taraf için de).
+- **Kurallar:** materyal P=1, N=B=3, R=5, Q=9; varyantın ilk 4 yarım hamlesine bakılır, çift sayıda yarım
+  hamlede ölçülür (geri alma sayılsın; tek yarım hamlelik varyantta 1). Eşik ±2 (`MATERIAL_SWING`), yani
+  piyon kaybı asılı taş sayılmaz.
+  - asılı taş: hamleden sonraki pozisyonun varyantında hamleyi yapan ≥ 2 kaybediyor.
+  - bedava taş: en iyi hamle bir alış, oynanan hamle farklı ve en iyi varyant ≥ 2 kazandırıyor.
+  - mat kaçtı: önce zorlayıcı mat vardı, sonra yok. Mata düşme: sonra rakibin zorlayıcı matı var (önceden
+    zaten mat yemiyorken).
+  - kazanılmış oyun: win% ≥ 80 → ≤ 50. Zaman baskısı: hamleden sonraki saat < başlangıç süresinin %10'u;
+    daily oyunlarda yok.
+- **Gerçek motor testi:** `engine.test.ts` fixture oyununda 7… Qg5'i (vezir Bxg5 ile gidiyor) asılı taş buluyor.
+- **Nerede görünür:** oyun sayfası hamle kutusu (etiket + açıklama); bulmaca bağlamında **cevaptan sonra**
+  (önce gösterilirse ipucu olur); bulmaca motif filtresi (sadece mevcut motifler, sayılarıyla); panelde
+  "Motife göre hatalar". **Odak konusu artık motif:** son 7 günün en sık motifi (eşitlikte öncelikli olan),
+  motif yoksa evre. Bulmaca adresindeki `focus` bir motif ya da evre olabilir.
+- **İlk sonuç (mswindler07, blitz, son 30 gün):** hata + blunder'ların motifleri: asılı taş 44, kazanılmış oyun
+  kaçtı 27, bedava taş alınmadı 16, zaman baskısı 8, mat kaçtı 4, mata düşme 2. Projenin varsayımı
+  (en büyük sorun taş asmak) doğrulandı.
+- **Sonra (v2):** çatal, şiş, açmaz tespiti.
