@@ -1,7 +1,8 @@
 import type { Motif } from '../core/analysis/motifs'
 import type { ClassCounts } from '../core/analysis/types'
 import { t } from '../i18n'
-import { MOVE_CLASS_TEXT, MOVE_SYMBOLS } from './analysisStyles'
+import { MOVE_CLASS_TEXT, MOVE_SYMBOLS, useAnalysisRunner } from './analysisStyles'
+import { routeHref } from './router'
 
 const ERROR_CLASSES = ['blunder', 'mistake', 'inaccuracy'] as const
 
@@ -54,5 +55,22 @@ export function MotifChips({ motifs }: { motifs: readonly Motif[] }) {
         </span>
       ))}
     </span>
+  )
+}
+
+/** Small header note while background analysis runs; links to that user's game list. */
+export function AnalysisBadge() {
+  const runner = useAnalysisRunner()
+  if (runner.status !== 'running' || !runner.username || runner.remaining === 0) return null
+  return (
+    <a
+      href={routeHref({ name: 'games', username: runner.username })}
+      className="flex items-center gap-1.5 text-xs text-emerald-300 hover:text-emerald-200"
+      title={t('analysis.badgeTitle')}
+      role="status"
+    >
+      <span aria-hidden="true" className="size-2 animate-pulse rounded-full bg-emerald-400" />
+      {t('analysis.badge', { remaining: runner.remaining })}
+    </a>
   )
 }

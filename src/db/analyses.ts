@@ -56,3 +56,15 @@ export async function getAnalysisDepth(): Promise<number> {
 export async function setAnalysisDepth(depth: number): Promise<void> {
   await db.settings.put({ key: DEPTH_KEY, value: depth })
 }
+
+const AUTO_KEY = 'autoAnalyze'
+
+/** Analyse new games without pressing "Start" (default on). */
+export async function getAutoAnalyze(): Promise<boolean> {
+  const record = await db.settings.get(AUTO_KEY)
+  return typeof record?.value === 'boolean' ? record.value : true
+}
+
+export async function setAutoAnalyze(on: boolean): Promise<void> {
+  await db.settings.put({ key: AUTO_KEY, value: on })
+}

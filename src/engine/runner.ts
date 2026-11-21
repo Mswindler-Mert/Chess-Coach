@@ -19,6 +19,8 @@ export interface RunnerState {
   current: { gameId: string; done: number; total: number } | null
   /** Games analysed since the last start. */
   completed: number
+  /** Games still to analyse, including the one in progress. */
+  remaining: number
   /** Increases with every saved analysis, so views know when to reload. */
   savedCount: number
   error: string | null
@@ -29,14 +31,15 @@ const INITIAL_STATE: RunnerState = {
   username: null,
   current: null,
   completed: 0,
+  remaining: 0,
   savedCount: 0,
   error: null,
 }
 
 /**
  * Analyses a user's games one at a time in the background, newest first, using only the
- * games matching the saved filter (tempos and date range). Each finished game is saved right away, so pausing (or closing
- * the tab) only loses the game in progress.
+ * games matching the saved filter (tempos and date range). Each finished game is saved right away,
+ * so pausing (or closing the tab) only loses the game in progress.
  */
 export class AnalysisRunner {
   private state: RunnerState = INITIAL_STATE
@@ -47,6 +50,8 @@ export class AnalysisRunner {
   private generation = 0
   /** Games whose PGN could not be replayed; skipped until the page reloads. */
   private readonly skipped = new Set<string>()
+  /** Set by "Pause": automatic starts stay off until the user starts again. */
+  private userPaused = false
 
   getState = (): RunnerState => this.state
 
@@ -67,6 +72,7 @@ export class AnalysisRunner {
 
   /** Starts (or keeps) analysing `username`'s games. `priorityId` is analysed first. */
   start(username: string, priorityId?: string): void {
+    this.userPaused = false
     if (priorityId) this.priorityId = priorityId
     if (this.state.status === 'running' && this.state.username === username) {
       // Drop the game in progress so the requested one starts now.
@@ -79,18 +85,31 @@ export class AnalysisRunner {
     void this.run(username, generation)
   }
 
+  /**
+   * Starts analysing without the user asking (after a sync, when the app opens) — unless the user
+   * paused in this session or another user's games are being analysed.
+   */
+  autoStart(username: string): void {
+    if (this.userPaused) return
+    if (this.state.status === 'running' && this.state.username !== username) return
+    this.start(username)
+    this.userPaused = false
+  }
+
   /** Stops after the current position; the game in progress is not saved. */
   pause(): void {
+    this.userPaused = true
     this.generation++
     this.priorityId = undefined
     this.controller?.abort()
-    if (this.state.status === 'running') this.set({ status: 'idle', current: null })
+    if (this.state.status === 'running') this.set({ status: 'idle', current: null, remaining: 0 })
   }
 
   private async run(username: string, generation: number): Promise<void> {
     const isCurrent = () => generation === this.generation
+    // The engine starts only once there is a game to analyse.
+    let engine: UciEngine | null = null
     try {
-      const engine: UciEngine = await getSharedEngine()
       while (isCurrent()) {
         const [games, analyzed, filter, depth] = await Promise.all([
           listGames(username),
@@ -100,7 +119,9 @@ export class AnalysisRunner {
         ])
         if (!isCurrent()) return
         for (const id of this.skipped) analyzed.add(id)
-        const game = planAnalysisQueue(games, analyzed, filter, Date.now(), this.priorityId)[0]
+        const queue = planAnalysisQueue(games, analyzed, filter, Date.now(), this.priorityId)
+        const game = queue[0]
+        this.set({ remaining: queue.length })
         if (!game) break
         if (game.id === this.priorityId) this.priorityId = undefined
 
@@ -117,8 +138,10 @@ export class AnalysisRunner {
         const total = replay.moves.length + 1
         this.set({ current: { gameId: game.id, done: 0, total } })
         try {
-          await engine.newGame()
-          const analysis = await analyzeGame(replay, (p) => engine.evaluate(p, { depth }), {
+          engine ??= await getSharedEngine()
+          const e = engine
+          await e.newGame()
+          const analysis = await analyzeGame(replay, (p) => e.evaluate(p, { depth }), {
             signal: controller.signal,
             onProgress: (done) => {
               if (isCurrent()) this.set({ current: { gameId: game.id, done, total } })
@@ -140,13 +163,14 @@ export class AnalysisRunner {
           throw error
         }
       }
-      if (isCurrent()) this.set({ status: 'idle', current: null })
+      if (isCurrent()) this.set({ status: 'idle', current: null, remaining: 0 })
     } catch (error) {
       if (!isCurrent()) return
       resetSharedEngine()
       this.set({
         status: 'error',
         current: null,
+        remaining: 0,
         error: error instanceof Error ? error.message : String(error),
       })
     }

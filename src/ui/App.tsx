@@ -1,5 +1,7 @@
-import { Suspense } from 'react'
+import { Suspense, useEffect } from 'react'
 import { t } from '../i18n'
+import { AnalysisBadge } from './analysis'
+import { startBackgroundWork } from './background'
 import { LanguageSwitch } from './LanguageSwitch'
 import { lazyPage } from './lazyPage'
 import { GamesPage } from './pages/GamesPage'
@@ -16,6 +18,12 @@ const DashboardPage = lazyPage(() => import('./pages/DashboardPage').then((m) =>
 
 export default function App() {
   const route = useRoute()
+  const routeUsername = 'username' in route ? route.username : null
+
+  useEffect(() => {
+    startBackgroundWork(routeUsername)
+    // Runs once per app start (guarded inside), with the user on screen at that moment.
+  }, [routeUsername])
 
   return (
     <div className="min-h-dvh bg-slate-950 text-slate-100">
@@ -29,6 +37,7 @@ export default function App() {
               {t('app.title')}
             </a>
             <div className="flex items-center gap-3">
+              <AnalysisBadge />
               <a
                 href={routeHref({ name: 'home' })}
                 className="text-sm text-slate-400 hover:text-slate-200"

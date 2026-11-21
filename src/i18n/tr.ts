@@ -61,7 +61,10 @@ export const tr = {
   'analysis.error': 'Analiz durdu: {message}',
   'analysis.depth': 'Derinlik',
   'analysis.hint':
-    'Analiz bu sekme açıkken arka planda sürer, en yeni oyundan başlar. Biten her oyun kaydedilir. Derinlik arttıkça analiz daha doğru ama daha yavaş olur.',
+    'Analiz uygulama açıkken arka planda sürer, en yeni oyundan başlar. Biten her oyun kaydedilir. Derinlik arttıkça analiz daha doğru ama daha yavaş olur. Duraklatırsan bu oturumda kendiliğinden yeniden başlamaz.',
+  'analysis.auto': 'Yeni oyunları otomatik analiz et',
+  'analysis.badge': 'Analiz: {remaining} oyun',
+  'analysis.badgeTitle': 'Arka planda analiz sürüyor',
   'analysis.clean': 'hatasız',
   'analysis.count.blunder': '{count} blunder',
   'analysis.count.mistake': '{count} hata',

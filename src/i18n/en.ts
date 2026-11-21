@@ -66,7 +66,10 @@ export const en: Record<MessageKey, string> = {
   'analysis.error': 'Analysis stopped: {message}',
   'analysis.depth': 'Depth',
   'analysis.hint':
-    'Analysis runs in the background while this tab is open, newest game first. Every finished game is saved. Higher depth is more accurate but slower.',
+    'Analysis runs in the background while the app is open, newest game first. Every finished game is saved. Higher depth is more accurate but slower. If you pause, it will not restart by itself in this session.',
+  'analysis.auto': 'Analyse new games automatically',
+  'analysis.badge': 'Analysing: {remaining} games',
+  'analysis.badgeTitle': 'Analysis is running in the background',
   'analysis.clean': 'clean',
   'analysis.count.blunder': '{count} blunders',
   'analysis.count.mistake': '{count} mistakes',

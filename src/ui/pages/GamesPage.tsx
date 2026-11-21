@@ -26,8 +26,10 @@ import {
 import {
   DEPTH_OPTIONS,
   getAnalysisDepth,
+  getAutoAnalyze,
   listAnalysisSummaries,
   setAnalysisDepth,
+  setAutoAnalyze,
   type AnalysisSummary,
 } from '../../db/analyses'
 import { analysisRunner } from '../../engine/runner'
@@ -41,6 +43,7 @@ import {
   timeClassLabel,
   timeControlLabel,
 } from '../format'
+import { autoAnalyzeAfterSync } from '../background'
 import { routeHref } from '../router'
 
 const PAGE_SIZE = 50
@@ -104,6 +107,8 @@ function GamesView({ username }: { username: string }) {
         setSync({ status: 'done' })
       })
       .catch((error: unknown) => setSync({ status: 'error', message: errorMessage(error) }))
+      // New (or, offline, already stored) games get analysed if automatic analysis is on.
+      .finally(() => void autoAnalyzeAfterSync(username))
   }, [username, reload])
 
   useEffect(() => {
@@ -139,7 +144,8 @@ function GamesView({ username }: { username: string }) {
   function onRange(range: DateRange) {
     setRange(range)
     setLimit(PAGE_SIZE)
-    void setDateRange(range)
+    // Games that just entered the filter get analysed too (if automatic analysis is on).
+    void setDateRange(range).then(() => autoAnalyzeAfterSync(username))
   }
 
   function onToggle(tc: TimeClass) {
@@ -147,7 +153,7 @@ function GamesView({ username }: { username: string }) {
     const next = toggleTimeClass(timeClasses, tc)
     setSelected(next)
     setLimit(PAGE_SIZE)
-    void setTimeClasses(next)
+    void setTimeClasses(next).then(() => autoAnalyzeAfterSync(username))
   }
 
   return (
@@ -350,6 +356,10 @@ function AnalysisPanel({
 }) {
   const runner = useAnalysisRunner()
   const [depth, setDepth] = useState<number | null>(null)
+  const [auto, setAuto] = useState<boolean | null>(null)
+  useEffect(() => {
+    void getAutoAnalyze().then(setAuto)
+  }, [])
   useEffect(() => {
     void getAnalysisDepth().then(setDepth)
   }, [])
@@ -434,6 +444,21 @@ function AnalysisPanel({
         </p>
       )}
 
+      <label className="flex items-center gap-2 text-sm text-slate-300">
+        <input
+          type="checkbox"
+          checked={auto ?? false}
+          disabled={auto === null}
+          onChange={(e) => {
+            const on = e.target.checked
+            setAuto(on)
+            void setAutoAnalyze(on)
+            if (on) analysisRunner.start(username)
+          }}
+          className="size-4 accent-emerald-500"
+        />
+        {t('analysis.auto')}
+      </label>
       <p className="text-xs text-slate-500">{t('analysis.hint')}</p>
     </section>
   )
