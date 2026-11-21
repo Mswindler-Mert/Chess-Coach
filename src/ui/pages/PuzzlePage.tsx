@@ -42,6 +42,7 @@ import {
 } from '../moveText'
 import { routeHref } from '../router'
 import { playMoveSan, playSound } from '../sound'
+import { useBoardColors } from '../theme'
 
 const SELECTED_STYLE: CSSProperties = { backgroundColor: 'rgba(250, 204, 21, 0.55)' }
 const LAST_MOVE_STYLE: CSSProperties = { backgroundColor: 'rgba(250, 204, 21, 0.4)' }
@@ -293,6 +294,7 @@ function PuzzleBoard({
   onAnswered: (puzzle: Puzzle, correct: boolean) => void
   onNext: () => void
 }) {
+  const boardColors = useBoardColors()
   const [answer, setAnswer] = useState<Answer>({ status: 'solving' })
   const [selected, setSelected] = useState<Square | null>(null)
   const [opponent, setOpponent] = useState<string | null>(null)
@@ -449,25 +451,26 @@ function PuzzleBoard({
   return (
     <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
       <div className="flex w-full max-w-[560px] flex-col gap-2.5 self-center lg:self-start">
-        <div className="aspect-square w-full touch-none select-none overflow-hidden rounded-md shadow-lg shadow-black/40">
-          <Chessboard
-            options={{
-              id: 'puzzle-board',
-              position,
-              boardOrientation: puzzle.color,
-              allowDragging: solving,
-              canDragPiece: ({ piece }) => solving && piece.pieceType.startsWith(myPrefix),
-              onPieceDrop: ({ sourceSquare, targetSquare }) =>
-                targetSquare ? tryMove(sourceSquare, targetSquare) : false,
-              onSquareClick: ({ piece, square }) => onSquareClick(square, piece?.pieceType),
-              arrows,
-              allowDrawingArrows: false,
-              squareStyles,
-              animationDurationInMs: 150,
-              darkSquareStyle: { backgroundColor: '#769656' },
-              lightSquareStyle: { backgroundColor: '#eeeed2' },
-            }}
-          />
+        <div className="club-board-frame w-full">
+          <div className="aspect-square w-full touch-none select-none overflow-hidden rounded-[6px]">
+            <Chessboard
+              options={{
+                id: 'puzzle-board',
+                position,
+                boardOrientation: puzzle.color,
+                allowDragging: solving,
+                canDragPiece: ({ piece }) => solving && piece.pieceType.startsWith(myPrefix),
+                onPieceDrop: ({ sourceSquare, targetSquare }) =>
+                  targetSquare ? tryMove(sourceSquare, targetSquare) : false,
+                onSquareClick: ({ piece, square }) => onSquareClick(square, piece?.pieceType),
+                arrows,
+                allowDrawingArrows: false,
+                squareStyles,
+                animationDurationInMs: 150,
+                ...boardColors,
+              }}
+            />
+          </div>
         </div>
 
         {done && coaching && (

@@ -39,6 +39,13 @@ export const tr = {
   'nav.changeUser': 'Kullanıcı değiştir',
   'nav.backToGames': 'Oyunlara dön',
   'nav.language': 'Dil',
+  'nav.theme': 'Tema',
+  'theme.walnut': 'Ceviz Kulüp teması',
+  'theme.forest': 'Orman Turnuva teması',
+  'theme.obsidian': 'Füme Bakır teması',
+  'home.showcase.caption': 'İtalyan Açılışı · 1. e4 e5 2. Nf3 Nc6 3. Bc4',
+  'home.showcase.note':
+    'Filin zayıf f7 karesine nişan alır; taşların merkeze çıkar ve şahın kısa roka hazır olur.',
   'nav.soundOn': 'Sesler açık',
   'nav.soundOff': 'Sesler kapalı',
 

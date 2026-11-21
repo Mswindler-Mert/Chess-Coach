@@ -4,6 +4,7 @@ import { AnalysisBadge } from './analysis'
 import { LanguageSwitch } from './LanguageSwitch'
 import { routeHref, type Route } from './router'
 import { isSoundEnabled, playSound, setSoundEnabled, subscribeSound } from './sound'
+import { ThemeSwitch } from './ThemeSwitch'
 
 type Section = 'games' | 'puzzles' | 'hanging' | 'openings' | 'endgames' | 'dashboard'
 
@@ -150,26 +151,29 @@ export function SoundToggle() {
 export function TopNav({ route, username }: { route: Route; username: string }) {
   const current = activeSection(route)
   return (
-    <header className="sticky top-0 z-30 border-b border-slate-800/80 bg-slate-950/90 backdrop-blur-md">
-      <div className="mx-auto flex max-w-4xl items-center justify-between gap-2 px-4 py-2.5">
+    <header className="sticky top-0 z-30 border-b border-slate-800/90 bg-slate-950/88 backdrop-blur-md">
+      <div className="mx-auto flex max-w-5xl items-center justify-between gap-2 px-4 py-2.5">
         <a
           href={routeHref({ name: 'games', username })}
-          className="flex items-center gap-2 font-semibold tracking-tight text-slate-100 hover:text-white"
+          className="flex items-center gap-2.5 font-semibold tracking-tight text-slate-100 hover:text-white"
         >
           <span
             aria-hidden="true"
-            className="grid size-7 place-items-center rounded-lg bg-emerald-600 text-sm text-white shadow-sm shadow-emerald-950/60"
+            className="grid size-7 place-items-center rounded-md border border-emerald-500/40 bg-emerald-600/20 text-sm text-emerald-300"
           >
             ♞
           </span>
-          <span className="truncate">{t('app.title')}</span>
+          <span className="font-display truncate text-lg font-semibold tracking-tight">
+            {t('app.title')}
+          </span>
         </a>
         <div className="flex items-center gap-2">
           <AnalysisBadge />
+          <ThemeSwitch />
           <SoundToggle />
           <a
             href={routeHref({ name: 'home' })}
-            className="rounded-md px-2 py-1 text-xs font-medium text-slate-400 transition-colors hover:bg-slate-800/80 hover:text-slate-100 sm:text-sm"
+            className="hidden rounded-md px-2 py-1 text-xs font-medium text-slate-400 transition-colors hover:bg-slate-800/80 hover:text-slate-100 sm:inline-block sm:text-sm"
           >
             {t('nav.changeUser')}
           </a>
@@ -179,7 +183,7 @@ export function TopNav({ route, username }: { route: Route; username: string }) 
 
       {/* Desktop section tabs */}
       <nav aria-label={t('app.title')} className="hidden border-t border-slate-800/60 sm:block">
-        <div className="mx-auto flex max-w-4xl items-center gap-1 px-4">
+        <div className="mx-auto flex max-w-5xl items-center gap-1 px-4">
           {ITEMS.map((item) => {
             const active = current === item.id
             return (

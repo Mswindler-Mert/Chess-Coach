@@ -44,6 +44,13 @@ export const en: Record<MessageKey, string> = {
   'nav.changeUser': 'Change user',
   'nav.backToGames': 'Back to games',
   'nav.language': 'Language',
+  'nav.theme': 'Theme',
+  'theme.walnut': 'Walnut Club theme',
+  'theme.forest': 'Forest Tournament theme',
+  'theme.obsidian': 'Obsidian Copper theme',
+  'home.showcase.caption': 'Italian Game · 1. e4 e5 2. Nf3 Nc6 3. Bc4',
+  'home.showcase.note':
+    'The bishop aims at f7 while your pieces control the centre and prepare to castle.',
   'nav.soundOn': 'Sound on',
   'nav.soundOff': 'Sound off',
 

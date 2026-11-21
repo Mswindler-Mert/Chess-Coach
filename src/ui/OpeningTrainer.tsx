@@ -15,6 +15,7 @@ import { getLanguage, t } from '../i18n'
 import { ProgressBar } from './analysis'
 import { formatMoveAction } from './moveText'
 import { playMoveSan, playSound } from './sound'
+import { useBoardColors } from './theme'
 
 const START_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
 const SELECTED_STYLE: CSSProperties = { backgroundColor: 'rgba(250, 204, 21, 0.55)' }
@@ -258,6 +259,7 @@ function LineBoard({
   nextLine: OpeningGuide['lines'][number] | undefined
   onNextLine: (() => void) | undefined
 }) {
+  const boardColors = useBoardColors()
   const steps = useMemo(() => buildOpeningSteps(guide, lineId), [guide, lineId])
   const [stepIndex, setStepIndex] = useState(0)
   const [selected, setSelected] = useState<Square | null>(null)
@@ -375,25 +377,26 @@ function LineBoard({
           </button>
         </div>
 
-        <div className="aspect-square w-full touch-none select-none overflow-hidden rounded-md shadow-lg shadow-black/40">
-          <Chessboard
-            options={{
-              id: 'opening-trainer-board',
-              position: fen,
-              boardOrientation: guide.color,
-              allowDragging: isUserTurn,
-              canDragPiece: ({ piece }) => isUserTurn && piece.pieceType.startsWith(myPrefix),
-              onPieceDrop: ({ sourceSquare, targetSquare }) =>
-                targetSquare ? tryMove(sourceSquare, targetSquare) : false,
-              onSquareClick: ({ piece, square }) => onSquareClick(square, piece?.pieceType),
-              arrows,
-              allowDrawingArrows: false,
-              squareStyles,
-              animationDurationInMs: 180,
-              darkSquareStyle: { backgroundColor: '#769656' },
-              lightSquareStyle: { backgroundColor: '#eeeed2' },
-            }}
-          />
+        <div className="club-board-frame w-full">
+          <div className="aspect-square w-full touch-none select-none overflow-hidden rounded-[6px]">
+            <Chessboard
+              options={{
+                id: 'opening-trainer-board',
+                position: fen,
+                boardOrientation: guide.color,
+                allowDragging: isUserTurn,
+                canDragPiece: ({ piece }) => isUserTurn && piece.pieceType.startsWith(myPrefix),
+                onPieceDrop: ({ sourceSquare, targetSquare }) =>
+                  targetSquare ? tryMove(sourceSquare, targetSquare) : false,
+                onSquareClick: ({ piece, square }) => onSquareClick(square, piece?.pieceType),
+                arrows,
+                allowDrawingArrows: false,
+                squareStyles,
+                animationDurationInMs: 180,
+                ...boardColors,
+              }}
+            />
+          </div>
         </div>
       </div>
 

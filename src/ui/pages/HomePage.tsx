@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
+import { Chessboard } from 'react-chessboard'
 import { SITE_NAMES, SOURCES, sourceOf, type Source } from '../../core/api/source'
 import { normalizeAccount } from '../../core/api/username'
 import { getLastUsername, setLastUsername } from '../../db/games'
@@ -6,44 +7,18 @@ import { t, type MessageKey } from '../../i18n'
 import { accountLabel } from '../format'
 import { LanguageSwitch } from '../LanguageSwitch'
 import { navigate, routeHref } from '../router'
+import { useBoardColors } from '../theme'
+import { ThemeSwitch } from '../ThemeSwitch'
 
-const features: { icon: string; tone: string; title: MessageKey; body: MessageKey }[] = [
-  {
-    icon: '♞',
-    tone: 'bg-emerald-500/15 text-emerald-300',
-    title: 'home.features.puzzles.title',
-    body: 'home.features.puzzles.body',
-  },
-  {
-    icon: '🎯',
-    tone: 'bg-rose-500/15 text-rose-300',
-    title: 'home.features.hanging.title',
-    body: 'home.features.hanging.body',
-  },
-  {
-    icon: '🔥',
-    tone: 'bg-amber-500/15 text-amber-300',
-    title: 'home.features.daily.title',
-    body: 'home.features.daily.body',
-  },
-  {
-    icon: '♝',
-    tone: 'bg-sky-500/15 text-sky-300',
-    title: 'home.features.openings.title',
-    body: 'home.features.openings.body',
-  },
-  {
-    icon: '♚',
-    tone: 'bg-violet-500/15 text-violet-300',
-    title: 'home.features.endgames.title',
-    body: 'home.features.endgames.body',
-  },
-  {
-    icon: '♜',
-    tone: 'bg-teal-500/15 text-teal-300',
-    title: 'home.features.dashboard.title',
-    body: 'home.features.dashboard.body',
-  },
+const ITALIAN_FEN = 'r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 3 3'
+
+const features: { num: string; title: MessageKey; body: MessageKey }[] = [
+  { num: '01', title: 'home.features.puzzles.title', body: 'home.features.puzzles.body' },
+  { num: '02', title: 'home.features.hanging.title', body: 'home.features.hanging.body' },
+  { num: '03', title: 'home.features.openings.title', body: 'home.features.openings.body' },
+  { num: '04', title: 'home.features.daily.title', body: 'home.features.daily.body' },
+  { num: '05', title: 'home.features.endgames.title', body: 'home.features.endgames.body' },
+  { num: '06', title: 'home.features.dashboard.title', body: 'home.features.dashboard.body' },
 ]
 
 export function HomePage() {
@@ -51,6 +26,7 @@ export function HomePage() {
   const [invalid, setInvalid] = useState(false)
   const [lastUsername, setLast] = useState<string | null>(null)
   const [site, setSite] = useState<Source>('chesscom')
+  const boardColors = useBoardColors()
 
   useEffect(() => {
     getLastUsername().then(
@@ -75,46 +51,48 @@ export function HomePage() {
   }
 
   return (
-    <div className="flex flex-col gap-10">
-      <div className="relative overflow-hidden rounded-3xl border border-slate-800/90 bg-gradient-to-b from-emerald-950/35 via-slate-900/90 to-slate-900 p-6 shadow-xl shadow-black/30 sm:p-8">
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute -top-24 left-1/2 h-56 w-96 -translate-x-1/2 rounded-full bg-emerald-500/15 blur-3xl"
-        />
+    <div className="flex flex-col gap-14">
+      {/* Top utility bar */}
+      <div className="flex items-center justify-between gap-3 border-b border-slate-800/80 pb-4">
+        <div className="flex items-center gap-2.5">
+          <span
+            aria-hidden="true"
+            className="grid size-8 place-items-center rounded-md border border-emerald-500/40 bg-emerald-600/15 text-base text-emerald-300"
+          >
+            ♞
+          </span>
+          <span className="font-display text-lg font-semibold tracking-tight text-slate-100">
+            {t('app.title')}
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          <ThemeSwitch />
+          <LanguageSwitch />
+        </div>
+      </div>
 
-        <div className="relative flex flex-col gap-6">
-          <div className="flex items-center justify-between gap-3">
-            <span className="inline-flex items-center rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-300">
-              {t('home.badge')}
-            </span>
-            <LanguageSwitch />
-          </div>
+      {/* Editorial asymmetric hero: typography + form on the left, real tactile chessboard on the right */}
+      <section className="grid items-center gap-10 lg:grid-cols-12">
+        <div className="flex flex-col gap-6 lg:col-span-7">
+          <p className="text-xs font-medium tracking-[0.14em] text-emerald-400 uppercase">
+            {t('home.badge')}
+          </p>
 
           <header className="flex flex-col gap-3">
-            <div className="flex items-center gap-3">
-              <span
-                aria-hidden="true"
-                className="grid size-12 shrink-0 place-items-center rounded-2xl bg-emerald-600 text-2xl text-white shadow-lg shadow-emerald-950/60"
-              >
-                ♞
-              </span>
-              <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
-                {t('app.title')}
-              </h1>
-            </div>
-            <p className="max-w-2xl text-base text-slate-300 sm:text-lg">{t('app.tagline')}</p>
+            <h1 className="font-display text-4xl leading-[1.08] font-semibold tracking-tight text-slate-100 sm:text-5xl">
+              {t('app.title')}
+            </h1>
+            <p className="max-w-xl text-base leading-relaxed text-slate-300 sm:text-lg">
+              {t('app.tagline')}
+            </p>
           </header>
 
-          <form
-            noValidate
-            className="flex flex-col gap-4 rounded-2xl border border-slate-800 bg-slate-950/70 p-4 sm:p-5"
-            onSubmit={onSubmit}
-          >
+          <form noValidate className="flex max-w-lg flex-col gap-4 pt-1" onSubmit={onSubmit}>
             <fieldset className="flex flex-col gap-2">
-              <legend className="mb-1 text-xs font-medium tracking-wide text-slate-400 uppercase">
+              <legend className="mb-1 text-xs font-medium tracking-wider text-slate-400 uppercase">
                 {t('home.site.label')}
               </legend>
-              <div className="grid grid-cols-2 gap-1.5 rounded-xl border border-slate-800 bg-slate-900 p-1">
+              <div className="grid grid-cols-2 gap-1 rounded-xl border border-slate-800 bg-slate-900/90 p-1">
                 {SOURCES.map((source) => (
                   <button
                     key={source}
@@ -126,7 +104,7 @@ export function HomePage() {
                     }}
                     className={`min-h-10 rounded-lg text-sm font-semibold transition-colors ${
                       site === source
-                        ? 'bg-emerald-600 text-white shadow-sm'
+                        ? 'bg-emerald-600 text-slate-950 shadow-sm'
                         : 'text-slate-400 hover:text-slate-100'
                     }`}
                   >
@@ -156,11 +134,11 @@ export function HomePage() {
                   aria-invalid={invalid}
                   aria-describedby={invalid ? 'username-error' : undefined}
                   placeholder={t(`home.username.placeholder.${site}`)}
-                  className="min-h-11 flex-1 rounded-xl border border-slate-700 bg-slate-900 px-3.5 text-base text-white placeholder:text-slate-500 outline-none transition-colors focus:border-emerald-500 aria-invalid:border-rose-500"
+                  className="min-h-12 flex-1 rounded-xl border border-slate-700/90 bg-slate-900/90 px-4 text-base text-slate-100 placeholder:text-slate-500 outline-none transition-colors focus:border-emerald-500 aria-invalid:border-rose-500"
                 />
                 <button
                   type="submit"
-                  className="min-h-11 rounded-xl bg-emerald-600 px-5 font-semibold text-white shadow-sm shadow-emerald-950/50 transition-colors hover:bg-emerald-500"
+                  className="min-h-12 rounded-xl bg-emerald-600 px-6 font-semibold text-slate-950 transition-colors hover:bg-emerald-500"
                 >
                   {t('home.username.submit')}
                 </button>
@@ -175,44 +153,74 @@ export function HomePage() {
             {lastUsername && (
               <a
                 href={routeHref({ name: 'games', username: lastUsername })}
-                className="group flex items-center justify-between rounded-xl border border-emerald-500/25 bg-emerald-500/10 px-3.5 py-2.5 text-sm font-medium text-emerald-300 transition-colors hover:border-emerald-500/50 hover:bg-emerald-500/15"
+                className="group flex items-center justify-between border-t border-slate-800/80 pt-3 text-sm font-medium text-emerald-300 transition-colors hover:text-emerald-200"
               >
                 <span>{t('home.continue', { username: accountLabel(lastUsername) })}</span>
-                <span
-                  aria-hidden="true"
-                  className="transition-transform group-hover:translate-x-0.5"
-                >
+                <span aria-hidden="true" className="transition-transform group-hover:translate-x-1">
                   →
                 </span>
               </a>
             )}
           </form>
         </div>
-      </div>
 
-      <section className="flex flex-col gap-4">
-        <h2 className="text-lg font-semibold tracking-tight text-slate-100">
+        {/* Tactile Chessboard Showcase */}
+        <figure className="flex flex-col gap-3 lg:col-span-5">
+          <div className="club-board-frame mx-auto w-full max-w-[360px]">
+            <div className="aspect-square w-full overflow-hidden rounded-[6px] select-none">
+              <Chessboard
+                options={{
+                  id: 'home-showcase-board',
+                  position: ITALIAN_FEN,
+                  boardOrientation: 'white',
+                  allowDragging: false,
+                  allowDrawingArrows: false,
+                  arrows: [
+                    {
+                      startSquare: 'c4',
+                      endSquare: 'f7',
+                      color: 'rgba(207, 160, 87, 0.85)',
+                    },
+                  ],
+                  squareStyles: {
+                    f1: { backgroundColor: 'rgba(207, 160, 87, 0.25)' },
+                    c4: { backgroundColor: 'rgba(207, 160, 87, 0.35)' },
+                  },
+                  ...boardColors,
+                }}
+              />
+            </div>
+          </div>
+          <figcaption className="mx-auto flex max-w-[360px] flex-col gap-1 text-center lg:text-left">
+            <span className="font-mono text-xs text-emerald-300/90">
+              {t('home.showcase.caption')}
+            </span>
+            <span className="text-xs leading-relaxed text-slate-400">
+              {t('home.showcase.note')}
+            </span>
+          </figcaption>
+        </figure>
+      </section>
+
+      {/* Editorial ruled index instead of generic identical boxes */}
+      <section className="flex flex-col gap-6 border-t border-slate-800/80 pt-8">
+        <h2 className="font-display text-2xl font-semibold tracking-tight text-slate-100">
           {t('home.features.title')}
         </h2>
-        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <ol className="grid gap-x-8 gap-y-6 sm:grid-cols-2 lg:grid-cols-3">
           {features.map((feature) => (
             <li
               key={feature.title}
-              className="flex flex-col gap-2.5 rounded-2xl border border-slate-800/90 bg-slate-900/70 p-4 transition-colors hover:border-slate-700"
+              className="flex flex-col gap-2 border-t border-slate-800/70 pt-4"
             >
-              <span
-                aria-hidden="true"
-                className={`grid size-10 place-items-center rounded-xl text-xl leading-none ${feature.tone}`}
-              >
-                {feature.icon}
-              </span>
-              <div className="flex flex-col gap-1">
-                <h3 className="font-semibold text-slate-100">{t(feature.title)}</h3>
-                <p className="text-sm leading-relaxed text-slate-400">{t(feature.body)}</p>
-              </div>
+              <span className="font-mono text-xs text-emerald-400/90">{feature.num}</span>
+              <h3 className="font-display text-lg font-semibold text-slate-100">
+                {t(feature.title)}
+              </h3>
+              <p className="text-sm leading-relaxed text-slate-400">{t(feature.body)}</p>
             </li>
           ))}
-        </ul>
+        </ol>
       </section>
     </div>
   )

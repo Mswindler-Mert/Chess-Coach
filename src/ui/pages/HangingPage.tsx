@@ -24,6 +24,7 @@ import { formatDate } from '../format'
 import { formatMoveAction, formatPlayedSentence, formatThreatSentence } from '../moveText'
 import { routeHref } from '../router'
 import { playSound } from '../sound'
+import { useBoardColors } from '../theme'
 
 const ring = (color: string): CSSProperties => ({ boxShadow: `inset 0 0 0 4px ${color}` })
 const LAST_MOVE: CSSProperties = { backgroundColor: 'rgba(250, 204, 21, 0.35)' }
@@ -153,6 +154,7 @@ function Drill({
   onAnswered: (drill: HangingDrill, correct: boolean) => void
   onNext: () => void
 }) {
+  const boardColors = useBoardColors()
   const [selected, setSelected] = useState<string[]>([])
   const [result, setResult] = useState<SquareCheck | null>(null)
   const [viewMode, setViewMode] = useState<'threat' | 'better'>('threat')
@@ -232,21 +234,22 @@ function Drill({
   return (
     <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
       <div className="flex w-full max-w-[560px] flex-col gap-2.5 self-center lg:self-start">
-        <div className="aspect-square w-full touch-none select-none overflow-hidden rounded-md shadow-lg shadow-black/40">
-          <Chessboard
-            options={{
-              id: 'hanging-board',
-              position: boardFen,
-              boardOrientation: drill.color,
-              allowDragging: false,
-              allowDrawingArrows: false,
-              onSquareClick: ({ piece, square }) => toggle(square, piece !== null),
-              arrows,
-              squareStyles,
-              darkSquareStyle: { backgroundColor: '#769656' },
-              lightSquareStyle: { backgroundColor: '#eeeed2' },
-            }}
-          />
+        <div className="club-board-frame w-full">
+          <div className="aspect-square w-full touch-none select-none overflow-hidden rounded-[6px]">
+            <Chessboard
+              options={{
+                id: 'hanging-board',
+                position: boardFen,
+                boardOrientation: drill.color,
+                allowDragging: false,
+                allowDrawingArrows: false,
+                onSquareClick: ({ piece, square }) => toggle(square, piece !== null),
+                arrows,
+                squareStyles,
+                ...boardColors,
+              }}
+            />
+          </div>
         </div>
 
         {result && bestMove && (

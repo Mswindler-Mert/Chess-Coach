@@ -32,6 +32,7 @@ import {
 } from '../format'
 import { formatBestReason, formatCoachTip, formatMoveAction, formatPlayedReason } from '../moveText'
 import { routeHref } from '../router'
+import { useBoardColors } from '../theme'
 
 const LAST_MOVE_STYLE = { backgroundColor: 'rgba(250, 204, 21, 0.45)' }
 const BEST_ARROW = 'rgba(16, 185, 129, 0.85)'
@@ -116,6 +117,7 @@ function ReplayView({
   initialPly: number
 }) {
   const total = replay.moves.length
+  const boardColors = useBoardColors()
   const [ply, setPly] = useState(() => Math.max(0, Math.min(total, initialPly)))
   const [showArrow, setShowArrow] = useState(true)
   const [showThreats, setShowThreats] = useState(false)
@@ -203,21 +205,22 @@ function ReplayView({
               orientation={game.userColor}
             />
           )}
-          <div className="aspect-square min-w-0 flex-1 touch-none select-none overflow-hidden rounded-md shadow-lg shadow-black/40">
-            <Chessboard
-              options={{
-                id: 'game-viewer',
-                position: fen,
-                boardOrientation: game.userColor,
-                allowDragging: false,
-                allowDrawingArrows: true,
-                arrows,
-                squareStyles,
-                animationDurationInMs: 150,
-                darkSquareStyle: { backgroundColor: '#769656' },
-                lightSquareStyle: { backgroundColor: '#eeeed2' },
-              }}
-            />
+          <div className="club-board-frame min-w-0 flex-1">
+            <div className="aspect-square w-full touch-none select-none overflow-hidden rounded-[6px]">
+              <Chessboard
+                options={{
+                  id: 'game-viewer',
+                  position: fen,
+                  boardOrientation: game.userColor,
+                  allowDragging: false,
+                  allowDrawingArrows: true,
+                  arrows,
+                  squareStyles,
+                  animationDurationInMs: 150,
+                  ...boardColors,
+                }}
+              />
+            </div>
           </div>
         </div>
         <PlayerBar

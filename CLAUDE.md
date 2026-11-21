@@ -572,3 +572,19 @@ Her aşama ayrı bir dal (branch) ve küçük commit'lerle yapılır. Bir aşama
   (yeşil ok + hamle açıklaması + otomatik rakip cevabı) ve **Kendin dene (pratik)** (oksuz, ipuçlu).
   İlerleme `settings.openingProgress` içinde saklanır (Dexie sürümü artmadı), tamamlanan varyasyon günlük
   seriye +1 ekler. Tüm varyasyon hamleleri `guides.test.ts` içinde `chess.js` ile doğrulanır.
+
+### Sanat yönü ve göz yormayan temalar (2026-11-21)
+- **Tipografi (`index.html`, `src/index.css`):** Başlıklarda **Fraunces** (editorial serif), gövdede
+  **Plus Jakarta Sans**, hamle/saatlerde **JetBrains Mono** (çevrimdışı fallback'li).
+- **3 göz yormayan tema (`src/ui/theme.ts`, `src/ui/ThemeSwitch.tsx`):**
+  - `walnut` (**Ceviz Kulüp**, varsayılan): sıcak espresso zemin, ceviz kartlar, fildişi metin, mat
+    pirinç altın vurgu, sıcak ahşap tahta (`#9d7250` / `#decab0`).
+  - `forest` (**Orman Turnuva**): koyu çam zemin, adaçayı yüzeyler, yumuşak yaprak yeşili vurgu,
+    turnuva yeşil tahta (`#658058` / `#d3dcc9`).
+  - `obsidian` (**Füme Bakır**): sıcak bazalt/grafit zemin, mat bakır vurgu, arduvaz tahta
+    (`#626f7d` / `#cbd2d9`).
+  Seçim `localStorage` (`chess-coach:theme`) ile saklanır, `<html data-theme>` ve `useBoardColors()` ile
+  hem tüm sayfalar hem tüm satranç tahtaları anlık olarak güncellenir.
+- **Doku ve çerçeve:** Hafif ortam ışığı + mikro kâğıt/ahşap kum dokusu (`body::after`), tüm tahtalarda
+  `.club-board-frame`, ana sayfada asimetrik 2 sütunlu editöryel vitrin (sağda canlı İtalyan Açılışı
+  tahtası, altta 01–06 numaralı çizgili dizin).

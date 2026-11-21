@@ -25,11 +25,11 @@ export default function App() {
   }, [routeUsername])
 
   return (
-    <div className="min-h-dvh bg-slate-950 text-slate-100">
+    <div className="min-h-dvh text-slate-100">
       {routeUsername && <TopNav route={route} username={routeUsername} />}
 
       <main
-        className={`mx-auto flex max-w-4xl flex-col gap-8 px-4 py-6 sm:py-8 ${
+        className={`mx-auto flex max-w-5xl flex-col gap-8 px-4 py-6 sm:py-8 ${
           routeUsername ? 'pb-24 sm:pb-10' : ''
         }`}
       >

@@ -19,6 +19,7 @@ import { t } from '../../i18n'
 import { formatDate } from '../format'
 import { routeHref } from '../router'
 import { playMoveSan, playSound } from '../sound'
+import { useBoardColors } from '../theme'
 
 /** Engine strength while defending: enough to punish mistakes, quick on a phone. */
 const ENGINE_DEPTH = 12
@@ -199,6 +200,7 @@ type Phase =
 
 function Play({ lesson, username }: { lesson: EndgameLesson; username: string }) {
   const chess = useRef(new Chess(lesson.fen))
+  const boardColors = useBoardColors()
   const [fen, setFen] = useState(lesson.fen)
   const [lastMove, setLastMove] = useState<{ from: string; to: string } | null>(null)
   const [userMoves, setUserMoves] = useState(0)
@@ -326,24 +328,25 @@ function Play({ lesson, username }: { lesson: EndgameLesson; username: string })
 
   return (
     <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
-      <div className="aspect-square w-full max-w-[560px] touch-none self-center select-none lg:self-start">
-        <Chessboard
-          options={{
-            id: 'endgame-board',
-            position: fen,
-            boardOrientation: lesson.color,
-            allowDragging: canMove,
-            canDragPiece: ({ piece }) => canMove && piece.pieceType.startsWith(myPrefix),
-            onPieceDrop: ({ sourceSquare, targetSquare }) =>
-              targetSquare ? tryMove(sourceSquare, targetSquare) : false,
-            onSquareClick: ({ piece, square }) => onSquareClick(square, piece?.pieceType),
-            allowDrawingArrows: true,
-            squareStyles,
-            animationDurationInMs: 150,
-            darkSquareStyle: { backgroundColor: '#769656' },
-            lightSquareStyle: { backgroundColor: '#eeeed2' },
-          }}
-        />
+      <div className="club-board-frame w-full max-w-[560px] self-center lg:self-start">
+        <div className="aspect-square w-full touch-none select-none overflow-hidden rounded-[6px]">
+          <Chessboard
+            options={{
+              id: 'endgame-board',
+              position: fen,
+              boardOrientation: lesson.color,
+              allowDragging: canMove,
+              canDragPiece: ({ piece }) => canMove && piece.pieceType.startsWith(myPrefix),
+              onPieceDrop: ({ sourceSquare, targetSquare }) =>
+                targetSquare ? tryMove(sourceSquare, targetSquare) : false,
+              onSquareClick: ({ piece, square }) => onSquareClick(square, piece?.pieceType),
+              allowDrawingArrows: true,
+              squareStyles,
+              animationDurationInMs: 150,
+              ...boardColors,
+            }}
+          />
+        </div>
       </div>
 
       <aside className="flex min-w-0 flex-1 flex-col gap-3 text-sm">

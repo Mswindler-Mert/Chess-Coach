@@ -260,13 +260,15 @@ function GamesView({ username }: { username: string }) {
         </p>
       )}
 
-      <ul className="flex flex-col gap-2">
-        {visible.slice(0, limit).map((game) => (
-          <li key={game.id}>
-            <GameRow game={game} username={username} summary={summaries.get(game.id)} />
-          </li>
-        ))}
-      </ul>
+      {visible.length > 0 && (
+        <ul className="divide-y divide-slate-800/70 overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-900/45">
+          {visible.slice(0, limit).map((game) => (
+            <li key={game.id}>
+              <GameRow game={game} username={username} summary={summaries.get(game.id)} />
+            </li>
+          ))}
+        </ul>
+      )}
 
       {visible.length > limit && (
         <button
@@ -494,7 +496,7 @@ function GameRow({
   return (
     <a
       href={routeHref({ name: 'game', username, id: game.id })}
-      className="flex items-center gap-3 rounded-xl border border-slate-800/90 bg-slate-900/80 p-3 transition-colors hover:border-emerald-500/40 hover:bg-slate-900"
+      className="flex items-center gap-3.5 px-4 py-3 transition-colors hover:bg-slate-800/40"
     >
       <span
         title={t(`outcome.${game.outcome}`)}
