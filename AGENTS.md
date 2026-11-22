@@ -15,6 +15,7 @@ mantığı, karar notları). Bu dosya sadece kısa bir giriş ve her oturumda ge
 - Satranç/analiz mantığı `src/core` içinde saf fonksiyon olarak yazılır ve her yeni fonksiyon için Vitest testi yazılır.
 - Bir iş bitince: `npm test`, `npm run typecheck`, `npm run lint`, sonra kısa ve açıklayıcı commit.
 - Büyük değişiklikten önce planı kısaca anlat ve onay bekle. Bağımlılık eklemeden önce nedenini söyle.
+- Yeni bir özellik eklemeden veya büyük bir değişiklik yapmadan önce, çalışma ağacında commit edilmemiş değişiklik varsa mevcut durumu otomatik olarak `git commit` ile yedekle.
 - Stockfish çağrıları asla ana thread'de çalışmaz.
 - Her büyük adım kendi dalında yapılır; bitince `main`'e fast-forward ile birleştirilir. `main`'e push yayını tetikler.
 - Commit e-postası GitHub noreply adresidir; kişisel e-posta commit'lere girmemeli.
