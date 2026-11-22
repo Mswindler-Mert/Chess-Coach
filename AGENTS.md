@@ -13,7 +13,7 @@ mantığı, karar notları). Bu dosya sadece kısa bir giriş ve her oturumda ge
 
 - Kod ve değişken isimleri İngilizce; arayüz metinleri `src/i18n` üzerinden, **hem `tr.ts` hem `en.ts`**'e eklenir.
 - Satranç/analiz mantığı `src/core` içinde saf fonksiyon olarak yazılır ve her yeni fonksiyon için Vitest testi yazılır.
-- Bir iş bitince: `npm test`, `npm run typecheck`, `npm run lint`, sonra kısa ve açıklayıcı commit.
+- Bir iş bitince (ve GitHub'a push yapmadan önce) sırasıyla `npm run format:check`, `npm run lint`, `npm run typecheck` ve `npm test` komutlarını çalıştır; format hatası çıkarsa Prettier ile düzelt, tüm kontroller geçmeden push yapma. Sonrasında kısa ve açıklayıcı commit at.
 - Büyük değişiklikten önce planı kısaca anlat ve onay bekle. Bağımlılık eklemeden önce nedenini söyle.
 - Yeni bir özellik eklemeden veya büyük bir değişiklik yapmadan önce, çalışma ağacında commit edilmemiş değişiklik varsa mevcut durumu otomatik olarak `git commit` ile yedekle.
 - Stockfish çağrıları asla ana thread'de çalışmaz.
