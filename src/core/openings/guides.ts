@@ -11,6 +11,8 @@ export interface GuideMove {
   san: string
   /** Short, beginner-friendly reason for this move. */
   note: BilingualText
+  /** Specific explanations for common wrong moves beginners try at this exact step (keyed by SAN). */
+  wrongMoves?: Record<string, BilingualText>
 }
 
 export interface OpeningLine {
@@ -27,6 +29,8 @@ export interface OpeningGuide {
   name: BilingualText
   tagline: BilingualText
   idea: BilingualText
+  /** 1-sentence golden rule when the opponent deviates from the script. */
+  offbookRule: BilingualText
   pros: readonly BilingualText[]
   cons: readonly BilingualText[]
   lines: readonly OpeningLine[]
@@ -43,6 +47,7 @@ export interface OpeningStep {
   fenBefore: string
   fenAfter: string
   note: BilingualText
+  wrongMoves?: Record<string, BilingualText>
 }
 
 const ITALIAN_BASE: readonly GuideMove[] = [
@@ -213,6 +218,10 @@ export const OPENING_GUIDES: readonly OpeningGuide[] = [
       tr: 'Taşlarını hızla merkeze çıkar (Nf3, Bc4), şahını kısa rokla güvene al ve rakibin cevabına göre merkezde d4 ile alan kazan.',
       en: 'Develop quickly toward the centre (Nf3, Bc4), castle early, and expand with d4 depending on how Black replies.',
     },
+    offbookRule: {
+      tr: 'Rakip farklı oynarsa panik yok: 1) e4 piyonunu koru (d3 veya Nc3), 2) Atlarını ve fillerini çıkar, 3) Kısa rok yapıp şahını güvene al.',
+      en: 'If Black goes off-book: 1) Protect e4 (d3 or Nc3), 2) Develop knights and bishops, 3) Castle kingside early.',
+    },
     pros: [
       {
         tr: 'Tüm temel açılış prensiplerini (merkez, gelişim, hızlı rok) doğalca uygular.',
@@ -356,6 +365,16 @@ export const OPENING_GUIDES: readonly OpeningGuide[] = [
               tr: 'Piyonu al ve c6’daki ata saldır! Rakip Nxd5 ile geri alırsa f7’ye büyük hücum başlar.',
               en: 'Capture the pawn and attack the c6 knight! If Black recaptures with Nxd5, a huge attack on f7 follows.',
             },
+            wrongMoves: {
+              Bxd5: {
+                tr: 'Fille d5’i alırsan siyah f6 atıyla filini alır (Nxd5) — hem güçlü filini verirsin hem de f7 baskın biter! Piyonla (exd5) al ki filin f7’ye bakmaya devam etsin.',
+                en: 'If you take with the bishop, Black captures it with the f6 knight (Nxd5) and ends your attack on f7! Capture with the e-pawn (exd5) to keep your bishop aiming at f7.',
+              },
+              Nxf7: {
+                tr: 'Henüz erken! Önce d5’teki piyonu e-piyonunla al ki filinin yolu açık kalsın ve siyahın taşları dağılsın.',
+                en: 'A bit too early! Capture on d5 with your e-pawn first so your bishop diagonal stays open.',
+              },
+            },
           },
         ],
       },
@@ -372,6 +391,10 @@ export const OPENING_GUIDES: readonly OpeningGuide[] = [
     idea: {
       tr: 'Önce d4 ve Bf4 oyna, ardından e3–c3–Nf3–Nd2 piramidini kur. Karmaşık ezber gerektirmez, taş asma riskini en aza indirir.',
       en: 'Play d4 and Bf4 first, then build the e3–c3–Nf3–Nd2 pyramid. Minimal theory and very hard to blunder.',
+    },
+    offbookRule: {
+      tr: 'Rakip ne oynarsa oynasın piramidini kur: Bf4 → e3 → Nf3 → c3 → Nd2 → Bd3 → kısa rok. Sadece rakip piyonunu/taşını bedava bırakırsa al!',
+      en: 'No matter what Black plays, build your pyramid: Bf4 → e3 → Nf3 → c3 → Nd2 → Bd3 → castle. Only deviate to grab free material!',
     },
     pros: [
       {
@@ -514,6 +537,10 @@ export const OPENING_GUIDES: readonly OpeningGuide[] = [
       tr: 'Merkezde eşit alan tut (e5), taşlarını aktif karelere hızla geliştir (Nc6, Bc5/Be7, Nf6) ve erken rok yaparak güvende kal.',
       en: 'Hold equal space in the centre (e5), develop your pieces actively (Nc6, Bc5/Be7, Nf6), and castle early.',
     },
+    offbookRule: {
+      tr: 'Beyaz farklı bir hamle oynarsa: 1) e5 piyonun güvende mi kontrol et, 2) Atlarını (Nc6, Nf6) ve filini (Bc5/Be7) çıkar, 3) Kısa rok yap.',
+      en: 'If White deviates: 1) Check that e5 is protected, 2) Develop Nc6, Nf6, and Bc5/Be7, 3) Castle early.',
+    },
     pros: [
       {
         tr: 'Taşların sıkışmaz; açık hatlarda taktik görüşünü hızla geliştirir.',
@@ -645,6 +672,10 @@ export const OPENING_GUIDES: readonly OpeningGuide[] = [
       tr: 'c6 ile d5’i hazırla, açık kareli filini (c8) piyon zincirinin dışına (Bf5) çıkar, sonra e6 ile kaya gibi savunma kur.',
       en: 'Support d5 with c6, develop your light-squared bishop outside the chain (Bf5), then lock down with e6.',
     },
+    offbookRule: {
+      tr: 'Beyaz 2.d4 oynamazsa bile planın basit: d5 ile merkezi al, açık kareli filini e6’dan önce dışarı çıkar, sonra atları geliştirip rok yap.',
+      en: 'Even if White skips 2.d4, your plan stays simple: claim the centre with d5, get the light bishop out before e6, then develop and castle.',
+    },
     pros: [
       {
         tr: 'Erken taktik tuzaklara karşı çok dayanıklıdır; piyon yapın hep sağlam kalır.',
@@ -747,6 +778,10 @@ export const OPENING_GUIDES: readonly OpeningGuide[] = [
     idea: {
       tr: 'd5’i e6 ile tut, atını Nf6’ya çık, filini Be7’ye koyup açmazı çöz ve hemen kısa rok yap.',
       en: 'Keep d5 backed up by e6, develop Nf6 and Be7 to break any pin, and castle quickly.',
+    },
+    offbookRule: {
+      tr: 'Beyaz 2.c4 oynamazsa da d5’i koru, Nf6 ve Be7 ile gelişip kısa rok yap; ardından …c5 ile beyazın merkezine saldır.',
+      en: 'Even without 2.c4, keep d5 solid, develop Nf6 and Be7, castle early, and later counter-attack the centre with …c5.',
     },
     pros: [
       {
@@ -892,6 +927,7 @@ export function buildOpeningSteps(guide: OpeningGuide, lineId: string): OpeningS
       fenBefore,
       fenAfter: chess.fen(),
       note: entry.note,
+      wrongMoves: entry.wrongMoves,
     })
   })
   return steps
@@ -899,4 +935,17 @@ export function buildOpeningSteps(guide: OpeningGuide, lineId: string): OpeningS
 
 export function openingLineKey(guideId: string, lineId: string): string {
   return `${guideId}:${lineId}`
+}
+
+/** Maps a game opening family name (e.g. "Italian Game") to an interactive guide id when we have one. */
+export function guideIdForOpeningFamily(family: string): string | null {
+  const lower = family.toLowerCase()
+  if (lower.includes('italian') || lower.includes('giuoco')) return 'italian'
+  if (lower.includes('london')) return 'london'
+  if (lower.includes('caro-kann') || lower.includes('caro kann')) return 'caro-kann'
+  if (lower.includes('queen') && lower.includes('gambit')) return 'qgd'
+  if (lower.includes('ruy lopez') || lower.includes('spanish') || lower.includes('four knights')) {
+    return 'classical-e5'
+  }
+  return null
 }

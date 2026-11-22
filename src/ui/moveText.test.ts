@@ -4,6 +4,7 @@ import { describeMove } from '../core/analysis/explainMove'
 import {
   formatBestReason,
   formatMoveAction,
+  formatMoveBadge,
   formatPlayedReason,
   formatPlayedSentence,
   trAtSquare,
@@ -32,6 +33,8 @@ describe('moveText', () => {
     expect(formatPlayedSentence(cap, 'en')).toBe(
       'You took the knight on d5 with your bishop (Bxd5).',
     )
+    expect(formatMoveBadge(cap, 'tr')).toBe('♝ Fil × d5')
+    expect(formatMoveBadge(castle, 'tr')).toBe('♚ Kısa rok')
   })
 
   it('produces concrete Turkish coaching sentences for a hanging piece', () => {

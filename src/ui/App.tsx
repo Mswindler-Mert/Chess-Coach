@@ -3,6 +3,7 @@ import { t } from '../i18n'
 import { startBackgroundWork } from './background'
 import { lazyPage } from './lazyPage'
 import { BottomNav, DesktopSidebar, MobileTopBar } from './Nav'
+import { activeSection, SECTION_STYLES } from './sections'
 import { GamesPage } from './pages/GamesPage'
 import { HomePage } from './pages/HomePage'
 import { OverviewPage } from './pages/OverviewPage'
@@ -38,14 +39,26 @@ export default function App() {
     )
   }
 
+  const section = activeSection(route)
+  const sectionGlow = section ? SECTION_STYLES[section].pageGlow : undefined
+
   return (
     <div className="min-h-dvh text-slate-100 lg:flex">
       <DesktopSidebar route={route} username={routeUsername} />
 
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div
+        className="flex min-w-0 flex-1 flex-col transition-[background-image] duration-300"
+        style={
+          sectionGlow
+            ? {
+                backgroundImage: `radial-gradient(ellipse 75% 42% at 32% -8%, ${sectionGlow}, transparent 70%)`,
+              }
+            : undefined
+        }
+      >
         <MobileTopBar username={routeUsername} />
 
-        <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 px-4 py-6 pb-24 sm:px-6 sm:py-8 lg:px-8 lg:pb-10">
+        <main className="mx-auto flex w-full max-w-[1440px] flex-1 flex-col gap-8 px-4 py-6 pb-24 sm:px-6 sm:py-8 lg:px-10 lg:pb-10">
           <Suspense fallback={<p className="text-slate-400">{t('app.loading')}</p>}>
             {route.name === 'overview' && (
               <OverviewPage key={route.username} username={route.username} />

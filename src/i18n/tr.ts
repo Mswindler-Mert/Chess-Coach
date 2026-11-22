@@ -511,6 +511,21 @@ export const tr = {
   'openings.guide.progress': '{done}/{total} varyasyon tamamlandı',
   'openings.guide.playAs': '{color} ile oynanır',
   'openings.guide.stepOf': 'Hamle {step}/{total}',
+  'openings.guide.offbook': 'Rakip farklı oynarsa?',
+  'openings.stats.coachTitle': 'Koçun Açılış Özeti',
+  'openings.stats.coachTop': 'En sık açılış hatan: {principle} ({share}). {advice}',
+  'openings.stats.coachClean': 'Harika! Son oyunlarında öne çıkan bir açılış prensibi hatası yok.',
+  'openings.stats.studyGuide': 'Çalış →',
+
+  'endgame.hintBtn': 'İpucu al',
+  'endgame.hintShown': 'Öneri: {move}',
+  'endgame.eval.good': '✓ İyi gidiyorsun — üstünlüğün sürüyor ({score})',
+  'endgame.eval.drawGood': '✓ Sağlam savunma — beraberliği tutuyorsun ({score})',
+  'endgame.eval.warn': '⚠ Dikkat! Üstünlüğün azaldı ({score})',
+  'endgame.eval.drawWarn': '⚠ Dikkat! Rakip baskıyı artırıyor ({score})',
+  'endgame.own.viewGame': 'Eski oyunda bu ana git',
+  'endgame.own.context':
+    'Gerçek oyununda burada {move} oynayıp kazancı kaçırmıştın — şimdi kazanmayı dene!',
 
   'overview.kicker': 'ÇALIŞMA DEFTERİ',
   'overview.title': 'Bugünkü Odak',

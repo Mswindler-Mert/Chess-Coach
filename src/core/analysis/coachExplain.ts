@@ -1,4 +1,4 @@
-import type { PieceSymbol } from 'chess.js'
+import { Chess, type PieceSymbol } from 'chess.js'
 import type { Color } from '../games/model'
 import { buildLineSteps, describeMove, type LineStep, type MoveDetails } from './explainMove'
 import { cheapestCapturer, hangingPieces, staticExchange, type ThreatCapture } from './hanging'
@@ -15,6 +15,9 @@ export type BestReason =
   | { kind: 'saves-piece'; piece: PieceSymbol; from: string }
   | { kind: 'castle' }
   | { kind: 'capture' }
+  | { kind: 'gives-check' }
+  | { kind: 'develops' }
+  | { kind: 'active-rook'; file: string }
   | { kind: 'position' }
 
 export type PlayedReason =
@@ -126,7 +129,31 @@ function classifyBestReason(
   ) {
     return { kind: 'fork', targetCount: forkTargets(best.fenAfter, best.to).length }
   }
+  if (best.check) return { kind: 'gives-check' }
+  const backRank = color === 'white' ? '1' : '8'
+  if ((best.piece === 'n' || best.piece === 'b') && best.from.endsWith(backRank)) {
+    return { kind: 'develops' }
+  }
+  if (best.piece === 'r' && isOpenFileForColor(best.fenAfter, best.to[0] ?? 'e', color)) {
+    return { kind: 'active-rook', file: best.to[0] ?? 'e' }
+  }
   return { kind: 'position' }
+}
+
+function isOpenFileForColor(fen: string, file: string, color: Color): boolean {
+  try {
+    const board = new Chess(fen).board()
+    const col = file.charCodeAt(0) - 'a'.charCodeAt(0)
+    if (col < 0 || col > 7) return false
+    const friendly = color === 'white' ? 'w' : 'b'
+    for (let r = 0; r < 8; r++) {
+      const cell = board[r]?.[col]
+      if (cell && cell.type === 'p' && cell.color === friendly) return false
+    }
+    return true
+  } catch {
+    return false
+  }
 }
 
 function classifyPlayedReason(

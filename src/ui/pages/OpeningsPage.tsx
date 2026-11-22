@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import { normalizeUsername } from '../../core/api/username'
 import { opponentOf, type Color } from '../../core/games/model'
+import { guideIdForOpeningFamily } from '../../core/openings/guides'
 import { summarizePrinciples } from '../../core/openings/principles'
 import { openingStats, type OpeningStats } from '../../core/openings/stats'
 import { loadOpenings, type OpeningsData } from '../../db/openings'
 import { formatPercent, t } from '../../i18n'
-import { BarList } from '../charts'
 import { formatDate, timeClassLabel } from '../format'
 import { OpeningTrainer } from '../OpeningTrainer'
 import { routeHref } from '../router'
@@ -26,6 +26,7 @@ export function OpeningsPage({ username: rawUsername }: { username: string }) {
 function Openings({ username }: { username: string }) {
   const [now] = useState(() => Date.now())
   const [tab, setTab] = useState<'learn' | 'stats'>('learn')
+  const [selectedGuideId, setSelectedGuideId] = useState<string | null>(null)
   const [data, setData] = useState<OpeningsData | null>(null)
 
   useEffect(() => {
@@ -73,11 +74,20 @@ function Openings({ username }: { username: string }) {
       </header>
 
       {tab === 'learn' ? (
-        <OpeningTrainer />
+        <OpeningTrainer key={selectedGuideId ?? 'list'} initialGuideId={selectedGuideId} />
       ) : !data || !principles ? (
         <p className="text-slate-400">{t('openings.loading')}</p>
       ) : (
-        <OpeningStatsView username={username} data={data} stats={stats} principles={principles} />
+        <OpeningStatsView
+          username={username}
+          data={data}
+          stats={stats}
+          principles={principles}
+          onStudyGuide={(id) => {
+            setSelectedGuideId(id)
+            setTab('learn')
+          }}
+        />
       )}
     </div>
   )
@@ -88,11 +98,13 @@ function OpeningStatsView({
   data,
   stats,
   principles,
+  onStudyGuide,
 }: {
   username: string
   data: OpeningsData
   stats: OpeningStats[]
   principles: ReturnType<typeof summarizePrinciples>
+  onStudyGuide: (guideId: string) => void
 }) {
   const scope = [
     data.filter.timeClasses.map(timeClassLabel).join(', ') || '—',
@@ -101,6 +113,9 @@ function OpeningStatsView({
   const recent = data.games
     .filter((g) => (data.warnings.get(g.id)?.length ?? 0) > 0)
     .slice(0, RECENT_WARNINGS)
+  const worstPrinciple = [...principles.rates]
+    .filter((r) => r.games > 0)
+    .sort((a, b) => b.share - a.share)[0]
 
   return (
     <div className="flex flex-col gap-5">
@@ -114,27 +129,65 @@ function OpeningStatsView({
         </p>
       ) : (
         <>
-          <section className="flex flex-col gap-2 rounded-xl border border-emerald-800 bg-emerald-950/30 p-4">
-            <p className="text-sm text-slate-300">{t('openings.practice.body')}</p>
-            <a
-              href={routeHref({ name: 'puzzles', username, focus: 'opening' })}
-              className="grid min-h-10 place-items-center self-start rounded-lg bg-emerald-600 px-4 text-sm font-semibold text-white hover:bg-emerald-500"
-            >
-              {t('openings.practice.link')}
-            </a>
+          {/* Beginner-friendly Coach Summary instead of raw data */}
+          <section className="flex flex-col gap-3 rounded-2xl border border-slate-800 border-t-[3px] border-t-teal-400 bg-slate-900/95 p-5">
+            <p className="font-mono text-xs font-bold tracking-wider text-teal-300 uppercase">
+              💡 {t('openings.stats.coachTitle')}
+            </p>
+            <p className="text-[15px] leading-relaxed text-slate-100">
+              {worstPrinciple
+                ? t('openings.stats.coachTop', {
+                    principle: t(`principle.${worstPrinciple.principle}`),
+                    share: pct(worstPrinciple.share),
+                    advice: t(`principle.desc.${worstPrinciple.principle}`),
+                  })
+                : t('openings.stats.coachClean')}
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <a
+                href={routeHref({ name: 'puzzles', username, focus: 'opening' })}
+                className="grid min-h-10 place-items-center rounded-lg bg-emerald-600 px-4 text-sm font-semibold text-white hover:bg-emerald-500"
+              >
+                {t('openings.practice.link')}
+              </a>
+            </div>
           </section>
 
-          <BarList
-            title={t('openings.principles.title')}
-            subtitle={t('openings.principles.subtitle', { games: principles.games })}
-            valueHead={t('openings.principles.head')}
-            format={pct}
-            rows={principles.rates.map((r) => ({
-              label: t(`principle.${r.principle}`),
-              value: r.share,
-              note: t('dashboard.games', { count: r.games }),
-            }))}
-          />
+          {/* Opening principles with plain-language explanations under every row */}
+          <section className="flex flex-col gap-3 rounded-2xl border border-slate-800 bg-slate-900/95 p-5">
+            <div className="flex flex-col gap-0.5">
+              <h2 className="text-base font-bold text-slate-100">
+                {t('openings.principles.title')}
+              </h2>
+              <p className="text-xs text-slate-400">
+                {t('openings.principles.subtitle', { games: principles.games })}
+              </p>
+            </div>
+            <ul className="flex flex-col gap-3.5">
+              {principles.rates.map((r) => (
+                <li key={r.principle} className="flex flex-col gap-1">
+                  <div className="flex items-baseline justify-between gap-2 text-sm">
+                    <span className="font-semibold text-slate-100">
+                      {t(`principle.${r.principle}`)}
+                    </span>
+                    <span className="font-mono text-xs text-slate-300 tabular-nums">
+                      {pct(r.share)}{' '}
+                      <span className="text-slate-500">
+                        ({t('dashboard.games', { count: r.games })})
+                      </span>
+                    </span>
+                  </div>
+                  <div className="h-2 overflow-hidden rounded-full bg-slate-800">
+                    <div
+                      className="h-full rounded-full bg-teal-400"
+                      style={{ width: `${Math.max(r.share > 0 ? 4 : 0, r.share * 100)}%` }}
+                    />
+                  </div>
+                  <p className="text-xs text-slate-400">{t(`principle.desc.${r.principle}`)}</p>
+                </li>
+              ))}
+            </ul>
+          </section>
 
           <div className="grid gap-4 md:grid-cols-2">
             {(['white', 'black'] as const).map((color) => (
@@ -143,6 +196,7 @@ function OpeningStatsView({
                 color={color}
                 username={username}
                 rows={stats.filter((s) => s.color === color)}
+                onStudyGuide={onStudyGuide}
               />
             ))}
           </div>
@@ -195,15 +249,17 @@ function OpeningTable({
   color,
   username,
   rows,
+  onStudyGuide,
 }: {
   color: Color
   username: string
   rows: OpeningStats[]
+  onStudyGuide: (guideId: string) => void
 }) {
   const [showAll, setShowAll] = useState(false)
   const shown = showAll ? rows : rows.slice(0, TOP_OPENINGS)
   return (
-    <section className="flex flex-col gap-2 rounded-xl border border-slate-800 bg-slate-900 p-4">
+    <section className="flex flex-col gap-2 rounded-2xl border border-slate-800 bg-slate-900/95 p-4">
       <h2 className="font-semibold">{t('openings.table.title', { color: t(`color.${color}`) })}</h2>
       {rows.length === 0 ? (
         <p className="text-sm text-slate-400">{t('openings.table.none')}</p>
@@ -218,24 +274,38 @@ function OpeningTable({
             </tr>
           </thead>
           <tbody>
-            {shown.map((row) => (
-              <tr key={row.family} className="border-t border-slate-800">
-                <td className="py-1.5 pr-2">
-                  <a
-                    href={routeHref({ name: 'game', username, id: row.latestGameId })}
-                    title={t('openings.table.latest')}
-                    className="text-slate-200 hover:underline"
-                  >
-                    {row.family}
-                  </a>
-                </td>
-                <td className="py-1.5 text-right tabular-nums">{row.games}</td>
-                <td className="py-1.5 text-right whitespace-nowrap text-slate-400 tabular-nums">
-                  {row.wins}/{row.draws}/{row.losses}
-                </td>
-                <td className="py-1.5 text-right tabular-nums">{pct(row.score)}</td>
-              </tr>
-            ))}
+            {shown.map((row) => {
+              const guideId = guideIdForOpeningFamily(row.family)
+              return (
+                <tr key={row.family} className="border-t border-slate-800">
+                  <td className="py-2 pr-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <a
+                        href={routeHref({ name: 'game', username, id: row.latestGameId })}
+                        title={t('openings.table.latest')}
+                        className="text-slate-200 hover:underline"
+                      >
+                        {row.family}
+                      </a>
+                      {guideId && (
+                        <button
+                          type="button"
+                          onClick={() => onStudyGuide(guideId)}
+                          className="rounded-md bg-teal-500/15 px-2 py-0.5 text-xs font-medium text-teal-300 hover:bg-teal-500/25"
+                        >
+                          📖 {t('openings.stats.studyGuide')}
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                  <td className="py-2 text-right tabular-nums">{row.games}</td>
+                  <td className="py-2 text-right whitespace-nowrap text-slate-400 tabular-nums">
+                    {row.wins}/{row.draws}/{row.losses}
+                  </td>
+                  <td className="py-2 text-right tabular-nums">{pct(row.score)}</td>
+                </tr>
+              )
+            })}
           </tbody>
         </table>
       )}

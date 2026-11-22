@@ -607,3 +607,21 @@ Her aşama ayrı bir dal (branch) ve küçük commit'lerle yapılır. Bir aşama
   - Alt 2'li Bento: "Hatalar Nereden Geldi?" (tıklanabilir motif barları) ve "Son Oyunlar".
 - **Kareli çalışma defteri zemini (`src/index.css`):** 36×36px çok hafif çizgili ızgara dokusu;
   varsayılan tema `carbon` (Karbon).
+
+### Ölçek, renkli bölümler ve öğreticilik v2 (2026-11-22)
+- **Renkli bölümler & geniş ölçek (`src/ui/Nav.tsx`, `src/ui/App.tsx`):** Çalışma alanı `max-w-[1440px]`,
+  sol menü `w-72` ve daha büyük tipografiyle ferahlatıldı. Her sekmenin kendi imza rengi var (Özet:
+  Amber, Oyunlar: Mavi, Bulmaca: Turuncu, Asılı taş: Gül Kırmızısı, Açılışlar: Yeşil, Oyun sonu: Mor,
+  İstatistikler: Turkuaz); aktif sekme o renkle vurgulanır ve sayfanın üstünde o rengin hafif atmosfer
+  parıltısı görünür.
+- **Görsel hamle rozeti (`ui/moveText.ts`, `formatMoveBadge`) & somut sebepler (`coachExplain.ts`):**
+  `Doğru! Re8` yerine **`♜ Kale → e8`** gibi taş simgeli görsel başlık + açık hat (`active-rook`),
+  gelişim (`develops`) ve şah (`gives-check`) sebepleri.
+- **Açılış öğreticiliği (`guides.ts`, `OpeningTrainer.tsx`, `OpeningsPage.tsx`):** Yaygın yanlış
+  hamlelere özel açıklamalar (`wrongMoves`, ör. İtalyan `Ng5`'te `Bxd5` vs `exd5`) + otomatik taş asma
+  kontrolü + her açılışta "Rakip farklı oynarsa?" kural kutusu. "Oyunlarımdaki açılışlar" sekmesinde
+  en üste Koçun Açılış Özeti, her prensip altında sade açıklama ve rehberi olan açılışlara "📖 Çalış →"
+  kısayolu eklendi.
+- **Canlı Oyun Sonu Koçu (`EndgamesPage.tsx`):** Tahta yanına canlı `EvalBar`, her hamle sonrası anlık
+  durum geri bildirimi (yeşil/sarı), Stockfish'ten "💡 İpucu al" (tahtada yeşil ok + görsel hamle
+  rozeti) ve kafa karıştıran `Oyunda gör (Rxf7+)` yerine net "📜 Eski oyunda bu ana git" düğmesi.

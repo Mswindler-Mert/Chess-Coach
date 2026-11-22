@@ -80,6 +80,30 @@ const EN_PIECES: Record<PieceSymbol, string> = {
   k: 'king',
 }
 
+const PIECE_GLYPHS: Record<PieceSymbol, string> = {
+  p: '♟',
+  n: '♞',
+  b: '♝',
+  r: '♜',
+  q: '♛',
+  k: '♚',
+}
+
+/**
+ * Short, visual, beginner-friendly move label with a piece glyph, e.g.
+ * TR: "♜ Kale → e8", "♝ Fil × d5", "♚ Kısa rok"
+ * EN: "♜ Rook → e8", "♝ Bishop × d5", "♚ Castle kingside"
+ */
+export function formatMoveBadge(move: MoveDetails, lang = getLanguage()): string {
+  if (move.castling === 'kingside') return lang === 'tr' ? '♚ Kısa rok' : '♚ Castle kingside'
+  if (move.castling === 'queenside') return lang === 'tr' ? '♚ Uzun rok' : '♚ Castle queenside'
+  const glyph = PIECE_GLYPHS[move.piece]
+  const name = lang === 'tr' ? cap(TR_PIECES[move.piece].plain) : cap(EN_PIECES[move.piece])
+  const verb = move.captured ? '×' : '→'
+  const extra = move.checkmate ? ' #' : move.check ? ' +' : ''
+  return `${glyph} ${name} ${verb} ${move.to}${extra}`
+}
+
 /** Turkish "-deki/-daki/-teki" suffix by rank digit ("a2" → "a2’deki", "d5" → "d5’teki"). */
 export function trAtSquare(square: string): string {
   const rank = square.slice(-1)
@@ -235,6 +259,12 @@ export function formatBestReason(
         return `${cap(action)} tucks your king to safety and brings your rook into the game.`
       case 'capture':
         return `${cap(action)} wins a favourable trade.`
+      case 'gives-check':
+        return `${cap(action)} gives check and seizes the initiative.`
+      case 'develops':
+        return `${cap(action)} develops a piece off the back rank into the game.`
+      case 'active-rook':
+        return `${cap(action)} puts your rook on the open ${reason.file}-file.`
       case 'position':
         return `${cap(action)} keeps your pieces safe and improves your position.`
     }
@@ -259,6 +289,12 @@ export function formatBestReason(
       return `${cap(action)} şahını köşeye çekip güvene alıyor ve kaleni oyuna sokuyor.`
     case 'capture':
       return `${cap(action)} kârlı bir takas yapıyor.`
+    case 'gives-check':
+      return `${cap(action)} şah çekerek baskıyı eline alıyor.`
+    case 'develops':
+      return `${cap(action)} başlangıç karesindeki taşını oyuna sokuyor.`
+    case 'active-rook':
+      return `${cap(action)} kaleni açık ${reason.file}-hattına çıkarıp aktif hale getiriyor.`
     case 'position':
       return `${cap(action)} taşlarını güvende tutup konumunu güçlendiriyor.`
   }

@@ -519,6 +519,21 @@ export const en: Record<MessageKey, string> = {
   'openings.guide.progress': '{done}/{total} {total|variation|variations} completed',
   'openings.guide.playAs': 'Played as {color}',
   'openings.guide.stepOf': 'Move {step}/{total}',
+  'openings.guide.offbook': 'If the opponent deviates?',
+  'openings.stats.coachTitle': 'Coach’s Opening Summary',
+  'openings.stats.coachTop': 'Your most common opening slip: {principle} ({share}). {advice}',
+  'openings.stats.coachClean': 'Great! No standout opening principle issues in your recent games.',
+  'openings.stats.studyGuide': 'Study →',
+
+  'endgame.hintBtn': 'Get a hint',
+  'endgame.hintShown': 'Suggested: {move}',
+  'endgame.eval.good': '✓ Good move — you keep your edge ({score})',
+  'endgame.eval.drawGood': '✓ Solid defence — holding the draw ({score})',
+  'endgame.eval.warn': '⚠ Careful! Your advantage shrank ({score})',
+  'endgame.eval.drawWarn': '⚠ Careful! The opponent is building pressure ({score})',
+  'endgame.own.viewGame': 'Open this moment in the original game',
+  'endgame.own.context':
+    'In your real game you played {move} here and let the win slip — try to convert it now!',
 
   'overview.kicker': 'TRAINING NOTEBOOK',
   'overview.title': 'Today’s Focus',

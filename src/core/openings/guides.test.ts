@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { buildOpeningSteps, OPENING_GUIDES, openingLineKey } from './guides'
+import {
+  buildOpeningSteps,
+  guideIdForOpeningFamily,
+  OPENING_GUIDES,
+  openingLineKey,
+} from './guides'
 
 describe('OPENING_GUIDES', () => {
   it('has only legal chess moves and complete bilingual text in every line', () => {
@@ -55,5 +60,13 @@ describe('OPENING_GUIDES', () => {
   it('returns an empty list for an unknown line id', () => {
     const italian = OPENING_GUIDES[0]!
     expect(buildOpeningSteps(italian, 'no-such-line')).toEqual([])
+  })
+
+  it('maps common opening family names to interactive guides', () => {
+    expect(guideIdForOpeningFamily('Italian Game')).toBe('italian')
+    expect(guideIdForOpeningFamily('Caro Kann Defense')).toBe('caro-kann')
+    expect(guideIdForOpeningFamily('London System')).toBe('london')
+    expect(guideIdForOpeningFamily('Queens Gambit Declined')).toBe('qgd')
+    expect(guideIdForOpeningFamily('Alekhines Defense')).toBeNull()
   })
 })

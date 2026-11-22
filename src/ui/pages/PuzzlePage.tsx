@@ -29,6 +29,7 @@ import { recordActivity } from '../../db/daily'
 import { judgeAttempt } from '../../engine/judge'
 import { t } from '../../i18n'
 import { explainMistake, type MistakeCoaching } from '../../core/analysis/coachExplain'
+import { describeMove } from '../../core/analysis/explainMove'
 import { isMotif, MOTIFS, type Motif } from '../../core/analysis/motifs'
 import { MotifChips } from '../analysis'
 import { MOVE_CLASS_TEXT } from '../analysisStyles'
@@ -38,6 +39,7 @@ import {
   formatCoachTip,
   formatEnemyReply,
   formatMoveAction,
+  formatMoveBadge,
   formatPlayedReason,
 } from '../moveText'
 import { routeHref } from '../router'
@@ -653,51 +655,67 @@ function Feedback({
     )
   }
 
-  const { result, san } = answer
+  const { result, san, uci } = answer
+  const attemptedMove = uci ? describeMove(puzzle.fen, uci) : null
+  const attemptBadge = attemptedMove ? formatMoveBadge(attemptedMove) : (san ?? '')
+  const bestBadge = coaching ? formatMoveBadge(coaching.best.move) : puzzle.solution.san
+
   return (
-    <div role="status" className="flex flex-col gap-2.5">
+    <div role="status" className="flex flex-col gap-3">
       <div
-        className={`flex flex-col gap-1.5 rounded-xl border p-3.5 ${
-          result.correct ? 'border-emerald-700 bg-emerald-950/40' : 'border-rose-800 bg-rose-950/30'
+        className={`flex flex-col gap-2 rounded-2xl border border-t-[3px] p-4 ${
+          result.correct
+            ? 'border-emerald-700/70 border-t-emerald-400 bg-emerald-950/35'
+            : 'border-rose-800/70 border-t-rose-400 bg-rose-950/30'
         }`}
       >
         {result.correct ? (
-          <p className="text-base font-semibold text-emerald-300">
-            {result.exact
-              ? t('puzzles.correct', { move: san ?? '' })
-              : t('puzzles.correctAlt', { move: san ?? '', best: puzzle.solution.san })}
-          </p>
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="text-lg font-bold text-emerald-300">
+              {result.exact
+                ? t('puzzles.correct', { move: attemptBadge })
+                : t('puzzles.correctAlt', { move: attemptBadge, best: bestBadge })}
+            </p>
+            {san && (
+              <span className="rounded-md bg-slate-950/60 px-2 py-0.5 font-mono text-xs text-slate-400">
+                {san}
+              </span>
+            )}
+          </div>
         ) : (
-          <>
-            <p className="text-base font-semibold text-rose-300">
-              {san ? t('puzzles.wrong', { move: san }) : t('puzzles.revealed')}
+          <div className="flex flex-col gap-1.5">
+            <p className="text-lg font-bold text-rose-300">
+              {san ? t('puzzles.wrong', { move: attemptBadge }) : t('puzzles.revealed')}
             </p>
-            <p className="font-medium text-emerald-300">
-              {t('puzzles.solution', {
-                move: coaching ? formatMoveAction(coaching.best.move) : puzzle.solution.san,
-              })}
-            </p>
-          </>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="rounded-lg bg-emerald-500/20 px-2.5 py-1 text-sm font-bold text-emerald-200">
+                ✓ {bestBadge}
+              </span>
+              <span className="font-mono text-xs text-slate-400">({puzzle.solution.san})</span>
+            </div>
+          </div>
         )}
         {coaching && (
-          <div className="mt-1 flex flex-col gap-0.5 border-t border-slate-800/80 pt-2">
-            <p className="text-xs font-semibold tracking-wide text-emerald-300/90 uppercase">
-              ✓ {t('coach.whyGood')}
-            </p>
-            <p className="text-slate-200">
-              {formatBestReason(coaching.best.move, coaching.best.reason)}
-            </p>
-          </div>
+          <p className="border-t border-slate-800/80 pt-2 text-[15px] leading-relaxed text-slate-100">
+            {formatBestReason(coaching.best.move, coaching.best.reason)}
+          </p>
         )}
       </div>
 
       {coaching ? (
         <>
-          <div className="flex flex-col gap-1 rounded-xl border border-rose-900/60 bg-slate-900 p-3.5">
-            <p className="text-xs font-semibold tracking-wide text-rose-300 uppercase">
-              ✕ {t('coach.whyBad')}
+          <div className="flex flex-col gap-1.5 rounded-2xl border border-slate-800 border-t-[3px] border-t-rose-400 bg-slate-900/95 p-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="font-mono text-xs font-bold tracking-wider text-rose-300 uppercase">
+                ✕ {t('coach.whyBad')}
+              </p>
+              <span className="rounded-md bg-rose-500/15 px-2 py-0.5 text-xs font-semibold text-rose-200">
+                {formatMoveBadge(coaching.played.move)}
+              </span>
+            </div>
+            <p className="text-[15px] leading-relaxed text-slate-200">
+              {formatPlayedReason(coaching)}
             </p>
-            <p className="text-slate-200">{formatPlayedReason(coaching)}</p>
             <p className="text-xs text-slate-400">
               {t('viewer.analysis.winChance', {
                 color: t(`color.${puzzle.color}`),
@@ -707,11 +725,11 @@ function Feedback({
             </p>
           </div>
 
-          <div className="flex flex-col gap-1 rounded-xl border border-amber-700/50 bg-amber-950/20 p-3.5">
-            <p className="text-xs font-semibold tracking-wide text-amber-300 uppercase">
+          <div className="flex flex-col gap-1.5 rounded-2xl border border-slate-800 border-t-[3px] border-t-amber-400 bg-amber-950/20 p-4">
+            <p className="font-mono text-xs font-bold tracking-wider text-amber-300 uppercase">
               💡 {t('coach.howToThink')}
             </p>
-            <p className="text-slate-200">{formatCoachTip(coaching)}</p>
+            <p className="text-[15px] leading-relaxed text-slate-100">{formatCoachTip(coaching)}</p>
           </div>
         </>
       ) : (

@@ -10,10 +10,9 @@ import { useAnalysisRunner } from './analysisStyles'
 import { accountLabel } from './format'
 import { LanguageSwitch } from './LanguageSwitch'
 import { routeHref, type Route } from './router'
+import { activeSection, SECTION_STYLES, type Section } from './sections'
 import { isSoundEnabled, playSound, setSoundEnabled, subscribeSound } from './sound'
 import { ThemeSwitch } from './ThemeSwitch'
-
-type Section = 'overview' | 'games' | 'puzzles' | 'hanging' | 'openings' | 'endgames' | 'dashboard'
 
 interface NavItem {
   id: Section
@@ -28,7 +27,7 @@ const ITEMS: readonly NavItem[] = [
     label: 'nav.overview',
     mobile: true,
     icon: (c) => (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className={c}>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.9} className={c}>
         <rect x="3" y="3" width="7" height="7" rx="1.5" />
         <rect x="14" y="3" width="7" height="7" rx="1.5" />
         <rect x="3" y="14" width="7" height="7" rx="1.5" />
@@ -41,7 +40,7 @@ const ITEMS: readonly NavItem[] = [
     label: 'nav.games',
     mobile: true,
     icon: (c) => (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className={c}>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.9} className={c}>
         <circle cx="12" cy="12" r="9" />
         <path strokeLinecap="round" strokeLinejoin="round" d="M12 7v5l3 2" />
       </svg>
@@ -52,7 +51,7 @@ const ITEMS: readonly NavItem[] = [
     label: 'nav.puzzles',
     mobile: true,
     icon: (c) => (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className={c}>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.9} className={c}>
         <path
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -66,7 +65,7 @@ const ITEMS: readonly NavItem[] = [
     label: 'nav.hanging',
     mobile: true,
     icon: (c) => (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className={c}>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.9} className={c}>
         <circle cx="12" cy="12" r="8" />
         <circle cx="12" cy="12" r="3" />
         <path strokeLinecap="round" d="M12 2v3m0 14v3M2 12h3m14 0h3" />
@@ -78,7 +77,7 @@ const ITEMS: readonly NavItem[] = [
     label: 'nav.openings',
     mobile: true,
     icon: (c) => (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className={c}>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.9} className={c}>
         <path
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -91,7 +90,7 @@ const ITEMS: readonly NavItem[] = [
     id: 'endgames',
     label: 'nav.endgames',
     icon: (c) => (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className={c}>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.9} className={c}>
         <path
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -105,18 +104,12 @@ const ITEMS: readonly NavItem[] = [
     label: 'nav.dashboard',
     mobile: true,
     icon: (c) => (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className={c}>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.9} className={c}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M4 20h16M7 16v-5m5 5V7m5 9v-8" />
       </svg>
     ),
   },
 ]
-
-function activeSection(route: Route): Section | null {
-  if (route.name === 'home') return null
-  if (route.name === 'game') return 'games'
-  return route.name
-}
 
 function sectionHref(section: Section, username: string): string {
   return routeHref({ name: section, username })
@@ -136,7 +129,7 @@ export function SoundToggle() {
       aria-pressed={on}
       aria-label={label}
       title={label}
-      className="grid size-8 place-items-center rounded-lg border border-slate-800 bg-slate-900 text-slate-300 transition-colors hover:border-slate-600 hover:text-white"
+      className="grid size-9 place-items-center rounded-lg border border-slate-800 bg-slate-900 text-slate-300 transition-colors hover:border-slate-600 hover:text-white"
     >
       {on ? (
         <svg
@@ -213,7 +206,7 @@ function useSidebarCounts(username: string): SidebarCounts {
   return counts
 }
 
-/** Fixed left desktop sidebar inspired by tactile focus workbooks. */
+/** Roomier fixed left desktop sidebar with colour-coded sections. */
 export function DesktopSidebar({ route, username }: { route: Route; username: string }) {
   const current = activeSection(route)
   const runner = useAnalysisRunner()
@@ -221,23 +214,23 @@ export function DesktopSidebar({ route, username }: { route: Route; username: st
   const running = runner.status === 'running' && runner.username === username
 
   return (
-    <aside className="sticky top-0 hidden h-dvh w-64 shrink-0 flex-col gap-4 border-r border-slate-800/90 bg-slate-950/95 p-4 lg:flex">
+    <aside className="sticky top-0 hidden h-dvh w-72 shrink-0 flex-col gap-4 border-r border-slate-800/90 bg-slate-950/95 p-5 lg:flex">
       {/* Brand header */}
       <a
         href={routeHref({ name: 'overview', username })}
-        className="flex items-center gap-2.5 px-1 py-0.5 text-slate-100 hover:text-white"
+        className="flex items-center gap-3 px-1 py-0.5 text-slate-100 hover:text-white"
       >
         <span
           aria-hidden="true"
-          className="grid size-8 place-items-center rounded-lg border border-emerald-500/40 bg-emerald-600/20 text-base text-emerald-300"
+          className="grid size-9 place-items-center rounded-xl border border-emerald-500/40 bg-emerald-600/20 text-lg text-emerald-300"
         >
           ♞
         </span>
         <div className="flex min-w-0 flex-col">
-          <span className="truncate font-mono text-xs font-bold tracking-wider uppercase">
+          <span className="truncate font-mono text-sm font-bold tracking-wider uppercase">
             {t('app.title')}
           </span>
-          <span className="font-mono text-[10px] text-slate-500">v2.0</span>
+          <span className="font-mono text-[11px] text-slate-500">v2.1</span>
         </div>
       </a>
 
@@ -245,15 +238,15 @@ export function DesktopSidebar({ route, username }: { route: Route; username: st
       <ThemeSwitch showLabel />
 
       {/* Live account & engine status widget */}
-      <div className="flex flex-col gap-2.5 rounded-2xl border border-slate-800 bg-slate-900/90 p-3">
+      <div className="flex flex-col gap-2.5 rounded-2xl border border-slate-800 bg-slate-900/90 p-3.5">
         <div className="flex items-center gap-2">
           <span
             aria-hidden="true"
-            className={`size-2 shrink-0 rounded-full ${
+            className={`size-2.5 shrink-0 rounded-full ${
               running ? 'animate-pulse bg-emerald-400' : 'bg-rose-400/80'
             }`}
           />
-          <span className="truncate font-mono text-xs font-semibold text-slate-100">
+          <span className="truncate font-mono text-sm font-semibold text-slate-100">
             {accountLabel(username)}
           </span>
         </div>
@@ -262,12 +255,12 @@ export function DesktopSidebar({ route, username }: { route: Route; username: st
             ? t('overview.sidebar.engineWorking', { remaining: runner.remaining })
             : t('overview.sidebar.engineIdle')}
         </p>
-        <div className="flex flex-col gap-1.5">
+        <div className="grid grid-cols-2 gap-1.5">
           {running ? (
             <button
               type="button"
               onClick={() => analysisRunner.pause()}
-              className="min-h-8 rounded-lg border border-slate-700 bg-slate-950/70 px-3 text-xs font-medium text-slate-200 transition-colors hover:border-slate-500"
+              className="min-h-9 rounded-lg border border-slate-700 bg-slate-950/70 px-2.5 text-xs font-medium text-slate-200 transition-colors hover:border-slate-500"
             >
               {t('analysis.pause')}
             </button>
@@ -275,24 +268,25 @@ export function DesktopSidebar({ route, username }: { route: Route; username: st
             <button
               type="button"
               onClick={() => analysisRunner.start(username)}
-              className="min-h-8 rounded-lg border border-slate-700 bg-slate-950/70 px-3 text-xs font-medium text-slate-200 transition-colors hover:border-emerald-500/60 hover:text-emerald-200"
+              className="min-h-9 rounded-lg border border-slate-700 bg-slate-950/70 px-2.5 text-xs font-medium text-slate-200 transition-colors hover:border-emerald-500/60 hover:text-emerald-200"
             >
               {t('analysis.start')}
             </button>
           )}
           <a
             href={routeHref({ name: 'home' })}
-            className="grid min-h-8 place-items-center rounded-lg border border-slate-800 bg-slate-950/40 px-3 text-xs font-medium text-slate-400 transition-colors hover:border-slate-600 hover:text-slate-100"
+            className="grid min-h-9 place-items-center rounded-lg border border-slate-800 bg-slate-950/40 px-2.5 text-xs font-medium text-slate-400 transition-colors hover:border-slate-600 hover:text-slate-100"
           >
             {t('nav.changeUser')}
           </a>
         </div>
       </div>
 
-      {/* Primary vertical navigation */}
-      <nav aria-label={t('app.title')} className="flex flex-1 flex-col gap-1 overflow-y-auto">
+      {/* Colour-coded primary navigation */}
+      <nav aria-label={t('app.title')} className="flex flex-1 flex-col gap-1.5 overflow-y-auto">
         {ITEMS.map((item) => {
           const active = current === item.id
+          const style = SECTION_STYLES[item.id]
           const badge =
             item.id === 'puzzles' && counts.puzzles > 0
               ? String(counts.puzzles)
@@ -306,25 +300,24 @@ export function DesktopSidebar({ route, username }: { route: Route; username: st
               key={item.id}
               href={sectionHref(item.id, username)}
               aria-current={active ? 'page' : undefined}
-              className={`flex items-center justify-between gap-2 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
+              className={`flex items-center justify-between gap-2.5 rounded-xl border-l-[3px] px-3 py-2.5 text-[15px] font-medium transition-all ${
                 active
-                  ? 'bg-slate-100 font-semibold text-slate-950 shadow-sm'
-                  : 'text-slate-400 hover:bg-slate-900 hover:text-slate-100'
+                  ? `${style.activeBg} ${style.activeBorder} font-semibold shadow-sm`
+                  : 'border-l-transparent text-slate-300 hover:bg-slate-900/90 hover:text-white'
               }`}
             >
-              <span className="flex items-center gap-2.5">
-                <span aria-hidden="true">{item.icon('size-4')}</span>
+              <span className="flex items-center gap-3">
+                <span
+                  aria-hidden="true"
+                  className={`grid size-8 shrink-0 place-items-center rounded-lg ${style.iconBg} ${style.iconText}`}
+                >
+                  {item.icon('size-4')}
+                </span>
                 <span>{t(item.label)}</span>
               </span>
               {badge && (
                 <span
-                  className={`rounded-full px-2 py-0.5 font-mono text-[11px] font-bold ${
-                    active
-                      ? 'bg-slate-900 text-slate-100'
-                      : item.id === 'openings'
-                        ? 'bg-slate-800 text-slate-300'
-                        : 'bg-emerald-600 text-white'
-                  }`}
+                  className={`rounded-full px-2.5 py-0.5 font-mono text-xs font-bold ${style.badgeBg}`}
                 >
                   {badge}
                 </span>
@@ -385,13 +378,14 @@ export function BottomNav({ route, username }: { route: Route; username: string 
       <div className="grid grid-cols-6">
         {mobileItems.map((item) => {
           const active = current === item.id
+          const style = SECTION_STYLES[item.id]
           return (
             <a
               key={item.id}
               href={sectionHref(item.id, username)}
               aria-current={active ? 'page' : undefined}
-              className={`flex flex-col items-center justify-center gap-0.5 py-2 text-[10px] leading-tight font-medium transition-colors ${
-                active ? 'text-emerald-400' : 'text-slate-400 hover:text-slate-200'
+              className={`flex flex-col items-center justify-center gap-0.5 py-2 text-[11px] leading-tight font-medium transition-colors ${
+                active ? style.mobileText : 'text-slate-400 hover:text-slate-200'
               }`}
             >
               <span aria-hidden="true">{item.icon('size-5')}</span>

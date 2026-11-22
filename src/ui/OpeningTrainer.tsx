@@ -2,6 +2,8 @@ import { Chess, type Square } from 'chess.js'
 import { useEffect, useMemo, useState, type CSSProperties } from 'react'
 import { Chessboard } from 'react-chessboard'
 import { describeMove } from '../core/analysis/explainMove'
+import { cheapestCapturer, hangingPieces } from '../core/analysis/hanging'
+import type { Color } from '../core/games/model'
 import {
   buildOpeningSteps,
   OPENING_GUIDES,
@@ -13,7 +15,7 @@ import { recordActivity } from '../db/daily'
 import { getOpeningProgress, markOpeningLineDone, type OpeningProgress } from '../db/openings'
 import { getLanguage, t } from '../i18n'
 import { ProgressBar } from './analysis'
-import { formatMoveAction } from './moveText'
+import { formatMoveBadge, formatThreatSentence } from './moveText'
 import { playMoveSan, playSound } from './sound'
 import { useBoardColors } from './theme'
 
@@ -29,9 +31,9 @@ function textOf(b: BilingualText): string {
   return getLanguage() === 'en' ? b.en : b.tr
 }
 
-export function OpeningTrainer() {
+export function OpeningTrainer({ initialGuideId = null }: { initialGuideId?: string | null }) {
   const [progress, setProgress] = useState<OpeningProgress>({})
-  const [guideId, setGuideId] = useState<string | null>(null)
+  const [guideId, setGuideId] = useState<string | null>(initialGuideId)
 
   useEffect(() => {
     void getOpeningProgress().then(setProgress)
@@ -263,7 +265,7 @@ function LineBoard({
   const steps = useMemo(() => buildOpeningSteps(guide, lineId), [guide, lineId])
   const [stepIndex, setStepIndex] = useState(0)
   const [selected, setSelected] = useState<Square | null>(null)
-  const [wrongMsg, setWrongMsg] = useState(false)
+  const [wrongFeedback, setWrongFeedback] = useState<string | null>(null)
   const [showHint, setShowHint] = useState(false)
 
   const done = stepIndex >= steps.length
@@ -310,7 +312,7 @@ function LineBoard({
     setSelected(null)
     if (move.from === expected.from && move.to === expected.to) {
       playMoveSan(move.san)
-      setWrongMsg(false)
+      setWrongFeedback(null)
       setShowHint(false)
       const next = stepIndex + 1
       setStepIndex(next)
@@ -321,7 +323,23 @@ function LineBoard({
       return true
     }
     playSound('wrong')
-    setWrongMsg(true)
+    // 1. Specific pedagogical explanation for common mistakes at this step (e.g. Bxd5 vs exd5).
+    const specific = expected.wrongMoves?.[move.san]
+    if (specific) {
+      setWrongFeedback(textOf(specific))
+      return false
+    }
+    // 2. Automatic hanging-piece check: tell the player if their try hangs material!
+    const enemy: Color = guide.color === 'white' ? 'black' : 'white'
+    const afterFen = chess.fen()
+    const hung = hangingPieces(afterFen, guide.color)
+    const sq = hung.includes(move.to) ? move.to : hung[0]
+    const threat = sq ? cheapestCapturer(afterFen, sq, enemy) : null
+    if (threat) {
+      setWrongFeedback(formatThreatSentence(threat, 'own'))
+      return false
+    }
+    setWrongFeedback(t('openings.guide.tryAgain'))
     return false
   }
 
@@ -425,13 +443,18 @@ function LineBoard({
                     </p>
                   )}
                   {(mode === 'learn' || showHint) && (
-                    <div className="rounded-lg border border-emerald-700/60 bg-emerald-950/30 p-3">
+                    <div className="rounded-xl border border-emerald-700/60 bg-emerald-950/30 p-3.5">
                       {expectedDetails && (
-                        <p className="font-semibold text-emerald-300">
-                          → {formatMoveAction(expectedDetails)}
+                        <p className="text-base font-bold text-emerald-300">
+                          {formatMoveBadge(expectedDetails)}{' '}
+                          <span className="font-mono text-xs font-normal text-slate-400">
+                            ({expectedDetails.san})
+                          </span>
                         </p>
                       )}
-                      <p className="mt-1 text-slate-200">{textOf(expected.note)}</p>
+                      <p className="mt-1 text-[15px] leading-relaxed text-slate-100">
+                        {textOf(expected.note)}
+                      </p>
                     </div>
                   )}
                 </>
@@ -441,11 +464,19 @@ function LineBoard({
             </div>
           )}
 
-          {wrongMsg && !done && (
-            <p className="rounded-lg border border-rose-800/70 bg-rose-950/30 px-3 py-2 text-rose-300">
-              {t('openings.guide.tryAgain')}
+          {wrongFeedback && !done && (
+            <p className="rounded-xl border border-rose-700/70 bg-rose-950/35 px-3.5 py-2.5 text-[15px] leading-relaxed text-rose-200">
+              {wrongFeedback}
             </p>
           )}
+        </div>
+
+        {/* Off-book golden rule card */}
+        <div className="flex flex-col gap-1 rounded-xl border border-slate-800 border-t-[3px] border-t-sky-400 bg-slate-900/90 p-3.5">
+          <p className="font-mono text-xs font-bold tracking-wider text-sky-300 uppercase">
+            🧭 {t('openings.guide.offbook')}
+          </p>
+          <p className="text-sm leading-relaxed text-slate-200">{textOf(guide.offbookRule)}</p>
         </div>
 
         {done && (
