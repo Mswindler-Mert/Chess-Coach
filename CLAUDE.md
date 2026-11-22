@@ -625,3 +625,23 @@ Her aşama ayrı bir dal (branch) ve küçük commit'lerle yapılır. Bir aşama
 - **Canlı Oyun Sonu Koçu (`EndgamesPage.tsx`):** Tahta yanına canlı `EvalBar`, her hamle sonrası anlık
   durum geri bildirimi (yeşil/sarı), Stockfish'ten "💡 İpucu al" (tahtada yeşil ok + görsel hamle
   rozeti) ve kafa karıştıran `Oyunda gör (Rxf7+)` yerine net "📜 Eski oyunda bu ana git" düğmesi.
+
+### Kişisel Teşhis Raporu & Canlı "Ya Farklı Oynanırsa?" Tahta Simülatörü — v2.2 (2026-11-22)
+- **Kişisel Teşhis (`src/core/stats/diagnosis.ts`, `src/ui/DiagnosisCard.tsx`):** Analiz edilmiş
+  oyunlardan 3 somut teşhis üretir ve Özet + İstatistikler sayfalarında gösterir:
+  1. **En Çok Asılan Taşlar:** Hata/blunder hamlelerinden sonra yeni asılı kalan taşlar tür bazında
+     (`q/r/b/n`) sayılır, en büyük kan kaybı vurgulanır ve Asılı Taş antrenörüne yönlendirilir.
+  2. **Kırılma Hamle Haritası:** Hataların `1–5`, `6–10`, `11–20`, `21+` hamle aralıklarındaki dağılımı.
+  3. **Seni Şaşırtan Açılış Cevapları:** Beyazla `1.e4` sonrası rakibin `e5/d5/c5/e6/c6` cevaplarında
+     ve Siyahla erken vezir (`2.Qh5/Qf3`) saldırılarında galibiyet oranı + maç başı blunder sayısı ve
+     doğrudan ilgili açılış varyasyonuna giden `#/u/:user/openings/:guide/:line` kısayolu.
+- **Canlı "Ya Farklı Oynanırsa?" Tahta Simülatörü (`guides.ts`, `OpeningTrainer.tsx`):** Her açılış
+  adımına `whatIfs` senaryoları (`punish`, `danger`, `exchange`, `deviation`) ve `anchor: 'beforeStep' |
+  'beforePrev'` desteği eklendi. Kullanıcı tıklayınca tahta canlı animasyon + ◀/▶ adımlayıcıyla
+  alternatif hamlenin veya rakip sapmasının sonucunu tahtada birebir oynatır. Yanlış hamle denendiğinde
+  eşleşen senaryo varsa "Neden kötü olduğunu tahtada izle ▶" düğmesi çıkar.
+- **İki yeni açılış rehberi:** `e4-responses` (1.e4 Karar Haritası: İskandinav `1…d5`, Sicilya `1…c5`,
+  Fransız `1…e6`, Caro-Kann `1…c6`) ve `anti-traps` (Erken Vezir `2.Qh5` / Çoban Matı ve `4.Ng5`
+  Kızarmış Ciğer savunması). Tüm 20+ `whatIf` dalı `guides.test.ts` ile yasal hamle kontrolünden geçer.
+- **v2.2 & Tek Tıkla PWA Önbellek Temizleme (`Nav.tsx`):** Sol üst sürüm `v2.2` yapıldı; yanına
+  Service Worker'ı sıfırlayıp önbelleği temizleyerek sayfayı yenileyen "↻ Güncelle" düğmesi eklendi.

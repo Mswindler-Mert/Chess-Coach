@@ -9,7 +9,8 @@ export type Route =
   /** `focus` preselects a puzzle filter, e.g. a phase ("endgame") from the dashboard. */
   | { name: 'puzzles'; username: string; focus?: string }
   | { name: 'dashboard'; username: string }
-  | { name: 'openings'; username: string }
+  /** Optional `guide` and `line` jump directly into an interactive opening variation. */
+  | { name: 'openings'; username: string; guide?: string; line?: string }
   | { name: 'hanging'; username: string }
   /** Without `lesson`: the list; with it, a curriculum id or an own drill id (`gameId:ply`). */
   | { name: 'endgames'; username: string; lesson?: string }
@@ -34,7 +35,13 @@ export function parseRoute(hash: string): Route {
     }
     if (parts[2] === 'games') return { name: 'games', username: parts[1] }
     if (parts[2] === 'dashboard') return { name: 'dashboard', username: parts[1] }
-    if (parts[2] === 'openings') return { name: 'openings', username: parts[1] }
+    if (parts[2] === 'openings') {
+      if (parts[3] && parts[4]) {
+        return { name: 'openings', username: parts[1], guide: parts[3], line: parts[4] }
+      }
+      if (parts[3]) return { name: 'openings', username: parts[1], guide: parts[3] }
+      return { name: 'openings', username: parts[1] }
+    }
     if (parts[2] === 'hanging') return { name: 'hanging', username: parts[1] }
     if (parts[2] === 'endgames') {
       return parts[3]
@@ -64,8 +71,13 @@ export function routeHref(route: Route): string {
       }`
     case 'dashboard':
       return `#/u/${encodeURIComponent(route.username)}/dashboard`
-    case 'openings':
-      return `#/u/${encodeURIComponent(route.username)}/openings`
+    case 'openings': {
+      const base = `#/u/${encodeURIComponent(route.username)}/openings`
+      if (route.guide && route.line) {
+        return `${base}/${encodeURIComponent(route.guide)}/${encodeURIComponent(route.line)}`
+      }
+      return route.guide ? `${base}/${encodeURIComponent(route.guide)}` : base
+    }
     case 'hanging':
       return `#/u/${encodeURIComponent(route.username)}/hanging`
     case 'endgames':

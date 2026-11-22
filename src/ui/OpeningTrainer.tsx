@@ -6,10 +6,15 @@ import { cheapestCapturer, hangingPieces } from '../core/analysis/hanging'
 import type { Color } from '../core/games/model'
 import {
   buildOpeningSteps,
+  buildWhatIfSteps,
   OPENING_GUIDES,
   openingLineKey,
+  whatIfStartFen,
   type BilingualText,
   type OpeningGuide,
+  type WhatIfKind,
+  type WhatIfScenario,
+  type WhatIfStep,
 } from '../core/openings/guides'
 import { recordActivity } from '../db/daily'
 import { getOpeningProgress, markOpeningLineDone, type OpeningProgress } from '../db/openings'
@@ -26,12 +31,31 @@ const TARGET_STYLE: CSSProperties = {
   background: 'radial-gradient(circle, rgba(15, 23, 42, 0.35) 22%, transparent 24%)',
 }
 const ARROW_GUIDE = 'rgba(16, 185, 129, 0.9)'
+const ARROW_WHATIF: Record<WhatIfKind, string> = {
+  punish: 'rgba(16, 185, 129, 0.92)',
+  danger: 'rgba(244, 63, 94, 0.92)',
+  exchange: 'rgba(245, 158, 11, 0.92)',
+  deviation: 'rgba(56, 189, 248, 0.92)',
+}
+
+const WHATIF_BADGE_STYLES: Record<WhatIfKind, string> = {
+  punish: 'border-emerald-500/50 bg-emerald-500/15 text-emerald-300',
+  danger: 'border-rose-500/50 bg-rose-500/15 text-rose-300',
+  exchange: 'border-amber-500/50 bg-amber-500/15 text-amber-300',
+  deviation: 'border-sky-500/50 bg-sky-500/15 text-sky-300',
+}
 
 function textOf(b: BilingualText): string {
   return getLanguage() === 'en' ? b.en : b.tr
 }
 
-export function OpeningTrainer({ initialGuideId = null }: { initialGuideId?: string | null }) {
+export function OpeningTrainer({
+  initialGuideId = null,
+  initialLineId = null,
+}: {
+  initialGuideId?: string | null
+  initialLineId?: string | null
+}) {
   const [progress, setProgress] = useState<OpeningProgress>({})
   const [guideId, setGuideId] = useState<string | null>(initialGuideId)
 
@@ -52,6 +76,7 @@ export function OpeningTrainer({ initialGuideId = null }: { initialGuideId?: str
       <GuideLesson
         key={selected.id}
         guide={selected}
+        initialLineId={guideId === initialGuideId ? initialLineId : null}
         progress={progress}
         onComplete={onLineComplete}
         onBack={() => setGuideId(null)}
@@ -113,16 +138,22 @@ export function OpeningTrainer({ initialGuideId = null }: { initialGuideId?: str
 
 function GuideLesson({
   guide,
+  initialLineId,
   progress,
   onComplete,
   onBack,
 }: {
   guide: OpeningGuide
+  initialLineId?: string | null
   progress: OpeningProgress
   onComplete: (lineKey: string) => Promise<void>
   onBack: () => void
 }) {
-  const [lineId, setLineId] = useState(guide.lines[0]?.id ?? '')
+  const validInitial =
+    initialLineId && guide.lines.some((l) => l.id === initialLineId)
+      ? initialLineId
+      : (guide.lines[0]?.id ?? '')
+  const [lineId, setLineId] = useState(validInitial)
   const [mode, setMode] = useState<'learn' | 'practice'>('learn')
   const [runId, setRunId] = useState(0)
 
@@ -242,6 +273,12 @@ function GuideLesson({
   )
 }
 
+interface ActiveWhatIf {
+  scenario: WhatIfScenario
+  startFen: string
+  steps: WhatIfStep[]
+}
+
 function LineBoard({
   guide,
   lineId,
@@ -266,18 +303,24 @@ function LineBoard({
   const [stepIndex, setStepIndex] = useState(0)
   const [selected, setSelected] = useState<Square | null>(null)
   const [wrongFeedback, setWrongFeedback] = useState<string | null>(null)
+  const [wrongTrySan, setWrongTrySan] = useState<string | null>(null)
   const [showHint, setShowHint] = useState(false)
+
+  // Live "What if?" board simulation state
+  const [activeWhatIf, setActiveWhatIf] = useState<ActiveWhatIf | null>(null)
+  const [whatIfPos, setWhatIfPos] = useState(0)
+  const [whatIfAuto, setWhatIfAuto] = useState(false)
 
   const done = stepIndex >= steps.length
   const expected = done ? null : (steps[stepIndex] ?? null)
   const lastStep = stepIndex > 0 ? (steps[stepIndex - 1] ?? null) : null
-  const fen = lastStep ? lastStep.fenAfter : START_FEN
-  const isUserTurn = Boolean(expected?.isUserMove)
+  const mainFen = lastStep ? lastStep.fenAfter : START_FEN
+  const isUserTurn = Boolean(expected?.isUserMove) && !activeWhatIf
   const myPrefix = guide.color === 'white' ? 'w' : 'b'
 
-  // Automatically play the opponent's reply after a short pause so the board feels alive.
+  // Automatically play the opponent's reply in main line (paused during a what-if simulation).
   useEffect(() => {
-    if (!expected || expected.isUserMove) return
+    if (activeWhatIf || !expected || expected.isUserMove) return
     const timer = window.setTimeout(() => {
       playMoveSan(expected.san)
       const next = stepIndex + 1
@@ -288,7 +331,73 @@ function LineBoard({
       }
     }, 480)
     return () => window.clearTimeout(timer)
-  }, [expected, stepIndex, steps.length, onComplete])
+  }, [activeWhatIf, expected, stepIndex, steps.length, onComplete])
+
+  // Auto-advance the "What if?" scenario so the player watches the consequence unfold live.
+  useEffect(() => {
+    if (!activeWhatIf || !whatIfAuto) return
+    if (whatIfPos >= activeWhatIf.steps.length) return
+    const timer = window.setTimeout(() => {
+      const next = whatIfPos + 1
+      const moveStep = activeWhatIf.steps[next - 1]
+      if (moveStep) playMoveSan(moveStep.san)
+      setWhatIfPos(next)
+      if (next >= activeWhatIf.steps.length) setWhatIfAuto(false)
+    }, 1500)
+    return () => window.clearTimeout(timer)
+  }, [activeWhatIf, whatIfAuto, whatIfPos])
+
+  // Scenarios available at the current position (or at the final move once the line is complete).
+  const scenarioStepIndex = done ? Math.max(0, steps.length - 1) : stepIndex
+  const availableWhatIfs = useMemo(() => {
+    const step = steps[scenarioStepIndex]
+    return step?.whatIfs ?? []
+  }, [steps, scenarioStepIndex])
+
+  // If the user just tried a wrong move that matches a what-if branch, offer a 1-click live demo!
+  const matchingWrongScenario = useMemo(() => {
+    if (!wrongTrySan) return null
+    return (
+      availableWhatIfs.find(
+        (s) => s.anchor !== 'beforePrev' && s.moves[0]?.san === wrongTrySan,
+      ) ?? null
+    )
+  }, [availableWhatIfs, wrongTrySan])
+
+  function startWhatIf(scenario: WhatIfScenario) {
+    const startFen = whatIfStartFen(steps, scenarioStepIndex, scenario)
+    const wiSteps = buildWhatIfSteps(startFen, scenario)
+    if (wiSteps.length === 0) return
+    setSelected(null)
+    setActiveWhatIf({ scenario, startFen, steps: wiSteps })
+    playMoveSan(wiSteps[0]!.san)
+    setWhatIfPos(1)
+    setWhatIfAuto(wiSteps.length > 1)
+  }
+
+  function closeWhatIf() {
+    setActiveWhatIf(null)
+    setWhatIfPos(0)
+    setWhatIfAuto(false)
+  }
+
+  function stepWhatIfTo(pos: number) {
+    if (!activeWhatIf) return
+    const clamped = Math.max(0, Math.min(pos, activeWhatIf.steps.length))
+    setWhatIfAuto(false)
+    if (clamped > whatIfPos && activeWhatIf.steps[clamped - 1]) {
+      playMoveSan(activeWhatIf.steps[clamped - 1]!.san)
+    }
+    setWhatIfPos(clamped)
+  }
+
+  const activeWhatIfStep =
+    activeWhatIf && whatIfPos > 0 ? (activeWhatIf.steps[whatIfPos - 1] ?? null) : null
+  const fen = activeWhatIf
+    ? activeWhatIfStep
+      ? activeWhatIfStep.fenAfter
+      : activeWhatIf.startFen
+    : mainFen
 
   const targets = useMemo(() => {
     if (!selected || !isUserTurn) return []
@@ -300,9 +409,14 @@ function LineBoard({
     [expected],
   )
 
+  const whatIfMoveDetails = useMemo(
+    () => (activeWhatIfStep ? describeMove(activeWhatIfStep.fenBefore, activeWhatIfStep.uci) : null),
+    [activeWhatIfStep],
+  )
+
   function tryMove(from: string, to: string): boolean {
-    if (!expected || !expected.isUserMove) return false
-    const chess = new Chess(fen)
+    if (!expected || !expected.isUserMove || activeWhatIf) return false
+    const chess = new Chess(mainFen)
     let move
     try {
       move = chess.move({ from, to, promotion: 'q' })
@@ -313,6 +427,7 @@ function LineBoard({
     if (move.from === expected.from && move.to === expected.to) {
       playMoveSan(move.san)
       setWrongFeedback(null)
+      setWrongTrySan(null)
       setShowHint(false)
       const next = stepIndex + 1
       setStepIndex(next)
@@ -323,6 +438,7 @@ function LineBoard({
       return true
     }
     playSound('wrong')
+    setWrongTrySan(move.san)
     // 1. Specific pedagogical explanation for common mistakes at this step (e.g. Bxd5 vs exd5).
     const specific = expected.wrongMoves?.[move.san]
     if (specific) {
@@ -350,19 +466,29 @@ function LineBoard({
   }
 
   const squareStyles: Record<string, CSSProperties> = {}
-  if (lastStep) {
+  if (activeWhatIfStep) {
+    squareStyles[activeWhatIfStep.from] = LAST_MOVE_STYLE
+    squareStyles[activeWhatIfStep.to] = LAST_MOVE_STYLE
+  } else if (!activeWhatIf && lastStep) {
     squareStyles[lastStep.from] = LAST_MOVE_STYLE
     squareStyles[lastStep.to] = LAST_MOVE_STYLE
   }
-  if (selected) {
+  if (selected && !activeWhatIf) {
     squareStyles[selected] = SELECTED_STYLE
     for (const sq of targets) squareStyles[sq] = TARGET_STYLE
   }
 
-  const showArrow = isUserTurn && expected && (mode === 'learn' || showHint)
-  const arrows = showArrow
-    ? [{ startSquare: expected.from, endSquare: expected.to, color: ARROW_GUIDE }]
-    : []
+  const arrows = activeWhatIfStep
+    ? [
+        {
+          startSquare: activeWhatIfStep.from,
+          endSquare: activeWhatIfStep.to,
+          color: ARROW_WHATIF[activeWhatIf!.scenario.kind],
+        },
+      ]
+    : isUserTurn && expected && (mode === 'learn' || showHint)
+      ? [{ startSquare: expected.from, endSquare: expected.to, color: ARROW_GUIDE }]
+      : []
 
   const userTotal = steps.filter((s) => s.isUserMove).length
   const userDone = steps.slice(0, stepIndex).filter((s) => s.isUserMove).length
@@ -410,7 +536,7 @@ function LineBoard({
                 arrows,
                 allowDrawingArrows: false,
                 squareStyles,
-                animationDurationInMs: 180,
+                animationDurationInMs: 220,
                 ...boardColors,
               }}
             />
@@ -418,108 +544,290 @@ function LineBoard({
         </div>
       </div>
 
-      <aside className="flex min-w-0 flex-1 flex-col gap-3 text-sm">
-        <div className="flex flex-col gap-2 rounded-xl border border-slate-800 bg-slate-900 p-3.5">
-          <div className="flex items-center justify-between gap-2 text-xs text-slate-400">
-            <span>{t('openings.guide.stepOf', { step: userDone, total: userTotal })}</span>
-            <button type="button" onClick={onRestart} className="text-emerald-400 hover:underline">
-              ↺ {t('openings.guide.restart')}
-            </button>
-          </div>
-          <ProgressBar value={userTotal > 0 ? userDone / userTotal : 0} />
+      <aside className="flex min-w-0 flex-1 flex-col gap-3.5 text-sm">
+        {activeWhatIf ? (
+          /* LIVE WHAT-IF BOARD SIMULATION PANEL */
+          <div className="flex flex-col gap-3 rounded-2xl border border-sky-500/50 bg-slate-900/95 p-4 shadow-lg shadow-black/30">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <span
+                  className={`rounded-md border px-2 py-0.5 font-mono text-[10px] font-bold tracking-wider uppercase ${
+                    WHATIF_BADGE_STYLES[activeWhatIf.scenario.kind]
+                  }`}
+                >
+                  {t(`openings.whatif.badge.${activeWhatIf.scenario.kind}`)}
+                </span>
+                <span className="font-mono text-[11px] font-semibold tracking-wider text-sky-300 uppercase">
+                  {t('openings.whatif.playing')}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={closeWhatIf}
+                className="min-h-8 rounded-lg border border-slate-700 bg-slate-950 px-3 text-xs font-semibold text-slate-200 transition-colors hover:border-emerald-500 hover:text-white"
+              >
+                {t('openings.whatif.backToLine')}
+              </button>
+            </div>
 
-          {!done && expected && (
-            <div className="mt-1 flex flex-col gap-1.5">
-              {isUserTurn ? (
-                <>
-                  <p className="text-base font-semibold text-white">
-                    {t('openings.guide.yourTurn')}
+            <h3 className="text-base font-bold text-white">
+              {textOf(activeWhatIf.scenario.prompt)}
+            </h3>
+
+            {/* Live step explanation */}
+            {activeWhatIfStep && (
+              <div className="rounded-xl border border-slate-700/80 bg-slate-950/75 p-3.5">
+                {whatIfMoveDetails && (
+                  <p className="flex items-center gap-2 text-base font-bold text-white">
+                    <span>{formatMoveBadge(whatIfMoveDetails)}</span>
+                    <span className="font-mono text-xs font-normal text-slate-400">
+                      ({whatIfMoveDetails.san})
+                    </span>
+                    <span className="ml-auto rounded bg-slate-800 px-2 py-0.5 text-[11px] font-medium text-slate-300">
+                      {t(`color.${activeWhatIfStep.side}`)}
+                    </span>
                   </p>
-                  {lastStep && (
-                    <p className="rounded-lg border border-slate-800 bg-slate-950/60 px-3 py-2 text-slate-300">
-                      <span className="font-mono font-semibold text-slate-200">{lastStep.san}</span>
-                      {' — '}
-                      {textOf(lastStep.note)}
-                    </p>
-                  )}
-                  {(mode === 'learn' || showHint) && (
-                    <div className="rounded-xl border border-emerald-700/60 bg-emerald-950/30 p-3.5">
-                      {expectedDetails && (
-                        <p className="text-base font-bold text-emerald-300">
-                          {formatMoveBadge(expectedDetails)}{' '}
-                          <span className="font-mono text-xs font-normal text-slate-400">
-                            ({expectedDetails.san})
+                )}
+                <p className="mt-1.5 text-[15px] leading-relaxed text-slate-100">
+                  {textOf(activeWhatIfStep.note)}
+                </p>
+              </div>
+            )}
+
+            {/* Stepper controls */}
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                disabled={whatIfPos <= 1}
+                onClick={() => stepWhatIfTo(whatIfPos - 1)}
+                className="min-h-9 rounded-lg border border-slate-700 bg-slate-950 px-3.5 font-semibold text-slate-200 hover:border-slate-500 disabled:opacity-40"
+              >
+                ◀
+              </button>
+              <span className="font-mono text-xs text-slate-300 tabular-nums">
+                {t('openings.whatif.step', {
+                  step: whatIfPos,
+                  total: activeWhatIf.steps.length,
+                })}
+              </span>
+              <button
+                type="button"
+                disabled={whatIfPos >= activeWhatIf.steps.length}
+                onClick={() => stepWhatIfTo(whatIfPos + 1)}
+                className="min-h-9 rounded-lg border border-slate-700 bg-slate-950 px-3.5 font-semibold text-slate-200 hover:border-slate-500 disabled:opacity-40"
+              >
+                ▶
+              </button>
+              <button
+                type="button"
+                onClick={() => startWhatIf(activeWhatIf.scenario)}
+                className="ml-auto min-h-9 rounded-lg border border-sky-500/40 bg-sky-500/10 px-3 text-xs font-semibold text-sky-200 hover:bg-sky-500/20"
+              >
+                ↺ {t('openings.whatif.replay')}
+              </button>
+            </div>
+
+            {/* Move chips for random access */}
+            <div className="flex flex-wrap gap-1.5">
+              {activeWhatIf.steps.map((ws, i) => (
+                <button
+                  key={ws.index}
+                  type="button"
+                  onClick={() => stepWhatIfTo(i + 1)}
+                  className={`rounded-md px-2 py-1 font-mono text-xs font-semibold transition-colors ${
+                    whatIfPos === i + 1
+                      ? 'bg-sky-500 text-slate-950'
+                      : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                  }`}
+                >
+                  {i + 1}. {ws.san}
+                </button>
+              ))}
+            </div>
+
+            {/* Takeaway summary */}
+            <div className="rounded-xl border border-amber-500/40 bg-amber-950/25 p-3.5">
+              <p className="font-mono text-[11px] font-bold tracking-wider text-amber-300 uppercase">
+                💡 {t('openings.whatif.takeaway')}
+              </p>
+              <p className="mt-1 text-sm leading-relaxed text-amber-100">
+                {textOf(activeWhatIf.scenario.takeaway)}
+              </p>
+            </div>
+          </div>
+        ) : (
+          /* MAIN OPENING LINE PANEL */
+          <>
+            <div className="flex flex-col gap-2 rounded-xl border border-slate-800 bg-slate-900 p-3.5">
+              <div className="flex items-center justify-between gap-2 text-xs text-slate-400">
+                <span>{t('openings.guide.stepOf', { step: userDone, total: userTotal })}</span>
+                <button
+                  type="button"
+                  onClick={onRestart}
+                  className="text-emerald-400 hover:underline"
+                >
+                  ↺ {t('openings.guide.restart')}
+                </button>
+              </div>
+              <ProgressBar value={userTotal > 0 ? userDone / userTotal : 0} />
+
+              {!done && expected && (
+                <div className="mt-1 flex flex-col gap-1.5">
+                  {isUserTurn ? (
+                    <>
+                      <p className="text-base font-semibold text-white">
+                        {t('openings.guide.yourTurn')}
+                      </p>
+                      {lastStep && (
+                        <p className="rounded-lg border border-slate-800 bg-slate-950/60 px-3 py-2 text-slate-300">
+                          <span className="font-mono font-semibold text-slate-200">
+                            {lastStep.san}
                           </span>
+                          {' — '}
+                          {textOf(lastStep.note)}
                         </p>
                       )}
-                      <p className="mt-1 text-[15px] leading-relaxed text-slate-100">
-                        {textOf(expected.note)}
-                      </p>
-                    </div>
+                      {(mode === 'learn' || showHint) && (
+                        <div className="rounded-xl border border-emerald-700/60 bg-emerald-950/30 p-3.5">
+                          {expectedDetails && (
+                            <p className="text-base font-bold text-emerald-300">
+                              {formatMoveBadge(expectedDetails)}{' '}
+                              <span className="font-mono text-xs font-normal text-slate-400">
+                                ({expectedDetails.san})
+                              </span>
+                            </p>
+                          )}
+                          <p className="mt-1 text-[15px] leading-relaxed text-slate-100">
+                            {textOf(expected.note)}
+                          </p>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <p className="text-slate-300">{t('openings.guide.opponentMove')}</p>
                   )}
-                </>
-              ) : (
-                <p className="text-slate-300">{t('openings.guide.opponentMove')}</p>
+                </div>
+              )}
+
+              {wrongFeedback && !done && (
+                <div className="flex flex-col gap-2 rounded-xl border border-rose-700/70 bg-rose-950/35 px-3.5 py-2.5 text-[15px] leading-relaxed text-rose-200">
+                  <p>{wrongFeedback}</p>
+                  {matchingWrongScenario && (
+                    <button
+                      type="button"
+                      onClick={() => startWhatIf(matchingWrongScenario)}
+                      className="min-h-9 self-start rounded-lg bg-rose-500/25 px-3 text-xs font-semibold text-rose-100 ring-1 ring-rose-400/50 transition-colors hover:bg-rose-500/35"
+                    >
+                      {t('openings.whatif.watchWrong')}
+                    </button>
+                  )}
+                </div>
               )}
             </div>
-          )}
 
-          {wrongFeedback && !done && (
-            <p className="rounded-xl border border-rose-700/70 bg-rose-950/35 px-3.5 py-2.5 text-[15px] leading-relaxed text-rose-200">
-              {wrongFeedback}
-            </p>
-          )}
-        </div>
+            {done && (
+              <div
+                role="status"
+                className="flex flex-col gap-3 rounded-xl border border-emerald-700 bg-emerald-950/40 p-4"
+              >
+                <p className="text-base font-semibold text-emerald-300">
+                  ✓ {t('openings.guide.done')}
+                </p>
+                {lastStep && <p className="text-slate-200">{textOf(lastStep.note)}</p>}
+                <div className="flex flex-wrap gap-2">
+                  {mode === 'learn' && (
+                    <button
+                      type="button"
+                      onClick={() => onModeChange('practice')}
+                      className="min-h-10 rounded-lg bg-emerald-600 px-4 font-semibold text-white hover:bg-emerald-500"
+                    >
+                      🎯 {t('openings.guide.switchPractice')}
+                    </button>
+                  )}
+                  {nextLine && onNextLine && (
+                    <button
+                      type="button"
+                      onClick={onNextLine}
+                      className="min-h-10 rounded-lg border border-emerald-500/70 px-4 font-semibold text-emerald-200 hover:bg-emerald-600/20"
+                    >
+                      {t('openings.guide.nextLine')} →
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
 
-        {/* Off-book golden rule card */}
-        <div className="flex flex-col gap-1 rounded-xl border border-slate-800 border-t-[3px] border-t-sky-400 bg-slate-900/90 p-3.5">
-          <p className="font-mono text-xs font-bold tracking-wider text-sky-300 uppercase">
-            🧭 {t('openings.guide.offbook')}
-          </p>
-          <p className="text-sm leading-relaxed text-slate-200">{textOf(guide.offbookRule)}</p>
-        </div>
+            {!done && isUserTurn && mode === 'practice' && !showHint && (
+              <button
+                type="button"
+                onClick={() => setShowHint(true)}
+                className="min-h-10 self-start rounded-lg border border-sky-600/70 bg-sky-950/30 px-4 font-medium text-sky-200 hover:border-sky-400"
+              >
+                💡 {t('openings.guide.hint')}
+              </button>
+            )}
+          </>
+        )}
 
-        {done && (
-          <div
-            role="status"
-            className="flex flex-col gap-3 rounded-xl border border-emerald-700 bg-emerald-950/40 p-4"
-          >
-            <p className="text-base font-semibold text-emerald-300">✓ {t('openings.guide.done')}</p>
-            {lastStep && <p className="text-slate-200">{textOf(lastStep.note)}</p>}
-            <div className="flex flex-wrap gap-2">
-              {mode === 'learn' && (
-                <button
-                  type="button"
-                  onClick={() => onModeChange('practice')}
-                  className="min-h-10 rounded-lg bg-emerald-600 px-4 font-semibold text-white hover:bg-emerald-500"
-                >
-                  🎯 {t('openings.guide.switchPractice')}
-                </button>
-              )}
-              {nextLine && onNextLine && (
-                <button
-                  type="button"
-                  onClick={onNextLine}
-                  className="min-h-10 rounded-lg border border-emerald-500/70 px-4 font-semibold text-emerald-200 hover:bg-emerald-600/20"
-                >
-                  {t('openings.guide.nextLine')} →
-                </button>
-              )}
+        {/* INTERACTIVE "WHAT IF?" SCENARIO EXPLORER (ALWAYS VISIBLE WHEN SCENARIOS EXIST) */}
+        {availableWhatIfs.length > 0 && (
+          <div className="flex flex-col gap-2.5 rounded-2xl border border-slate-800 border-t-[3px] border-t-sky-400 bg-slate-900/95 p-4">
+            <div className="flex flex-col gap-0.5">
+              <p className="font-mono text-xs font-bold tracking-wider text-sky-300 uppercase">
+                🔍 {t('openings.whatif.title')}
+              </p>
+              <p className="text-xs text-slate-400">{t('openings.whatif.subtitle')}</p>
+            </div>
+            <div className="flex flex-col gap-2">
+              {availableWhatIfs.map((scenario) => {
+                const isActive = activeWhatIf?.scenario.id === scenario.id
+                return (
+                  <button
+                    key={scenario.id}
+                    type="button"
+                    onClick={() => startWhatIf(scenario)}
+                    className={`group flex items-start justify-between gap-3 rounded-xl border p-3 text-left transition-colors ${
+                      isActive
+                        ? 'border-sky-400 bg-sky-500/15 text-white'
+                        : 'border-slate-800 bg-slate-950/70 text-slate-200 hover:border-sky-500/60 hover:bg-slate-950'
+                    }`}
+                  >
+                    <div className="flex flex-col gap-1">
+                      <span
+                        className={`w-fit rounded border px-1.5 py-0.5 font-mono text-[10px] font-bold tracking-wider uppercase ${
+                          WHATIF_BADGE_STYLES[scenario.kind]
+                        }`}
+                      >
+                        {t(`openings.whatif.badge.${scenario.kind}`)}
+                      </span>
+                      <span className="text-sm font-medium leading-snug">
+                        {textOf(scenario.prompt)}
+                      </span>
+                    </div>
+                    <span
+                      aria-hidden="true"
+                      className="mt-1 shrink-0 text-sm text-sky-400 transition-transform group-hover:translate-x-0.5"
+                    >
+                      ▶
+                    </span>
+                  </button>
+                )
+              })}
             </div>
           </div>
         )}
 
-        {!done && isUserTurn && mode === 'practice' && !showHint && (
-          <button
-            type="button"
-            onClick={() => setShowHint(true)}
-            className="min-h-10 self-start rounded-lg border border-sky-600/70 bg-sky-950/30 px-4 font-medium text-sky-200 hover:border-sky-400"
-          >
-            💡 {t('openings.guide.hint')}
-          </button>
+        {/* Off-book golden rule card (shown when no active simulation) */}
+        {!activeWhatIf && (
+          <div className="flex flex-col gap-1 rounded-xl border border-slate-800 bg-slate-900/80 p-3.5">
+            <p className="font-mono text-xs font-bold tracking-wider text-slate-400 uppercase">
+              🧭 {t('openings.guide.offbook')}
+            </p>
+            <p className="text-sm leading-relaxed text-slate-300">{textOf(guide.offbookRule)}</p>
+          </div>
         )}
 
-        {stepIndex > 0 && (
+        {stepIndex > 0 && !activeWhatIf && (
           <div className="flex flex-wrap gap-1.5 rounded-xl border border-slate-800 bg-slate-900/70 p-3 font-mono text-xs text-slate-300">
             {steps.slice(0, stepIndex).map((s) => (
               <span

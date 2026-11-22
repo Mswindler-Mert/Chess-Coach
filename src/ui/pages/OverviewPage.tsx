@@ -3,6 +3,7 @@ import { normalizeUsername } from '../../core/api/username'
 import { applyGameFilter } from '../../core/games/filter'
 import { opponentOf, type Game } from '../../core/games/model'
 import { summarize, type DashboardSummary } from '../../core/stats/dashboard'
+import type { PlayerDiagnosis } from '../../core/stats/diagnosis'
 import { DAILY_GOAL, type ActivityLog, type PlanItem } from '../../core/training/daily'
 import { buildHeatmap, type HeatLevel } from '../../core/training/heatmap'
 import { listAnalysisSummaries, type AnalysisSummary } from '../../db/analyses'
@@ -14,6 +15,7 @@ import { formatNumber, formatPercent, t } from '../../i18n'
 import { ErrorChips } from '../analysis'
 import { useAnalysisRunner } from '../analysisStyles'
 import { autoAnalyzeAfterSync } from '../background'
+import { DiagnosisCard } from '../DiagnosisCard'
 import { formatDate, outcomeStyles, timeClassLabel } from '../format'
 import { routeHref, type Route } from '../router'
 
@@ -21,6 +23,7 @@ interface OverviewBundle {
   daily: DailyData
   log: ActivityLog
   dashboard: DashboardSummary
+  diagnosis: PlayerDiagnosis
   recentGames: Game[]
   summaries: Map<string, AnalysisSummary>
   pendingPuzzles: number
@@ -64,6 +67,7 @@ function OverviewCockpit({ username }: { username: string }) {
         daily,
         log,
         dashboard,
+        diagnosis: dashData.diagnosis,
         recentGames: visible.slice(0, 5),
         summaries,
         pendingPuzzles,
@@ -98,7 +102,7 @@ function OverviewCockpit({ username }: { username: string }) {
     return <p className="text-slate-400">{t('app.loading')}</p>
   }
 
-  const { daily, dashboard, recentGames, summaries, pendingPuzzles } = bundle
+  const { daily, dashboard, diagnosis, recentGames, summaries, pendingPuzzles } = bundle
   const { streak, plan } = daily
   const doneToday = streak.today
   const goalPct = Math.min(1, doneToday / DAILY_GOAL)
@@ -286,6 +290,9 @@ function OverviewCockpit({ username }: { username: string }) {
           </span>
         </a>
       </section>
+
+      {/* Row 2.5: Personal Diagnosis Report ("Where Are You Breaking Down?") */}
+      <DiagnosisCard username={username} diagnosis={diagnosis} />
 
       {/* Row 3: "Don't Break the Chain" Activity Heatmap */}
       <section className="flex flex-col gap-3 rounded-2xl border border-slate-800 bg-slate-900/95 p-5">

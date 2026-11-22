@@ -12,6 +12,8 @@ describe('router', () => {
     { name: 'puzzles', username: 'mswindler07', focus: 'endgame' },
     { name: 'dashboard', username: 'mswindler07' },
     { name: 'openings', username: 'mswindler07' },
+    { name: 'openings', username: 'mswindler07', guide: 'e4-responses' },
+    { name: 'openings', username: 'mswindler07', guide: 'e4-responses', line: 'scandinavian' },
     { name: 'hanging', username: 'mswindler07' },
     { name: 'endgames', username: 'mswindler07' },
     { name: 'endgames', username: 'mswindler07', lesson: 'lucena' },

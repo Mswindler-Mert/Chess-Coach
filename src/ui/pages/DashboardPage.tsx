@@ -13,6 +13,7 @@ import {
 import { loadDashboard, type DashboardData } from '../../db/dashboard'
 import { formatNumber, formatPercent, locale, t } from '../../i18n'
 import { BarList, ColumnChart, LineChart, StatTile } from '../charts'
+import { DiagnosisCard } from '../DiagnosisCard'
 import { timeClassLabel } from '../format'
 import { routeHref } from '../router'
 
@@ -89,6 +90,8 @@ function Dashboard({ username }: { username: string }) {
           {t('dashboard.scope', { scope, analyzed: summary.games, games: data.games.length })}
         </p>
       </header>
+
+      <DiagnosisCard username={username} diagnosis={data.diagnosis} />
 
       {summary.games === 0 ? (
         <div className="flex flex-col gap-3 rounded-xl border border-slate-800 bg-slate-900 p-4 text-slate-300">

@@ -1,14 +1,17 @@
 import { describe, expect, it } from 'vitest'
 import {
   buildOpeningSteps,
+  buildWhatIfSteps,
   guideIdForOpeningFamily,
   OPENING_GUIDES,
   openingLineKey,
+  whatIfStartFen,
 } from './guides'
 
 describe('OPENING_GUIDES', () => {
-  it('has only legal chess moves and complete bilingual text in every line', () => {
+  it('has only legal chess moves and complete bilingual text in every line and what-if scenario', () => {
     const ids = new Set<string>()
+    let totalWhatIfs = 0
     for (const guide of OPENING_GUIDES) {
       expect(ids.has(guide.id)).toBe(false)
       ids.add(guide.id)
@@ -27,13 +30,29 @@ describe('OPENING_GUIDES', () => {
         const steps = buildOpeningSteps(guide, line.id)
         expect(steps.length).toBe(line.moves.length)
         expect(steps.some((s) => s.isUserMove)).toBe(true)
-        for (const step of steps) {
+        steps.forEach((step, idx) => {
           expect(step.note.tr.trim()).not.toBe('')
           expect(step.note.en.trim()).not.toBe('')
           expect(step.uci.length).toBeGreaterThanOrEqual(4)
-        }
+          for (const scenario of step.whatIfs ?? []) {
+            totalWhatIfs++
+            expect(scenario.prompt.tr.trim()).not.toBe('')
+            expect(scenario.prompt.en.trim()).not.toBe('')
+            expect(scenario.takeaway.tr.trim()).not.toBe('')
+            expect(scenario.takeaway.en.trim()).not.toBe('')
+            const startFen = whatIfStartFen(steps, idx, scenario)
+            const wiSteps = buildWhatIfSteps(startFen, scenario)
+            expect(wiSteps.length).toBe(scenario.moves.length)
+            expect(wiSteps.length).toBeGreaterThan(0)
+            for (const ws of wiSteps) {
+              expect(ws.note.tr.trim()).not.toBe('')
+              expect(ws.note.en.trim()).not.toBe('')
+            }
+          }
+        })
       }
     }
+    expect(totalWhatIfs).toBeGreaterThanOrEqual(20)
   })
 
   it('builds valid step progression for the Italian Giuoco Piano line', () => {

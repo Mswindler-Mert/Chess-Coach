@@ -17,16 +17,39 @@ const RECENT_WARNINGS = 10
 
 const pct = formatPercent
 
-export function OpeningsPage({ username: rawUsername }: { username: string }) {
+export function OpeningsPage({
+  username: rawUsername,
+  initialGuideId = null,
+  initialLineId = null,
+}: {
+  username: string
+  initialGuideId?: string | null
+  initialLineId?: string | null
+}) {
   const username = normalizeUsername(rawUsername)
   if (!username) return <p className="text-rose-400">{t('home.username.invalid')}</p>
-  return <Openings username={username} />
+  return (
+    <Openings
+      username={username}
+      initialGuideId={initialGuideId}
+      initialLineId={initialLineId}
+    />
+  )
 }
 
-function Openings({ username }: { username: string }) {
+function Openings({
+  username,
+  initialGuideId,
+  initialLineId,
+}: {
+  username: string
+  initialGuideId: string | null
+  initialLineId: string | null
+}) {
   const [now] = useState(() => Date.now())
   const [tab, setTab] = useState<'learn' | 'stats'>('learn')
-  const [selectedGuideId, setSelectedGuideId] = useState<string | null>(null)
+  const [selectedGuideId, setSelectedGuideId] = useState<string | null>(initialGuideId)
+  const [selectedLineId, setSelectedLineId] = useState<string | null>(initialLineId)
   const [data, setData] = useState<OpeningsData | null>(null)
 
   useEffect(() => {
@@ -74,7 +97,11 @@ function Openings({ username }: { username: string }) {
       </header>
 
       {tab === 'learn' ? (
-        <OpeningTrainer key={selectedGuideId ?? 'list'} initialGuideId={selectedGuideId} />
+        <OpeningTrainer
+          key={`${selectedGuideId ?? 'list'}:${selectedLineId ?? ''}`}
+          initialGuideId={selectedGuideId}
+          initialLineId={selectedLineId}
+        />
       ) : !data || !principles ? (
         <p className="text-slate-400">{t('openings.loading')}</p>
       ) : (
@@ -85,6 +112,7 @@ function Openings({ username }: { username: string }) {
           principles={principles}
           onStudyGuide={(id) => {
             setSelectedGuideId(id)
+            setSelectedLineId(null)
             setTab('learn')
           }}
         />

@@ -207,6 +207,21 @@ function useSidebarCounts(username: string): SidebarCounts {
 }
 
 /** Roomier fixed left desktop sidebar with colour-coded sections. */
+async function clearPwaCacheAndReload(): Promise<void> {
+  try {
+    if ('serviceWorker' in navigator) {
+      const regs = await navigator.serviceWorker.getRegistrations()
+      await Promise.all(regs.map((r) => r.unregister()))
+    }
+    if ('caches' in window) {
+      const keys = await caches.keys()
+      await Promise.all(keys.map((k) => caches.delete(k)))
+    }
+  } finally {
+    window.location.reload()
+  }
+}
+
 export function DesktopSidebar({ route, username }: { route: Route; username: string }) {
   const current = activeSection(route)
   const runner = useAnalysisRunner()
@@ -216,23 +231,33 @@ export function DesktopSidebar({ route, username }: { route: Route; username: st
   return (
     <aside className="sticky top-0 hidden h-dvh w-72 shrink-0 flex-col gap-4 border-r border-slate-800/90 bg-slate-950/95 p-5 lg:flex">
       {/* Brand header */}
-      <a
-        href={routeHref({ name: 'overview', username })}
-        className="flex items-center gap-3 px-1 py-0.5 text-slate-100 hover:text-white"
-      >
-        <span
-          aria-hidden="true"
-          className="grid size-9 place-items-center rounded-xl border border-emerald-500/40 bg-emerald-600/20 text-lg text-emerald-300"
+      <div className="flex items-center justify-between gap-2 px-1 py-0.5">
+        <a
+          href={routeHref({ name: 'overview', username })}
+          className="flex min-w-0 items-center gap-3 text-slate-100 hover:text-white"
         >
-          ♞
-        </span>
-        <div className="flex min-w-0 flex-col">
-          <span className="truncate font-mono text-sm font-bold tracking-wider uppercase">
-            {t('app.title')}
+          <span
+            aria-hidden="true"
+            className="grid size-9 shrink-0 place-items-center rounded-xl border border-emerald-500/40 bg-emerald-600/20 text-lg text-emerald-300"
+          >
+            ♞
           </span>
-          <span className="font-mono text-[11px] text-slate-500">v2.1</span>
-        </div>
-      </a>
+          <div className="flex min-w-0 flex-col">
+            <span className="truncate font-mono text-sm font-bold tracking-wider uppercase">
+              {t('app.title')}
+            </span>
+            <span className="font-mono text-[11px] text-emerald-400/90">v2.2</span>
+          </div>
+        </a>
+        <button
+          type="button"
+          title={t('app.clearCache')}
+          onClick={() => void clearPwaCacheAndReload()}
+          className="shrink-0 rounded-lg border border-slate-800 bg-slate-900/90 px-2 py-1 font-mono text-[10px] font-semibold text-slate-400 transition-colors hover:border-emerald-500/50 hover:text-emerald-300"
+        >
+          ↻ {t('app.clearCacheShort')}
+        </button>
+      </div>
 
       {/* Two-tone theme selector */}
       <ThemeSwitch showLabel />

@@ -90,7 +90,12 @@ export default function App() {
               <HangingPage key={route.username} username={route.username} />
             )}
             {route.name === 'openings' && (
-              <OpeningsPage key={route.username} username={route.username} />
+              <OpeningsPage
+                key={`${route.username}:${route.guide ?? ''}:${route.line ?? ''}`}
+                username={route.username}
+                initialGuideId={route.guide ?? null}
+                initialLineId={route.line ?? null}
+              />
             )}
             {route.name === 'dashboard' && (
               <DashboardPage key={route.username} username={route.username} />
