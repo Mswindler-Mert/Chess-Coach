@@ -4,12 +4,7 @@ import type { Color, Game, Outcome } from '../games/model'
 import { buildReplay } from '../games/replay'
 import { classifyOpeningReply, diagnosePlayer, moveRangeForPly } from './diagnosis'
 
-function makeGame(
-  id: string,
-  userColor: Color,
-  outcome: Outcome,
-  pgn: string,
-): Game {
+function makeGame(id: string, userColor: Color, outcome: Outcome, pgn: string): Game {
   return {
     id,
     username: 'tester',

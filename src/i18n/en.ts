@@ -603,7 +603,8 @@ export const en: Record<MessageKey, string> = {
     '{share} of your errors happen after move 20 — endgame technique or time trouble.',
   'diagnosis.collapse.errors': '{count|# error|# errors}',
   'diagnosis.openings.title': 'Opening Replies That Shock You',
-  'diagnosis.openings.empty': 'Analyse a few 1.e4 / 1.d4 games to see your opening vulnerabilities.',
+  'diagnosis.openings.empty':
+    'Analyse a few 1.e4 / 1.d4 games to see your opening vulnerabilities.',
   'diagnosis.openings.stats': '{games|# game|# games} · {win}% win · {blunders} blunders/game',
   'diagnosis.openings.cta': 'See on board →',
   'diagnosis.reply.e4-e5': 'White 1.e4 → Black 1…e5 (Italian / Open)',
@@ -617,7 +618,8 @@ export const en: Record<MessageKey, string> = {
   'diagnosis.reply.vs-d4': 'Black → Facing 1.d4',
 
   'openings.whatif.title': 'See on Board: What If Something Else Happens?',
-  'openings.whatif.subtitle': 'Click any scenario to watch the exact moves play out live on the board!',
+  'openings.whatif.subtitle':
+    'Click any scenario to watch the exact moves play out live on the board!',
   'openings.whatif.badge.punish': 'PUNISH',
   'openings.whatif.badge.danger': 'TRAP / DANGER',
   'openings.whatif.badge.exchange': 'TRADE ORDER',

@@ -572,7 +572,8 @@ export const tr = {
     'Kişisel teşhis raporu için birkaç oyununun analiz edilmesi gerekiyor. Analiz tamamlandıkça burada en çok hangi taşı astığın, hangi hamlede dağıldığın ve hangi açılışta şaşırdığın görünecek.',
   'diagnosis.hung.title': 'En Çok Asılan Taşların',
   'diagnosis.hung.empty': 'Henüz korumasız bırakılan büyük taş tespit edilmedi.',
-  'diagnosis.hung.verdict': 'En büyük kan kaybın: {piece} ({count} kez bedava/savunmasız bıraktın).',
+  'diagnosis.hung.verdict':
+    'En büyük kan kaybın: {piece} ({count} kez bedava/savunmasız bıraktın).',
   'diagnosis.hung.cta': 'Asılı taş çalış →',
   'diagnosis.hung.times': '{count} kez',
   'diagnosis.piece.q': 'Vezir',

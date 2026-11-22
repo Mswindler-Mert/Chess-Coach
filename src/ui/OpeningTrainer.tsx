@@ -358,9 +358,8 @@ function LineBoard({
   const matchingWrongScenario = useMemo(() => {
     if (!wrongTrySan) return null
     return (
-      availableWhatIfs.find(
-        (s) => s.anchor !== 'beforePrev' && s.moves[0]?.san === wrongTrySan,
-      ) ?? null
+      availableWhatIfs.find((s) => s.anchor !== 'beforePrev' && s.moves[0]?.san === wrongTrySan) ??
+      null
     )
   }, [availableWhatIfs, wrongTrySan])
 
@@ -410,7 +409,8 @@ function LineBoard({
   )
 
   const whatIfMoveDetails = useMemo(
-    () => (activeWhatIfStep ? describeMove(activeWhatIfStep.fenBefore, activeWhatIfStep.uci) : null),
+    () =>
+      activeWhatIfStep ? describeMove(activeWhatIfStep.fenBefore, activeWhatIfStep.uci) : null,
     [activeWhatIfStep],
   )
 

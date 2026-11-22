@@ -29,11 +29,7 @@ export function OpeningsPage({
   const username = normalizeUsername(rawUsername)
   if (!username) return <p className="text-rose-400">{t('home.username.invalid')}</p>
   return (
-    <Openings
-      username={username}
-      initialGuideId={initialGuideId}
-      initialLineId={initialLineId}
-    />
+    <Openings username={username} initialGuideId={initialGuideId} initialLineId={initialLineId} />
   )
 }
 

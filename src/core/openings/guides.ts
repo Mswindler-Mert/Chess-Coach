@@ -980,7 +980,10 @@ export const OPENING_GUIDES: readonly OpeningGuide[] = [
     lines: [
       {
         id: 'scandinavian',
-        title: { tr: 'Rakip 1…d5 Oynarsa (İskandinav)', en: 'When Black Plays 1…d5 (Scandinavian)' },
+        title: {
+          tr: 'Rakip 1…d5 Oynarsa (İskandinav)',
+          en: 'When Black Plays 1…d5 (Scandinavian)',
+        },
         when: {
           tr: 'Rakip 1.e4 piyonuna hemen saldırıp seni şaşırtmak isterse',
           en: 'When Black immediately attacks your e4 pawn',
