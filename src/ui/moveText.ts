@@ -247,6 +247,10 @@ export function formatBestReason(
         return `${cap(action)} starts a forced checkmate sequence.`
       case 'free-capture':
         return `${cap(action)} wins material (+${reason.gain} points) that the opponent cannot recover.`
+      case 'tactical-capture':
+        return reason.followUp
+          ? `${cap(action)} isn’t free on its own — it’s a tactic (like removing a defender) that sets up ${formatMoveBadge(reason.followUp, 'en')} next!`
+          : `${cap(action)} starts a tactical sequence that wins material on the next move.`
       case 'fork':
         return `${cap(action)} attacks ${reason.targetCount} enemy targets at once (a fork) and wins material.`
       case 'pin':
@@ -277,6 +281,10 @@ export function formatBestReason(
       return `${cap(action)} zorunlu mat yolunu açıyor.`
     case 'free-capture':
       return `${cap(action)} rakibin geri alamayacağı bedava taş kazandırıyor (+${reason.gain} puan).`
+    case 'tactical-capture':
+      return reason.followUp
+        ? `${cap(action)} tek başına bedava değil — ama devamında ${formatMoveBadge(reason.followUp, 'tr')} ile taş kazanan bir taktik başlatıyor!`
+        : `${cap(action)} tek başına bedava değil — ama devamındaki taktikle taş kazandırıyor!`
     case 'fork':
       return `${cap(action)} aynı anda ${reason.targetCount} hedefe saldırarak (çatal) taş kazandırıyor.`
     case 'pin':
@@ -336,6 +344,8 @@ function playedReasonDetail(
           : 'It lets the opponent skewer your pieces.'
       case 'missed-free-piece':
         return `You missed the opponent’s free ${EN_PIECES[reason.targetPiece]} on ${reason.targetSquare}.`
+      case 'missed-tactic':
+        return 'You missed a tactical sequence here that wins material.'
       case 'missed-mate':
         return 'You had a forced checkmate here but missed it.'
       case 'blew-winning':
@@ -371,6 +381,8 @@ function playedReasonDetail(
         : 'Rakibe şiş taktiği fırsatı veriyor.'
     case 'missed-free-piece':
       return `Rakibin ${trAtSquare(reason.targetSquare)} bedava ${TR_PIECES[reason.targetPiece].theirNom} kaçtı.`
+    case 'missed-tactic':
+      return 'Burada devamında taş kazandıran bir taktik fırsatını kaçırdın.'
     case 'missed-mate':
       return 'Burada zorunlu matın vardı ama kaçırdın.'
     case 'blew-winning':

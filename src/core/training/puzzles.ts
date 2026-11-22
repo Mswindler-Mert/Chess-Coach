@@ -43,6 +43,8 @@ export interface Puzzle {
   solution: PuzzleMove
   /** Engine score of `fen` for the user. */
   bestScore: Score
+  /** Engine PV starting with the solution move (UCI), for stepping through tactical follow-ups. */
+  solutionPvUci: string[]
   /** The opponent's best reply line after the move played in the game, in SAN and UCI. */
   refutation: string[]
   refutationUci: string[]
@@ -103,6 +105,7 @@ export function generatePuzzles(game: Game, replay: Replay, analysis: GameAnalys
       played: { uci: move.uci, san: move.san },
       solution: { uci: before.bestMove, san: solutionSan },
       bestScore: before.score,
+      solutionPvUci: before.pv.slice(0, REFUTATION_PLIES),
       refutation: pvToSan(fenAt(replay, move.ply), after.pv, REFUTATION_PLIES),
       refutationUci: after.pv.slice(0, REFUTATION_PLIES),
       winBefore: move.winBefore,

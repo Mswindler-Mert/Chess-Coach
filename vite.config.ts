@@ -21,12 +21,12 @@ export default defineConfig({
         name: 'Satranç Antrenörü',
         short_name: 'Satranç',
         description:
-          'Chess.com oyunlarını Stockfish ile analiz edip kişisel alıştırmalar üreten satranç antrenörü.',
+          'Chess.com ve Lichess oyunlarını Stockfish ile analiz edip kişisel alıştırmalar üreten satranç antrenörü.',
         lang: 'tr',
         display: 'standalone',
         orientation: 'portrait',
-        background_color: '#020617',
-        theme_color: '#020617',
+        background_color: '#0c0d10',
+        theme_color: '#0c0d10',
         icons: [
           { src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png' },
           { src: 'pwa-512x512.png', sizes: '512x512', type: 'image/png' },
@@ -35,11 +35,13 @@ export default defineConfig({
       },
       workbox: {
         // The app shell plus the Stockfish engine (≈1.8 MB wasm), so analysis, puzzles and
-        // endgames work offline. Chess.com requests always go to the network.
+        // endgames work offline. Chess.com and Lichess requests always go to the network.
         globPatterns: ['**/*.{js,css,html,svg,png,wasm,webmanifest}'],
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
         navigateFallback: 'index.html',
         cleanupOutdatedCaches: true,
+        skipWaiting: true,
+        clientsClaim: true,
       },
     }),
   ],

@@ -452,6 +452,7 @@ export const tr = {
   'coach.hintPieceMsg': 'Mavi halkalı taşla en iyi hamleyi ara.',
   'coach.viewBest': 'En iyi hamle',
   'coach.viewPlayed': 'Oyunda oynadığın',
+  'coach.watchBest': 'En iyi devamı adım adım izle',
   'coach.watchLine': 'Rakibin cevabını adım adım izle',
   'coach.step': 'Adım {step}/{total}',
   'coach.youAre': 'Sen: {color}',

@@ -302,6 +302,7 @@ function PuzzleBoard({
   const [opponent, setOpponent] = useState<string | null>(null)
   const [hintLevel, setHintLevel] = useState<0 | 1 | 2>(0)
   const [reviewMode, setReviewMode] = useState<'best' | 'played'>('best')
+  const [bestStep, setBestStep] = useState(0)
   const [refStep, setRefStep] = useState(0)
 
   const coaching = useMemo(
@@ -311,6 +312,7 @@ function PuzzleBoard({
         color: puzzle.color,
         playedUci: puzzle.played.uci,
         bestUci: puzzle.solution.uci,
+        bestPv: puzzle.solutionPvUci,
         afterPlayedPv: puzzle.refutationUci,
         motifs: puzzle.motifs,
       }),
@@ -382,6 +384,7 @@ function PuzzleBoard({
 
   const done = answer.status === 'done' ? answer : null
   const wrong = done && !done.result.correct
+  const solSteps = coaching?.best.solutionSteps ?? []
   const refSteps = coaching?.played.refutationSteps ?? []
 
   // Determine which board position, arrows and square highlights to show.
@@ -409,6 +412,17 @@ function PuzzleBoard({
         arrows = [arrow(nextStep.move.uci, ARROW_BAD)]
       }
     }
+  } else if (done && bestStep > 0 && solSteps.length > 0) {
+    const step = solSteps[Math.min(bestStep, solSteps.length) - 1]
+    position = step ? step.fenAfter : puzzle.fen
+    if (step) {
+      squareStyles[step.move.from] = LAST_MOVE_STYLE
+      squareStyles[step.move.to] = LAST_MOVE_STYLE
+    }
+    const nextStep = solSteps[bestStep]
+    if (nextStep) {
+      arrows = [arrow(nextStep.move.uci, ARROW_GOOD)]
+    }
   } else {
     position =
       answer.status === 'checking'
@@ -433,6 +447,15 @@ function PuzzleBoard({
         for (const square of targets) squareStyles[square] = TARGET_STYLE
       }
     }
+  }
+
+  function stepSolution(next: number) {
+    const clamped = Math.max(0, Math.min(solSteps.length, next))
+    if (clamped !== bestStep && clamped > 0) {
+      const s = solSteps[clamped - 1]
+      if (s) playMoveSan(s.move.san)
+    }
+    setBestStep(clamped)
   }
 
   function stepRefutation(next: number) {
@@ -481,7 +504,10 @@ function PuzzleBoard({
               <button
                 type="button"
                 aria-pressed={reviewMode === 'best'}
-                onClick={() => setReviewMode('best')}
+                onClick={() => {
+                  setReviewMode('best')
+                  setBestStep(0)
+                }}
                 className={`min-h-9 rounded-lg px-3 text-sm font-medium transition-colors ${
                   reviewMode === 'best'
                     ? 'bg-emerald-600/25 text-emerald-200 ring-1 ring-emerald-500/70'
@@ -507,6 +533,42 @@ function PuzzleBoard({
                 ✕ {t('coach.viewPlayed')}
               </button>
             </div>
+            {reviewMode === 'best' && solSteps.length > 1 && (
+              <div className="flex flex-col gap-1.5 border-t border-slate-800 pt-2">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-xs font-medium text-slate-300">
+                    {t('coach.watchBest')} (
+                    {t('coach.step', { step: bestStep, total: solSteps.length })})
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      disabled={bestStep === 0}
+                      onClick={() => stepSolution(bestStep - 1)}
+                      className="min-h-8 rounded-md bg-slate-800 px-3 text-xs font-semibold hover:bg-slate-700 disabled:opacity-40"
+                    >
+                      ◀
+                    </button>
+                    <button
+                      type="button"
+                      disabled={bestStep >= solSteps.length}
+                      onClick={() => stepSolution(bestStep + 1)}
+                      className="min-h-8 rounded-md bg-emerald-600/85 px-3 text-xs font-semibold text-white hover:bg-emerald-500 disabled:opacity-40"
+                    >
+                      ▶
+                    </button>
+                  </div>
+                </div>
+                {bestStep > 0 && solSteps[bestStep - 1] && (
+                  <p className="text-xs text-slate-300">
+                    {bestStep}. {formatMoveBadge(solSteps[bestStep - 1]!.move)}{' '}
+                    <span className="text-slate-400">
+                      ({formatMoveAction(solSteps[bestStep - 1]!.move)})
+                    </span>
+                  </p>
+                )}
+              </div>
+            )}
             {reviewMode === 'played' && refSteps.length > 0 && (
               <div className="flex flex-col gap-1.5 border-t border-slate-800 pt-2">
                 <div className="flex items-center justify-between gap-2">

@@ -9,6 +9,7 @@ export type BestReason =
   | { kind: 'checkmate' }
   | { kind: 'forced-mate' }
   | { kind: 'free-capture'; gain: number }
+  | { kind: 'tactical-capture'; followUp: MoveDetails | null }
   | { kind: 'fork'; targetCount: number }
   | { kind: 'pin' }
   | { kind: 'skewer' }
@@ -27,6 +28,7 @@ export type PlayedReason =
   | { kind: 'allowed-pin' }
   | { kind: 'allowed-skewer' }
   | { kind: 'missed-free-piece'; targetSquare: string; targetPiece: PieceSymbol }
+  | { kind: 'missed-tactic' }
   | { kind: 'missed-mate' }
   | { kind: 'blew-winning' }
   | { kind: 'time-pressure' }
@@ -38,6 +40,8 @@ export interface MistakeCoaching {
   best: {
     move: MoveDetails
     reason: BestReason
+    /** Step-by-step continuation starting with the best move itself (for tactical follow-ups). */
+    solutionSteps: LineStep[]
   }
   played: {
     move: MoveDetails
@@ -55,6 +59,8 @@ export interface MistakeExplainInput {
   color: Color
   playedUci: string
   bestUci: string
+  /** Engine PV from `fen` starting with `bestUci` (shows tactical follow-up). */
+  bestPv?: readonly string[]
   /** Engine PV from the position after `playedUci` (opponent's refutation). */
   afterPlayedPv: readonly string[]
   motifs: readonly Motif[]
@@ -72,17 +78,36 @@ export function explainMistake(input: MistakeExplainInput): MistakeCoaching | nu
 
   const enemy: Color = input.color === 'white' ? 'black' : 'white'
   const motifs = input.motifs
+  const solutionSteps = buildLineSteps(
+    input.fen,
+    input.bestPv && input.bestPv.length > 0 ? input.bestPv : [input.bestUci],
+    4,
+  )
   const refutationSteps = buildLineSteps(playedMove.fenAfter, input.afterPlayedPv, 4)
   const enemyReply = refutationSteps[0]?.move ?? null
 
-  const bestReason = classifyBestReason(input.fen, bestMove, input.color, enemy, motifs)
-  const playedReason = classifyPlayedReason(playedMove, bestMove, input.color, enemy, motifs)
+  const bestReason = classifyBestReason(
+    input.fen,
+    bestMove,
+    input.color,
+    enemy,
+    motifs,
+    solutionSteps,
+  )
+  const playedReason = classifyPlayedReason(
+    input.fen,
+    playedMove,
+    bestMove,
+    input.color,
+    enemy,
+    motifs,
+  )
 
   const tip: CoachTipKey =
     motifs[0] ?? (bestReason.kind === 'saves-piece' ? 'saves-piece' : 'general')
 
   return {
-    best: { move: bestMove, reason: bestReason },
+    best: { move: bestMove, reason: bestReason, solutionSteps },
     played: {
       move: playedMove,
       reason: playedReason,
@@ -100,6 +125,7 @@ function classifyBestReason(
   color: Color,
   enemy: Color,
   motifs: readonly Motif[],
+  solutionSteps: readonly LineStep[],
 ): BestReason {
   if (best.checkmate) return { kind: 'checkmate' }
   if (motifs.includes('missed-mate')) return { kind: 'forced-mate' }
@@ -111,8 +137,14 @@ function classifyBestReason(
   if (motifs.includes('missed-skewer')) return { kind: 'skewer' }
   if (best.captured) {
     const see = staticExchange(fenBefore, best.to, color)
-    if (see >= 2 || motifs.includes('missed-free-piece')) {
-      return { kind: 'free-capture', gain: Math.max(see, 1) }
+    // Only call it a "free capture" when static exchange on that square genuinely wins material!
+    if (see >= 2) {
+      return { kind: 'free-capture', gain: see }
+    }
+    // Otherwise if the engine line still wins material a move later (e.g. removing the defender:
+    // Bxf3 Qxf3 Qxg5), describe it honestly as a tactical sequence instead of a "free piece".
+    if (motifs.includes('missed-free-piece')) {
+      return { kind: 'tactical-capture', followUp: solutionSteps[2]?.move ?? null }
     }
   }
   // Did the best move rescue a piece that was hanging on its origin square?
@@ -157,6 +189,7 @@ function isOpenFileForColor(fen: string, file: string, color: Color): boolean {
 }
 
 function classifyPlayedReason(
+  fenBefore: string,
   played: MoveDetails,
   best: MoveDetails,
   color: Color,
@@ -174,7 +207,10 @@ function classifyPlayedReason(
     return { kind: 'hanging-piece', threat }
   }
   if (motifs.includes('missed-free-piece') && best.captured) {
-    return { kind: 'missed-free-piece', targetSquare: best.to, targetPiece: best.captured }
+    if (staticExchange(fenBefore, best.to, color) >= 2) {
+      return { kind: 'missed-free-piece', targetSquare: best.to, targetPiece: best.captured }
+    }
+    return { kind: 'missed-tactic' }
   }
   if (motifs.includes('missed-mate')) return { kind: 'missed-mate' }
   if (motifs.includes('blew-winning-position')) return { kind: 'blew-winning' }

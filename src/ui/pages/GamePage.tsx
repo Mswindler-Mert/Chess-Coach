@@ -395,6 +395,7 @@ function MoveInsight({
           color: move.color,
           playedUci: move.uci,
           bestUci: before.bestMove,
+          bestPv: before.pv,
           afterPlayedPv: position.pv,
           motifs: moveMotifs,
         })

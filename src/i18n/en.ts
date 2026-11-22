@@ -460,6 +460,7 @@ export const en: Record<MessageKey, string> = {
   'coach.hintPieceMsg': 'Look for the best move with the highlighted piece.',
   'coach.viewBest': 'Best move',
   'coach.viewPlayed': 'What you played',
+  'coach.watchBest': 'Step through the best continuation',
   'coach.watchLine': 'Step through the opponent’s reply',
   'coach.step': 'Step {step}/{total}',
   'coach.youAre': 'You are: {color}',

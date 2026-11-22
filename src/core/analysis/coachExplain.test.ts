@@ -64,4 +64,24 @@ describe('explainMistake', () => {
     expect(coaching?.best.reason).toEqual({ kind: 'saves-piece', piece: 'r', from: 'a5' })
     expect(coaching?.played.reason).toMatchObject({ kind: 'hanging-piece' })
   })
+
+  it('never labels a defended capture as a free piece — describes removing-the-defender honestly', () => {
+    // Black bishop g4 captures White knight f3 (defended by g2 pawn & d1 queen) to remove the
+    // defender of White's g5 bishop: 1...Bxf3 2.gxf3 Qxg5.
+    const fen = 'r2qk2r/pppn1ppp/1b1p4/3P2B1/4P1b1/2N2N2/PPP2PPP/R2QK2R b KQkq - 0 11'
+    const coaching = explainMistake({
+      fen,
+      color: 'black',
+      playedUci: 'f7f6',
+      bestUci: 'g4f3',
+      bestPv: ['g4f3', 'g2f3', 'd8g5'],
+      afterPlayedPv: ['g5h4'],
+      motifs: ['missed-free-piece'],
+    })
+    expect(coaching?.best.reason).toMatchObject({
+      kind: 'tactical-capture',
+      followUp: expect.objectContaining({ san: 'Qxg5' }),
+    })
+    expect(coaching?.played.reason).toEqual({ kind: 'missed-tactic' })
+  })
 })
